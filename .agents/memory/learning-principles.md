@@ -13,3 +13,9 @@ AI Studio can have a separate tab, but AI should not feel separate from the rest
 **Why:** The user explicitly corrected the isolated AI Studio experience.
 
 **How to apply:** Provide context-aware help within learning, practice, project and reflection steps rather than forcing navigation to a separate AI page. Preserve the student's current work and cognitive/adaptive learning principles.
+
+Each course should have a book- or module-like study structure. Each module should contain textual content, images, animations, videos and AI-assisted teaching—not merely a chatbot.
+
+**Why:** The user explicitly requested this as the course study experience.
+
+**How to apply:** Build structured multimedia lessons with active teaching interactions grounded in the lesson, while retaining cognitive and adaptive learning as the core principles.
