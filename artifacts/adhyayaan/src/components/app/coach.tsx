@@ -37,11 +37,11 @@ export function CoachToggle({ open, onClick, label = 'Think it through', testId,
       onClick={onClick}
       aria-expanded={open}
       data-testid={testId}
-      className={`group inline-flex items-center gap-1.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+      className={`group inline-flex max-w-full shrink-0 items-center justify-center gap-1.5 rounded-full border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
         open ? 'border-primary bg-primary text-primary-foreground' : 'border-accent/40 bg-accent/5 text-accent hover:border-accent hover:bg-accent/10'
       } ${size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm font-medium'}`}
     >
-      <CoachMark className={`${size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} transition-transform group-hover:rotate-45`} />
+      <CoachMark className={`${size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} shrink-0 transition-transform group-hover:rotate-45`} />
       {open ? 'Hide coach' : label}
     </button>
   );

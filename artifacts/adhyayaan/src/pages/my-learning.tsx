@@ -61,9 +61,9 @@ function Pathway({ e }: { e: Enrollment }) {
           const done = e.completedModules.includes(m.id);
           return (
             <li key={m.id}>
-              <div className="flex items-center gap-2 pr-4 hover:bg-secondary/60">
+              <div className="flex flex-wrap items-center gap-2 p-3 hover:bg-secondary/60 sm:flex-nowrap sm:py-0 sm:pl-0 sm:pr-4">
               <button onClick={() => toggle(m.id)} disabled={!!busy || locked} data-testid={`button-module-${m.id}`}
-                className="group flex min-w-0 flex-1 items-center gap-4 px-6 py-3.5 text-left transition-colors disabled:cursor-not-allowed">
+                className="group flex min-w-0 basis-full items-center gap-3 py-2 text-left transition-colors disabled:cursor-not-allowed sm:flex-1 sm:basis-auto sm:gap-4 sm:px-6 sm:py-3.5">
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${done ? 'scale-105 border-accent bg-accent text-accent-foreground' : 'border-border group-hover:border-accent'}`}>
                   {busy === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : done ? <Check className="h-4 w-4" /> : <span className="font-mono text-[10px] text-muted-foreground">{i + 1}</span>}
                 </span>

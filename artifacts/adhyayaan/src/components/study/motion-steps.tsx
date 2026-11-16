@@ -48,7 +48,7 @@ export function MotionSteps({ steps, title }: { steps: StudySection[]; title: st
                 onClick={() => { setPlaying(false); setI(k); }}>
                 {k > 0 && on && <line x1={x(k - 1)} y1={y(k - 1)} x2={x(k)} y2={y(k)} stroke="hsl(var(--ledger))" strokeWidth="3" strokeLinecap="round" />}
                 <circle cx={x(k)} cy={y(k)} r={cur ? 20 : 15} fill={cur ? 'hsl(var(--accent))' : on ? 'hsl(var(--ledger))' : 'hsl(var(--paper))'} stroke={on ? 'none' : 'hsl(var(--input))'} strokeWidth="2" />
-                <text x={x(k)} y={y(k) + 5} textAnchor="middle" fontFamily="JetBrains Mono" fontSize="13" fontWeight="600" fill={on ? 'hsl(40 60% 97%)' : 'hsl(232 14% 42%)'}>{k + 1}</text>
+                <text x={x(k)} y={y(k) + 5} textAnchor="middle" fontFamily="Lato, Arial, sans-serif" fontSize="13" fontWeight="700" fill={on ? 'hsl(40 60% 97%)' : 'hsl(232 14% 42%)'}>{k + 1}</text>
                 <title>{s.heading}</title>
               </g>
             );

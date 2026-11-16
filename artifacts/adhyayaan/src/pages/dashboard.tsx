@@ -163,15 +163,17 @@ function NextStep({ d }: { d: DashboardData }) {
   const remaining = p && e ? p.mods.filter((m) => !e.completedModules.includes(m.id)) : [];
   return (
     <section className="ink-card rise mt-6 overflow-hidden" data-testid="section-next-step">
-      <div className="flex flex-wrap items-center gap-4 p-5">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-4 sm:gap-4 sm:p-5 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-center">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-[hsl(40_88%_62%)]"><CoachMark className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Your next step</p>
-          <p className="font-display text-lg font-semibold text-primary" data-testid="text-next-step">
+          <p className="break-words font-display text-lg font-semibold leading-relaxed text-primary" data-testid="text-next-step">
             {!e ? 'Choose a first pathway that fits your discipline.' : remaining.length ? <>Next up in {e.course.title}: <em className="text-accent">{remaining[0].title}</em></> : <>All modules done in {e.course.title}. Time for the project.</>}
           </p>
         </div>
-        <CoachToggle open={open} onClick={() => setOpen((o) => !o)} label="Plan it with the coach" testId="button-coach-next" />
+        <div className="col-span-2 min-w-0 xl:col-span-1">
+          <CoachToggle open={open} onClick={() => setOpen((o) => !o)} label="Plan it with the coach" testId="button-coach-next" />
+        </div>
       </div>
       {open && (
         <div className="space-y-3 border-t bg-secondary/30 p-4">

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -141,9 +141,9 @@
   --chart-4: 168 40% 36%;
   --chart-5: 280 25% 45%;
 
-  --app-font-sans: 'Bricolage Grotesque', sans-serif;
-  --app-font-serif: 'Fraunces', Georgia, serif;
-  --app-font-mono: 'JetBrains Mono', monospace;
+  --app-font-sans: 'Lato', Arial, sans-serif;
+  --app-font-serif: 'Lato', Arial, sans-serif;
+  --app-font-mono: 'Lato', Arial, sans-serif;
   --radius: 0.85rem; /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
@@ -433,7 +433,7 @@
   }
 }
 
-.font-display{font-family:'Fraunces',Georgia,serif;font-optical-sizing:auto;letter-spacing:-0.02em}
+.font-display{font-family:var(--app-font-sans);letter-spacing:-0.015em}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.07;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .alpona-dots{background-image:radial-gradient(hsl(var(--accent)/.35) 1.2px,transparent 1.3px);background-size:18px 18px}
 .ink-card{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:1.1rem;box-shadow:0 1px 0 hsl(232 45% 16%/.04),0 12px 30px -18px hsl(232 55% 28%/.35)}
@@ -451,15 +451,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;op
 .auth-form-side form{animation:authEnter .8s .12s cubic-bezier(.2,.8,.2,1) both}
 @keyframes authEnter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:639px){.auth-panel{padding:1.25rem;border-radius:1.15rem}}
-.prose-ai p{margin:.4rem 0}.prose-ai ul{list-style:disc;padding-left:1.2rem;margin:.4rem 0}.prose-ai ol{list-style:decimal;padding-left:1.2rem}.prose-ai h3{font-family:'Fraunces',serif;font-weight:600;margin-top:.6rem}.prose-ai code{font-family:'JetBrains Mono',monospace;font-size:.85em;background:hsl(var(--muted));padding:0 .25rem;border-radius:.25rem}
+.prose-ai p{margin:.4rem 0}.prose-ai ul{list-style:disc;padding-left:1.2rem;margin:.4rem 0}.prose-ai ol{list-style:decimal;padding-left:1.2rem}.prose-ai h3{font-family:var(--app-font-sans);font-weight:700;margin-top:.6rem}.prose-ai code{font-family:ui-monospace,monospace;font-size:.85em;background:hsl(var(--muted));padding:0 .25rem;border-radius:.25rem}
 
 /* ---- Study book: "survey ledger" reading room ---- */
 :root{--ledger:178 42% 30%;--ledger-soft:176 34% 92%;--turmeric:40 88% 52%;--paper:42 58% 97%;--rule:38 30% 86%}
 .reader-paper{background:linear-gradient(hsl(var(--paper)),hsl(var(--paper))) padding-box;border:1px solid hsl(var(--rule));border-radius:1.25rem;box-shadow:0 1px 0 hsl(232 45% 16%/.04),0 30px 60px -40px hsl(178 42% 20%/.45)}
 .reader-margin{background-image:linear-gradient(90deg,transparent 2.4rem,hsl(var(--accent)/.28) 2.4rem,hsl(var(--accent)/.28) calc(2.4rem + 1px),transparent calc(2.4rem + 1px))}
-.reader-prose{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;line-height:1.78;color:hsl(232 40% 18%)}
+.reader-prose{font-family:var(--app-font-sans);font-size:1.08rem;line-height:1.78;color:hsl(232 40% 18%)}
 .reader-prose p+p{margin-top:.9em}
-.dropcap::first-letter{float:left;font-family:'Fraunces',serif;font-weight:800;font-size:3.4em;line-height:.8;margin:.08em .12em 0 0;color:hsl(var(--accent))}
+.dropcap::first-letter{float:none;font:inherit;margin:0;color:inherit}
 .ledger-chip{background:hsl(var(--ledger-soft));color:hsl(var(--ledger))}
 @keyframes pageIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 .page-in{animation:pageIn .5s cubic-bezier(.2,.8,.2,1) both}
