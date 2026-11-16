@@ -23,7 +23,7 @@ export function AuthSplash() {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background" data-testid="status-session-loading" aria-busy="true">
       <div className="flex flex-col items-center gap-4">
-        <span className="flex h-12 w-12 animate-pulse items-center justify-center rounded-2xl bg-accent font-display text-2xl font-bold text-accent-foreground">অ</span>
+        <img src={`${import.meta.env.BASE_URL}adhyayaan-logo.png`} alt="Adhyayaan" className="h-12 w-auto object-contain" />
         <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Opening your workspace</span>
       </div>
     </div>
@@ -33,17 +33,16 @@ export function AuthSplash() {
 function Frame({ mode, children }: { mode: 'login' | 'register'; children: ReactNode }) {
   const next = useNext();
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-[hsl(232_52%_16%)] lg:grid lg:grid-cols-[1.05fr_1fr]">
+    <div className="auth-frame relative min-h-[100dvh] overflow-hidden bg-[hsl(232_52%_16%)] lg:grid lg:grid-cols-[1.02fr_1fr]">
       {/* Story side */}
       <div className="relative hidden overflow-hidden lg:block">
         <img src={`${import.meta.env.BASE_URL}hero.png`} alt="" className="absolute inset-0 h-full w-full scale-105 object-cover" />
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(232_52%_16%/.35)] via-[hsl(232_52%_16%/.55)] to-[hsl(232_52%_12%/.95)]" />
         <div className="alpona-dots absolute inset-0 opacity-25" />
         <div className="relative flex h-full flex-col justify-between p-12 text-[hsl(40_40%_94%)]">
-          <Link href="/" className="flex w-fit items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="link-home">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent font-display text-xl font-bold text-accent-foreground">অ</span>
-            <span className="font-display text-2xl font-semibold">Adhyayaan</span>
-          </Link>
+          <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(40_40%_94%/.72)]">
+            <span className="h-px w-8 bg-[hsl(40_88%_62%)]" /> A learning journey rooted in practice
+          </p>
           <div className="max-w-lg">
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[hsl(40_88%_62%)]">Final-year internships · West Bengal</p>
             <h2 className="mt-4 font-display text-5xl font-semibold leading-[1.02] xl:text-6xl">
@@ -66,12 +65,11 @@ function Frame({ mode, children }: { mode: 'login' | 'register'; children: React
       </div>
 
       {/* Form side */}
-      <div className="relative flex min-h-[100dvh] items-center justify-center bg-background px-5 py-10 lg:rounded-l-[2.5rem]">
+      <div className="auth-form-side relative flex min-h-[100dvh] items-center justify-center bg-background px-5 py-8 sm:px-8 lg:rounded-l-[2.5rem] lg:py-12">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border-[18px] border-dashed border-accent/10" />
-        <div className="rise relative w-full max-w-[440px]">
-          <Link href="/" className="mb-8 flex w-fit items-center gap-2.5 lg:hidden" data-testid="link-home-mobile">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent font-display text-lg font-bold text-accent-foreground">অ</span>
-            <span className="font-display text-xl font-semibold text-primary">Adhyayaan</span>
+        <div className="auth-content relative w-full max-w-[440px]">
+          <Link href="/" className="mb-6 inline-flex w-fit items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:mb-8" data-testid="link-home-mobile">
+            <img src={`${import.meta.env.BASE_URL}adhyayaan-logo.png`} alt="Adhyayaan home" className="h-14 w-auto max-w-[240px] object-contain object-left sm:h-16" />
           </Link>
           <div className="relative mb-8 lg:hidden">
             <img src={`${import.meta.env.BASE_URL}hero.png`} alt="" className="h-36 w-full rounded-2xl object-cover" />
@@ -79,7 +77,7 @@ function Frame({ mode, children }: { mode: 'login' | 'register'; children: React
             <p className="absolute bottom-3 left-4 right-4 font-display text-lg leading-tight text-primary-foreground">A coach at every step of your internship.</p>
           </div>
 
-          <div role="tablist" aria-label="Account" className="relative mb-8 grid grid-cols-2 rounded-full bg-secondary p-1">
+          <div role="tablist" aria-label="Account" className="auth-tabs relative mb-7 grid grid-cols-2 rounded-full bg-secondary p-1">
             <span aria-hidden className={`absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-card shadow-sm ring-1 ring-border transition-transform duration-300 ${mode === 'login' ? 'translate-x-1' : 'translate-x-[calc(100%+4px)]'}`} />
             <Link href={authHref('login', next)} role="tab" aria-selected={mode === 'login'} data-testid="tab-login"
               className={`relative z-10 rounded-full py-2 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${mode === 'login' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>Sign in</Link>
@@ -87,7 +85,9 @@ function Frame({ mode, children }: { mode: 'login' | 'register'; children: React
               className={`relative z-10 rounded-full py-2 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${mode === 'register' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>Create account</Link>
           </div>
 
-          {children}
+          <section className="auth-panel">
+            {children}
+          </section>
 
           <div className="mt-8 flex items-center gap-3 border-t border-dashed pt-6">
             <Compass className="h-4 w-4 text-accent" />

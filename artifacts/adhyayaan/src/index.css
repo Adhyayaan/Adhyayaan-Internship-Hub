@@ -441,6 +441,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;op
 .lift:hover{transform:translateY(-3px);box-shadow:0 18px 40px -20px hsl(232 55% 28%/.45)}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .rise{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.auth-frame{isolation:isolate}
+.auth-frame::before{content:'';position:absolute;z-index:1;inset:0 50% 0 0;pointer-events:none;background:linear-gradient(135deg,hsl(40 88% 52%/.08),transparent 46%);opacity:.8}
+.auth-content{animation:authEnter .7s cubic-bezier(.2,.8,.2,1) both}
+.auth-panel{padding:1.5rem;border:1px solid hsl(var(--border)/.78);border-radius:1.35rem;background:hsl(var(--card)/.86);box-shadow:0 16px 42px -32px hsl(232 55% 22%/.42);animation:authEnter .72s .06s cubic-bezier(.2,.8,.2,1) both}
+.auth-tabs{box-shadow:inset 0 1px 2px hsl(232 45% 16%/.04)}
+.auth-form-side{box-shadow:-18px 0 50px hsl(232 52% 12%/.08)}
+.auth-form-side input::placeholder{color:hsl(232 14% 55%)}
+.auth-form-side form{animation:authEnter .8s .12s cubic-bezier(.2,.8,.2,1) both}
+@keyframes authEnter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:639px){.auth-panel{padding:1.25rem;border-radius:1.15rem}}
 .prose-ai p{margin:.4rem 0}.prose-ai ul{list-style:disc;padding-left:1.2rem;margin:.4rem 0}.prose-ai ol{list-style:decimal;padding-left:1.2rem}.prose-ai h3{font-family:'Fraunces',serif;font-weight:600;margin-top:.6rem}.prose-ai code{font-family:'JetBrains Mono',monospace;font-size:.85em;background:hsl(var(--muted));padding:0 .25rem;border-radius:.25rem}
 
 /* ---- Study book: "survey ledger" reading room ---- */
@@ -454,4 +464,4 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;op
 @keyframes pageIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 .page-in{animation:pageIn .5s cubic-bezier(.2,.8,.2,1) both}
 .step-node{transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .4s}
-@media (prefers-reduced-motion: reduce){.rise,.page-in{animation:none}.lift,.step-node{transition:none}.lift:hover{transform:none}}
+@media (prefers-reduced-motion: reduce){.rise,.page-in,.auth-content,.auth-panel,.auth-form-side form{animation:none}.lift,.step-node{transition:none}.lift:hover{transform:none}}

@@ -16,11 +16,16 @@ const NAV = [
 
 function Logo({ light }: { light?: boolean }) {
   return (
-    <Link href="/" className="flex items-center gap-2.5" data-testid="link-logo">
-      <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-accent font-display text-lg font-bold text-accent-foreground">
-        অ
-      </span>
-      <span className={`font-display text-xl font-semibold ${light ? 'text-sidebar-foreground' : 'text-primary'}`}>Adhyayaan</span>
+    <Link
+      href="/"
+      className={`flex w-fit items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${light ? 'bg-[hsl(40_45%_95%)] px-2.5 py-2' : ''}`}
+      data-testid="link-logo"
+    >
+      <img
+        src={`${import.meta.env.BASE_URL}adhyayaan-logo.png`}
+        alt="Adhyayaan home"
+        className={light ? 'h-9 w-[174px] object-contain object-left' : 'h-8 w-[154px] object-contain object-left'}
+      />
     </Link>
   );
 }
