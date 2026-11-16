@@ -5,6 +5,7 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+import type { PilotVideo } from './pilotVideo';
 import type { StudyLesson } from './studyLesson';
 import type { StudyModuleQuestions } from './studyModuleQuestions';
 import type { StudySection } from './studySection';
@@ -20,6 +21,7 @@ export interface StudyModule {
   steps: StudySection[];
   videoUrl: string;
   transcript: string;
+  pilotVideo?: PilotVideo;
   questions: StudyModuleQuestions;
   sourceUrls: string[];
 }

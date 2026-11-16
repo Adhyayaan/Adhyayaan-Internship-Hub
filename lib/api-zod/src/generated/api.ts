@@ -8,7 +8,7 @@
 import * as zod from 'zod';
 
 
-export const getStudyMediaPathFileRegExp = new RegExp('^01-[0-9]{1,2}\\.(svg|mp4)$');
+export const getStudyMediaPathFileRegExp = new RegExp('^(01-[0-9]{1,2}\\.(svg|mp4)|consent-pilot\\.(mp4|vtt|jpg))$');
 
 
 export const GetStudyMediaParams = zod.object({
@@ -24,6 +24,12 @@ export const GetStudyMentorAvatarResponse = zod.unknown()
 export const GetStudyBookParams = zod.object({
   "courseId": zod.coerce.string()
 })
+
+export const getStudyBookResponseModulesItemPilotVideoChaptersItemStartMin = 0;
+
+export const getStudyBookResponseModulesItemPilotVideoChaptersItemEndMin = 0;
+
+
 
 export const GetStudyBookResponse = zod.object({
   "courseId": zod.string(),
@@ -54,6 +60,33 @@ export const GetStudyBookResponse = zod.object({
 })),
   "videoUrl": zod.string(),
   "transcript": zod.string(),
+  "pilotVideo": zod.object({
+  "lessonId": zod.string(),
+  "title": zod.string(),
+  "duration": zod.number(),
+  "videoUrl": zod.string(),
+  "posterUrl": zod.string(),
+  "captionsUrl": zod.string(),
+  "transcript": zod.string(),
+  "chapters": zod.array(zod.object({
+  "title": zod.string(),
+  "start": zod.number().min(getStudyBookResponseModulesItemPilotVideoChaptersItemStartMin),
+  "end": zod.number().min(getStudyBookResponseModulesItemPilotVideoChaptersItemEndMin)
+})),
+  "checkpoints": zod.array(zod.object({
+  "id": zod.string(),
+  "at": zod.number(),
+  "question": zod.string(),
+  "hint": zod.string(),
+  "explanation": zod.string(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "text": zod.string(),
+  "correct": zod.boolean(),
+  "feedback": zod.string()
+}))
+}))
+}).optional(),
   "questions": zod.object({
   "understand": zod.string(),
   "apply": zod.string(),

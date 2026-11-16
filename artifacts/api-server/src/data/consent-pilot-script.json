@@ -1,0 +1,64 @@
+{
+  "id": "consent-pilot",
+  "lessonId": "01-1-a",
+  "title": "Participation is a choice",
+  "version": "consent-2026-11",
+  "scenes": [
+    {
+      "title": "Meet Adhya",
+      "visual": "mentor",
+      "heading": "A signature is not the whole story",
+      "points": ["Understand consent", "Notice pressure", "Protect the participant"],
+      "lines": ["Hi, I'm Adhya, your AI learning mentor. Today, we'll practise inviting someone to a community survey.", "Our goal is not to collect a signature. It's to protect a person's choice."]
+    },
+    {
+      "title": "Notice the pressure",
+      "visual": "fieldwork",
+      "heading": "Would you feel free to say no?",
+      "points": ["Fictional library-access survey", "A busy shopkeeper", "A college badge can create pressure"],
+      "lines": ["Imagine a student tells a busy shopkeeper, our college needs everyone to answer.", "The shopkeeper signs while serving customers. Does that signature prove the choice was voluntary?"]
+    },
+    {
+      "title": "Make a prediction",
+      "visual": "question",
+      "heading": "Predict before I explain",
+      "points": ["Look beyond the signature", "Think about understanding and pressure"],
+      "lines": ["Pause here. Choose the strongest reason to question this consent.", "Think about what the person understood, and whether saying no really felt possible."]
+    },
+    {
+      "title": "Explain without pressure",
+      "visual": "principles",
+      "heading": "Explain. Check. Accept.",
+      "points": ["Purpose, time and data use", "Ask them to explain it back", "Accept refusal without argument"],
+      "lines": ["Start again. Explain the purpose, time required, questions, data use and foreseeable risks in everyday language.", "Make clear that declining, skipping a question, or stopping will not bring a penalty."]
+    },
+    {
+      "title": "Check understanding",
+      "visual": "conversation",
+      "heading": "A conversation, not a checkbox",
+      "points": ["Use their preferred language", "Invite a teach-back", "Pause if they seem uncomfortable"],
+      "lines": ["Then ask the person to describe what participation involves, in their preferred language.", "If they seem uncomfortable, pause. If they decline, thank them and stop. Consent is ongoing, not a one-time checkbox."]
+    },
+    {
+      "title": "Protect the answers",
+      "visual": "privacy",
+      "heading": "Collect less. Protect more.",
+      "points": ["Use non-identifying response codes", "Keep consent records separate", "Never send identifiers to an AI tool"],
+      "lines": ["For our fictional library survey, names and phone numbers are usually unnecessary. Use non-identifying response codes.", "Store any required consent records separately. Never upload participant identifiers or sensitive raw responses to an AI tool."]
+    },
+    {
+      "title": "Try a new situation",
+      "visual": "transfer",
+      "heading": "What changes when a leader is present?",
+      "points": ["A leader says everyone must answer", "A resident agrees", "Decide what to change before collecting data"],
+      "lines": ["Now a community leader says everyone must answer, and a resident agrees. What should you change before collecting any data?", "Choose your response. Use what you learned about power and voluntary choice, not just the word yes."]
+    },
+    {
+      "title": "Take it into practice",
+      "visual": "mentor",
+      "heading": "Practise the conversation",
+      "points": ["Write a 90-second invitation", "Role-play a refusal", "Get supervisor approval before fieldwork"],
+      "lines": ["Draft a ninety-second invitation, role-play a refusal with a peer, and get your supervisor's approval before fieldwork.", "This is a fictional learning exercise, not ethics approval. Explain in your own words why a signature alone is not enough."]
+    }
+  ]
+}

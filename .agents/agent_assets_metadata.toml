@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "_YD5eUlhxv_RHVxkI55sI"
+uri = "file://generated-artifacts/adhya-pilot/consent-pilot.mp4"
+type = "video"
+title = "Participation is a choice — 1080p pilot"
+description = "A two-minute narrated lesson with AI-generated library and fieldwork footage. Chapter navigation and two adaptive reasoning checks are available in the study book."
+logical_id = "a2d16701-2274-4ed7-b56b-dfda79affa5b"
+content_hash = "sha256:419cb82508c6dead564a243c543bf0b406911112fc49a4a35ccc3ca7ddbdff44"
+size = 40177120
+mtime_ms = 1794831202754
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:e525c5bc-97f1-42dd-a635-37656af308c3/a2d16701-2274-4ed7-b56b-dfda79affa5b/919279db-df6e-49b3-9867-a6060a4b3eb7"
+storage_version_token = "1794831609805116"
+content_type = "video/mp4"

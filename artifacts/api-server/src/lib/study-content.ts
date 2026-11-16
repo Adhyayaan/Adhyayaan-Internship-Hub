@@ -1,6 +1,7 @@
 import { GetStudyBookResponse } from "@workspace/api-zod";
 import { findCourse } from "./catalog";
 import { communityChapters as sources } from "../data/study";
+import { consentPilot } from "../data/consent-pilot";
 
 const course = findCourse("01")!;
 if (sources.length !== course.modules.length) throw new Error("Study chapters must match the source course plan.");
@@ -28,6 +29,7 @@ export const communityBook = GetStudyBookResponse.parse({
         `Before you move on, pause and think: ${s.questions.understand}`,
         "Try to explain your reasoning in your own words. You can pause here and use the study coach whenever you are ready.",
       ].join(" "),
+      ...(index === 0 ? { pilotVideo: consentPilot } : {}),
       questions: s.questions,
       sourceUrls: s.sources,
     };

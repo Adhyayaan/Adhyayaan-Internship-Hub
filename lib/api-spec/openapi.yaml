@@ -8,16 +8,20 @@ servers:
 paths:
   /study-media/01/{file}:
     parameters:
-      - { name: file, in: path, required: true, schema: { type: string, pattern: '^01-[0-9]{1,2}\.(svg|mp4)$' } }
+      - { name: file, in: path, required: true, schema: { type: string, pattern: '^(01-[0-9]{1,2}\.(svg|mp4)|consent-pilot\.(mp4|vtt|jpg))$' } }
     get:
       operationId: getStudyMedia
       responses:
         "200":
-          description: Reproducible instructional diagram or AI-narrated animated mentor lesson
+          description: Instructional diagram, narrated lesson, or pre-rendered pilot media
           content:
             image/svg+xml:
               schema: { type: string, format: binary }
             video/mp4:
+              schema: { type: string, format: binary }
+            text/vtt:
+              schema: { type: string }
+            image/jpeg:
               schema: { type: string, format: binary }
         "206":
           description: Byte range for video playback
@@ -342,6 +346,8 @@ components:
         steps: { type: array, items: { $ref: "#/components/schemas/StudySection" } }
         videoUrl: { type: string }
         transcript: { type: string }
+        pilotVideo:
+          $ref: "#/components/schemas/PilotVideo"
         questions:
           type: object
           required: [understand, apply, analyze]
@@ -350,6 +356,44 @@ components:
             apply: { type: string }
             analyze: { type: string }
         sourceUrls: { type: array, items: { type: string } }
+    PilotChapter:
+      type: object
+      required: [title, start, end]
+      properties:
+        title: { type: string }
+        start: { type: number, minimum: 0 }
+        end: { type: number, minimum: 0 }
+    PilotVideo:
+      type: object
+      required: [lessonId, title, duration, videoUrl, posterUrl, captionsUrl, transcript, chapters, checkpoints]
+      properties:
+        lessonId: { type: string }
+        title: { type: string }
+        duration: { type: number }
+        videoUrl: { type: string }
+        posterUrl: { type: string }
+        captionsUrl: { type: string }
+        transcript: { type: string }
+        chapters: { type: array, items: { $ref: "#/components/schemas/PilotChapter" } }
+        checkpoints: { type: array, items: { $ref: "#/components/schemas/VideoCheckpoint" } }
+    VideoCheckpoint:
+      type: object
+      required: [id, at, question, hint, explanation, options]
+      properties:
+        id: { type: string }
+        at: { type: number }
+        question: { type: string }
+        hint: { type: string }
+        explanation: { type: string }
+        options: { type: array, items: { $ref: "#/components/schemas/VideoAnswer" } }
+    VideoAnswer:
+      type: object
+      required: [id, text, correct, feedback]
+      properties:
+        id: { type: string }
+        text: { type: string }
+        correct: { type: boolean }
+        feedback: { type: string }
     StudyProgress:
       type: object
       required: [lessonId, read, bookmarked, updatedAt]

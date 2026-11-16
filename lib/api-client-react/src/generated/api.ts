@@ -84,9 +84,9 @@ export const getGetStudyMediaUrl = (file: string,) => {
   return `/api/study-media/01/${file}`
 }
 
-export const getStudyMedia = async (file: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob | void> => {
+export const getStudyMedia = async (file: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob | string | void> => {
 
-  return customFetch<Blob | void>(getGetStudyMediaUrl(file),
+  return customFetch<Blob | string | void>(getGetStudyMediaUrl(file),
   {
     ...options,
     method: 'GET'

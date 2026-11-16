@@ -25,6 +25,42 @@ export type StudyModuleQuestions = {
   analyze: string;
 };
 
+export interface PilotChapter {
+  title: string;
+  /** @minimum 0 */
+  start: number;
+  /** @minimum 0 */
+  end: number;
+}
+
+export interface VideoAnswer {
+  id: string;
+  text: string;
+  correct: boolean;
+  feedback: string;
+}
+
+export interface VideoCheckpoint {
+  id: string;
+  at: number;
+  question: string;
+  hint: string;
+  explanation: string;
+  options: VideoAnswer[];
+}
+
+export interface PilotVideo {
+  lessonId: string;
+  title: string;
+  duration: number;
+  videoUrl: string;
+  posterUrl: string;
+  captionsUrl: string;
+  transcript: string;
+  chapters: PilotChapter[];
+  checkpoints: VideoCheckpoint[];
+}
+
 export interface StudyModule {
   id: string;
   title: string;
@@ -36,6 +72,7 @@ export interface StudyModule {
   steps: StudySection[];
   videoUrl: string;
   transcript: string;
+  pilotVideo?: PilotVideo;
   questions: StudyModuleQuestions;
   sourceUrls: string[];
 }

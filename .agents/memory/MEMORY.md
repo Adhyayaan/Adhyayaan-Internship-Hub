@@ -1,2 +1,4 @@
 - [Learning principles](learning-principles.md) — cognitive and adaptive learning are the product's core; questionnaires must follow both.
 - [Programme scope](programme-scope.md) — custom auth, visual quality, source-plan caveats and supervised internship requirements.
+- [Instructional videos](instructional-videos.md) — pilot approved at 1080p in 16:9; use teacher-guided, pre-rendered lessons with cognitive and adaptive support.
+- [App Storage compatibility](app-storage-compatibility.md) — verify cold downloads as well as uploads before upgrading the sidecar storage SDK.

@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { findStudyModule } from "../lib/study-content";
 import { chapterDiagram, chapterVideo } from "../lib/study-media";
+import { getPilotMedia, type PilotFile } from "../lib/pilot-media";
 
 const router: IRouter = Router();
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -33,10 +34,22 @@ router.get("/study-media/mentor-avatar.png", limit, (_req, res) => {
 
 router.get("/study-media/01/:file", limit, protectGeneratedVideo, async (req, res): Promise<void> => {
   const file = String(req.params.file);
+  if (file === "consent-pilot.mp4" || file === "consent-pilot.vtt" || file === "consent-pilot.jpg") {
+    try {
+      const local = await getPilotMedia(file as PilotFile);
+      res.set("Cache-Control", file.endsWith(".mp4") ? "private, max-age=3600" : "public, max-age=3600");
+      res.set("X-Content-Type-Options", "nosniff");
+      res.type(file.endsWith(".mp4") ? "video/mp4" : file.endsWith(".vtt") ? "text/vtt" : "image/jpeg").sendFile(local);
+    } catch (error) {
+      req.log.error({ err: error, file }, "Pilot lesson media could not be loaded");
+      res.set("Cache-Control", "no-store").status(503).json({ error: "The pilot lesson media could not be loaded. Its transcript remains available." });
+    }
+    return;
+  }
   const match = /^(01-\d{1,2})\.(svg|mp4)$/.exec(file);
   const chapter = match ? findStudyModule(match[1]!) : undefined;
   if (!chapter || !match) { res.status(404).json({ error: "Instructional media not found." }); return; }
-  res.set("Cache-Control", "public, max-age=3600");
+  res.set("Cache-Control", match[2] === "mp4" ? "private, max-age=3600" : "public, max-age=3600");
   res.set("X-Content-Type-Options", "nosniff");
   if (match[2] === "svg") { res.type("image/svg+xml").send(chapterDiagram(chapter)); return; }
   try {

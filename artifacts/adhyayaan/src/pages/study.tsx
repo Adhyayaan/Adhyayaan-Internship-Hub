@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, BookOpen, CheckCircle2, Circle, Clock, ExternalLink, Info, ListTree, Loader2, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, BookOpen, CheckCircle2, Circle, Clock, ExternalLink, Info, ListTree, Loader2, Play, ShieldAlert } from 'lucide-react';
 import { useGetStudyBook, getGetStudyBookQueryKey, useSaveStudyProgress, type StudyBook, type StudyLesson, type StudyModule, type StudyProgress } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ErrorPanel, Meter } from '@/components/app/bits';
 import { MotionSteps } from '@/components/study/motion-steps';
 import { ModuleVideo } from '@/components/study/module-video';
+import { PilotVideo } from '@/components/study/pilot-video';
 import { TeachPanel } from '@/components/study/teach-panel';
 import { useToast } from '@/hooks/use-toast';
 import { authHref, errMsg, useAuth, useTitle } from '@/lib/app';
@@ -173,6 +174,8 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
     });
   };
   const isLastLesson = li === module.lessons.length - 1;
+  const pilot = module.pilotVideo && module.pilotVideo.lessonId === lesson.id ? module.pilotVideo : undefined;
+  const pilotPlayer = pilot ? <PilotVideo key={`${lesson.id}-${userId ?? 'guest'}`} pilot={pilot} transcript={pilot.transcript} userId={userId} /> : null;
 
   const toc = <Contents book={book} flat={flat} pm={pm} current={lesson.id} onPick={() => setTocOpen(false)} />;
 
@@ -207,6 +210,7 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
             <h1 id="lesson-title" className="mt-1 font-display text-3xl font-semibold leading-tight text-primary md:text-[2.6rem]" data-testid="text-lesson-title">{lesson.title}</h1>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" />{lesson.minutes} min read</span>
+              {pilot && <a href="#pilot-lesson" className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="link-watch-pilot"><Play className="h-3.5 w-3.5" />Watch 2-minute lesson</a>}
               <span className="flex-1" />
               {userId ? (
                 <>
@@ -263,7 +267,7 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
             <div className="mt-12 space-y-6">
               <div className="flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Chapter review</span><span className="h-px flex-1 bg-border" /></div>
               <MotionSteps steps={module.steps} title={module.id} />
-              <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} userId={userId} />
+              {pilotPlayer ?? <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} userId={userId} />}
               <TeachPanel courseId={book.courseId} module={module} lessonTitles={module.lessons.map((l) => l.title)} teaching={book.teaching} userId={userId} />
               {module.sourceUrls.length > 0 && (
                 <section className="rounded-2xl border p-5 text-sm" aria-label="Further reading">
@@ -274,8 +278,9 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
               )}
             </div>
           )}
+          {!isLastLesson && pilotPlayer && <div className="mt-10">{pilotPlayer}</div>}
           {!isLastLesson && (
-            <p className="mt-10 flex items-center gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground"><Info className="h-4 w-4 shrink-0" />The step-through, micro-video and teach-back for this chapter follow the final lesson.</p>
+            <p className="mt-10 flex items-center gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground"><Info className="h-4 w-4 shrink-0" />{pilot ? 'The chapter step-through and teach-back follow the final lesson.' : 'The step-through, micro-video and teach-back for this chapter follow the final lesson.'}</p>
           )}
 
           <nav className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2" aria-label="Lesson navigation">
