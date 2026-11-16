@@ -3,11 +3,12 @@ import { Link, useSearch } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Brain, Check, Layers, Loader2, RotateCcw, Sparkles, Workflow, X } from 'lucide-react';
 import {
-  useListCourses,
+  useListEnrollments,
   useListPractice,
   useStartPractice,
   useSubmitPractice,
   getListPracticeQueryKey,
+  getListEnrollmentsQueryKey,
   type PracticeAttempt,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -218,7 +219,7 @@ export default function Practice() {
   useTitle('Adaptive practice');
   const { user, isLoading } = useAuth();
   const search = useSearch();
-  const courses = useListCourses();
+  const enrollments = useListEnrollments({ query: { enabled: !!user, queryKey: getListEnrollmentsQueryKey() } });
   const hist = useListPractice({ query: { enabled: !!user, queryKey: getListPracticeQueryKey() } });
   const start = useStartPractice();
   const qc = useQueryClient();
@@ -228,14 +229,23 @@ export default function Practice() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [startErr, setStartErr] = useState<string | null>(null);
 
+  const enrolledCourses = enrollments.data ?? [];
+  const enrolledIds = useMemo(() => new Set(enrolledCourses.map((e) => e.course.id)), [enrolledCourses]);
+  const titles = useMemo(() => Object.fromEntries(enrolledCourses.map((e) => [e.course.id, e.course.title])), [enrolledCourses]);
+  const enrolledAttempts = useMemo(() => (hist.data ?? []).filter((a) => enrolledIds.has(a.courseId)), [hist.data, enrolledIds]);
+
   useEffect(() => {
     const c = new URLSearchParams(search).get('course');
-    if (c) setCourseId(c);
-  }, [search]);
+    if (enrollments.isLoading || enrollments.error) return;
+    setCourseId((current) => {
+      if (c && enrolledIds.has(c)) return c;
+      if (current && enrolledIds.has(current)) return current;
+      return enrolledCourses[0]?.course.id ?? '';
+    });
+  }, [search, enrollments.isLoading, enrollments.error, enrolledIds, enrolledCourses]);
 
-  const titles = useMemo(() => Object.fromEntries((courses.data ?? []).map((c) => [c.id, c.title])), [courses.data]);
-  const attempts = useMemo(() => [...(hist.data ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [hist.data]);
-  const scoped = attempts.filter((a) => !courseId || a.courseId === courseId);
+  const attempts = useMemo(() => [...enrolledAttempts].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [enrolledAttempts]);
+  const scoped = attempts.filter((a) => courseId && a.courseId === courseId);
   const finished = scoped.filter((a) => a.score !== null);
   const avg = finished.length ? finished.reduce((s, a) => s + (a.score ?? 0) / a.questions.length, 0) / finished.length : null;
   const latest = finished[0];
@@ -247,7 +257,7 @@ export default function Practice() {
   const open = attempts.find((a) => a.id === openId);
 
   const begin = async () => {
-    if (!courseId) return setStartErr('Choose an internship first.');
+    if (!courseId || !enrolledIds.has(courseId)) return setStartErr('Choose one of your enrolled internships first.');
     setStartErr(null);
     try {
       const a = await start.mutateAsync({ data: { courseId, language: lang } });
@@ -264,7 +274,10 @@ export default function Practice() {
       <PageHeader kicker="Cognitive & adaptive learning" title={<>Practice that <em className="text-accent">meets you where you are</em></>}
         sub="Five questions per set, climbing from understanding to application to analysis. Each set adapts its difficulty and focus from your last score on that internship." />
 
-      {isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="practise adaptively" /> : open ? (
+      {isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="practise adaptively" /> : enrollments.isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : enrollments.error ? <ErrorPanel error={enrollments.error} onRetry={() => enrollments.refetch()} /> : enrolledCourses.length === 0 ? (
+        <Empty title="Choose an internship to begin" body="Adaptive practice is available for internships you have enrolled in. Browse the internships, then start a 60- or 120-hour learning pathway to unlock course-specific questions."
+          action={<Button asChild variant="outline" data-testid="link-practice-explore"><Link href="/explore">Browse internships</Link></Button>} />
+      ) : open ? (
         open.score === null
           ? <Runner key={open.id} a={open} title={titles[open.courseId] ?? 'Practice set'} onDone={() => setOpenId(null)} />
           : <Result key={open.id} a={open} title={titles[open.courseId] ?? 'Practice set'} onClose={() => setOpenId(null)} />
@@ -274,10 +287,10 @@ export default function Practice() {
             <div className="ink-card space-y-4 p-6">
               <h2 className="font-display text-xl font-semibold text-primary">New question set</h2>
               <Select value={courseId} onValueChange={setCourseId}>
-                <SelectTrigger className="h-11" data-testid="select-practice-course"><SelectValue placeholder={courses.isLoading ? 'Loading internships…' : 'Choose an internship'} /></SelectTrigger>
-                <SelectContent>{(courses.data ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="h-11" data-testid="select-practice-course"><SelectValue placeholder="Choose an enrolled internship" /></SelectTrigger>
+              <SelectContent>{enrolledCourses.map((e) => <SelectItem key={e.course.id} value={e.course.id}>{e.course.title} · {e.hours}-hour pathway</SelectItem>)}</SelectContent>
               </Select>
-              {courses.error && <p className="text-sm text-destructive">{errMsg(courses.error)}</p>}
+              <p className="text-xs text-muted-foreground">Only your enrolled internships appear here.</p>
               <div className="flex rounded-full bg-secondary p-1 text-sm" role="radiogroup" aria-label="Question language">
                 {(['en', 'bn'] as const).map((l) => (
                   <button key={l} role="radio" aria-checked={lang === l} onClick={() => setLang(l)} data-testid={`button-practice-lang-${l}`}
@@ -294,7 +307,7 @@ export default function Practice() {
             </div>
 
             <div className="ink-card p-6" data-testid="panel-metrics">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">{courseId ? 'This internship' : 'All internships'}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">This internship</p>
               {finished.length === 0 ? (
                 <p className="mt-2 text-sm text-muted-foreground">No scored sets yet. Your first set starts at Foundation level.</p>
               ) : (

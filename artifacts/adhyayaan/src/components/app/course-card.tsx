@@ -1,7 +1,7 @@
 import { Link } from 'wouter';
 import { ArrowUpRight, Clock } from 'lucide-react';
 import type { Course } from '@workspace/api-client-react';
-import { fmtINR } from '@/lib/app';
+import { fmtINR, statusLabel } from '@/lib/app';
 
 const TONES = ['bg-primary text-primary-foreground', 'bg-accent text-accent-foreground', 'bg-[hsl(40_88%_52%)] text-primary', 'bg-[hsl(168_40%_36%)] text-primary-foreground'];
 
@@ -11,7 +11,7 @@ export function toneFor(s: string) {
   return TONES[h % TONES.length];
 }
 
-export function CourseCard({ course, i = 0 }: { course: Course; i?: number }) {
+export function CourseCard({ course, i = 0, enrollment }: { course: Course; i?: number; enrollment?: { hours: number; status: string } }) {
   return (
     <Link
       href={`/courses/${course.id}`}
@@ -22,7 +22,8 @@ export function CourseCard({ course, i = 0 }: { course: Course; i?: number }) {
       <div className={`relative flex h-24 items-end justify-between p-4 ${toneFor(course.category)}`}>
         <div className="alpona-dots absolute inset-0 opacity-30" />
         <span className="relative font-mono text-[10px] uppercase tracking-[0.18em] opacity-90">{course.category}</span>
-        <ArrowUpRight className="relative h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+        {enrollment ? <span className="relative rounded-full bg-white/95 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--ledger))]" data-testid={`badge-enrolled-${course.id}`}>Enrolled · {enrollment.hours}h</span>
+          : <ArrowUpRight className="relative h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="font-display text-xl font-semibold leading-tight text-primary">{course.title}</h3>
@@ -32,6 +33,7 @@ export function CourseCard({ course, i = 0 }: { course: Course; i?: number }) {
           <span>{course.mode}</span>
           <span className="font-mono">{fmtINR(course.price)} indicative</span>
         </div>
+        {enrollment && <p className="mt-3 border-t border-[hsl(var(--ledger)/.18)] pt-3 text-xs font-medium text-[hsl(var(--ledger))]" data-testid={`text-enrollment-status-${course.id}`}>Your {enrollment.hours}-hour pathway · {statusLabel(enrollment.status)}</p>}
       </div>
     </Link>
   );
