@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { Check, Circle, Loader2, Send } from 'lucide-react';
 import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
+import { Coach, CoachToggle } from '@/components/app/coach';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ function ProjectCard({ e }: { e: Enrollment }) {
   const inval = useInvalidateAll();
   const { toast } = useToast();
   const [mode, setMode] = useState<'draft' | 'submit' | null>(null);
+  const [coach, setCoach] = useState(false);
   const p = progressOf(e);
   const submitted = statusLabel(e.status) === 'Awaiting mentor review';
   const checks = [
@@ -77,8 +79,33 @@ function ProjectCard({ e }: { e: Enrollment }) {
             {!ready && <p className="text-xs text-muted-foreground">Finish the checklist to submit. You can save a draft anytime.</p>}
           </div>
         )}
-        <Button asChild variant="link" className="mt-2 px-0 text-primary" data-testid={`link-ai-review-${e.id}`}><Link href="/ai">Get formative AI feedback first</Link></Button>
+        <div className="mt-4"><CoachToggle open={coach} onClick={() => setCoach((o) => !o)} label="Feedback on this draft" testId={`button-coach-project-${e.id}`} /></div>
       </div>
+      {coach && (
+        <div className="lg:col-span-2">
+          <Coach
+            contextKey={`project:${e.id}`}
+            contextLabel={`Project draft · ${e.course.title}`}
+            courseId={e.course.id}
+            tool="review"
+            moves={[
+              { id: 'reflection', level: 'Reflect', label: 'Feedback on my reflection', request: 'Give formative feedback on my current reflection draft against the deliverable: what is specific and strong, what is vague, and two questions that would push it toward analysis. Do not rewrite it for me.' },
+              { id: 'deliverable', level: 'Apply', label: 'Does my description fit the deliverable?', request: 'Compare what my reflection says I built with the stated deliverable. List gaps I should check or explain. You cannot see my repository; base this only on my written text.' },
+              { id: 'viva', level: 'Analyse', label: 'One viva question', tool: 'viva', request: 'Based only on my reflection text, ask me one probing viva question a mentor might ask about this project. Wait for my answer.' },
+            ]}
+            getContext={() => [
+              `Internship: ${e.course.title}`,
+              `Deliverable: ${e.course.deliverable}`,
+              `Status: ${statusLabel(e.status)}. Modules ${p.done}/${p.mods.length}. Hours ${e.loggedHours}/${e.hours}.`,
+              `Project link entered (as text only; the coach has NOT opened it and must not claim to have seen its contents): ${url.trim() || '(none yet)'}`,
+              `Current reflection draft (may be unsaved):\n${refl.trim() || '(empty)'}`,
+            ].join('\n')}
+            intro="The coach reads the reflection text currently in the box, including unsaved edits. It cannot open your link."
+            onClose={() => setCoach(false)}
+            testId={`coach-project-${e.id}`}
+          />
+        </div>
+      )}
     </section>
   );
 }

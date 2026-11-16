@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn } from 'lucide-react';
-import { useAuth } from '@/lib/app';
+import { authHref, useAuth } from '@/lib/app';
+import { useHere } from '@/lib/use-here';
 
 const NAV = [
   { href: '/', label: 'Today', icon: LayoutGrid },
@@ -28,7 +29,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
   const { user } = useAuth();
   const active = (h: string) => (h === '/' ? loc === '/' : loc.startsWith(h) || (h === '/explore' && loc.startsWith('/courses')));
-  if (loc === '/login' || loc === '/register') return <>{children}</>;
+  const here = useHere();
   const initials = user?.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
   return (
     <div className="min-h-[100dvh] md:flex">
@@ -68,7 +69,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </span>
             </Link>
           ) : (
-            <Link href="/login" className="flex items-center justify-center gap-2 rounded-xl bg-sidebar-primary px-3 py-2.5 text-sm font-semibold text-sidebar-primary-foreground hover:brightness-110" data-testid="link-signin">
+            <Link href={authHref('login', here)} className="flex items-center justify-center gap-2 rounded-xl bg-sidebar-primary px-3 py-2.5 text-sm font-semibold text-sidebar-primary-foreground hover:brightness-110" data-testid="link-signin">
               <LogIn className="h-4 w-4" /> Sign in
             </Link>
           )}
@@ -77,7 +78,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/85 px-4 py-3 backdrop-blur md:hidden">
         <Logo />
-        <Link href={user ? '/profile' : '/login'} className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm text-primary-foreground" data-testid="link-mobile-account">
+        <Link href={user ? '/profile' : authHref('login', here)} className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm text-primary-foreground" data-testid="link-mobile-account">
           {user ? initials : <><UserRound className="h-4 w-4" /> Sign in</>}
         </Link>
       </header>

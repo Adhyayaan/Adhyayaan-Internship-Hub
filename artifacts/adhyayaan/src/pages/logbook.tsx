@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useCreateLog, useDeleteLog, useListEnrollments, useListLogs, getListEnrollmentsQueryKey, getListLogsQueryKey } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
+import { Coach, CoachToggle } from '@/components/app/coach';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -25,6 +26,7 @@ export default function Logbook() {
   const { toast } = useToast();
   const [f, setF] = useState({ enrollmentId: '', date: today(), hours: '2', activity: '', learning: '' });
   const [err, setErr] = useState<string | null>(null);
+  const [coach, setCoach] = useState(false);
   const titles = useMemo(() => Object.fromEntries((enr.data ?? []).map((e) => [e.id, e.course.title])), [enr.data]);
   const sorted = useMemo(() => [...(logs.data ?? [])].sort((a, b) => b.date.localeCompare(a.date)), [logs.data]);
   const total = sorted.reduce((s, l) => s + l.hours, 0);
@@ -59,7 +61,8 @@ export default function Logbook() {
         <Empty title="Logs need a pathway" body="Enroll in an internship first; each entry counts toward that pathway's hours." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
       ) : (
         <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-          <form onSubmit={submit} className="ink-card space-y-4 self-start p-6 lg:sticky lg:top-8" data-testid="form-log">
+          <div className="space-y-4 self-start">
+          <form onSubmit={submit} className="ink-card space-y-4 p-6" data-testid="form-log">
             <h2 className="font-display text-xl font-semibold text-primary">New entry</h2>
             <div className="space-y-1.5">
               <Label>Pathway</Label>
@@ -78,7 +81,37 @@ export default function Logbook() {
             <Button type="submit" disabled={create.isPending} className="w-full bg-accent hover:bg-accent/90" data-testid="button-add-log">
               {create.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}Add entry
             </Button>
+            <div className="border-t border-dashed pt-4">
+              <CoachToggle open={coach} onClick={() => setCoach((o) => !o)} label="Reflect on this entry" testId="button-coach-log" />
+            </div>
           </form>
+            {coach && (() => {
+              const eid = f.enrollmentId || enr.data[0].id;
+              const pe = enr.data.find((x) => x.id === eid);
+              return (
+                <Coach
+                  contextKey={`log:${eid}`}
+                  contextLabel={`Logbook · ${pe?.course.title ?? 'Pathway'}`}
+                  courseId={pe?.course.id}
+                  tool="review"
+                  moves={[
+                    { id: 'deepen', level: 'Reflect', label: 'Help me reflect deeper', request: 'Based on my current activity and learning notes, ask me 2 or 3 reflective questions that move from what I did to why it worked and what I would change. Do not write the log entry for me.' },
+                    { id: 'link', level: 'Apply', label: 'Connect to my modules', request: 'Which concepts from this internship does my activity connect to? Name them and ask me to explain one connection in my own words.' },
+                    { id: 'clarity', level: 'Analyse', label: 'Is my learning note specific?', request: 'Tell me whether my learning note is specific and evidence-based or vague. Point to the vague phrases and ask what evidence I could add. Do not invent activities or hours.' },
+                  ]}
+                  getContext={() => [
+                    `Pathway: ${pe?.course.title ?? 'unknown'} (${pe?.hours ?? '?'}-hour, ${pe?.loggedHours ?? 0} hrs logged so far)`,
+                    `Draft entry (not yet saved): date ${f.date}, ${f.hours} hours`,
+                    `Activity: ${f.activity.trim() || '(not written yet)'}`,
+                    `What I learned: ${f.learning.trim() || '(not written yet)'}`,
+                  ].join('\n')}
+                  intro="Reads the draft above as it is right now. It will not save or write entries for you."
+                  onClose={() => setCoach(false)}
+                  testId="coach-log"
+                />
+              );
+            })()}
+          </div>
 
           <section>
             <div className="mb-4 flex items-baseline justify-between">

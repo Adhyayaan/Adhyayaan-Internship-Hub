@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'wouter';
+import { Coach, CoachMark, CoachToggle } from '@/components/app/coach';
+import type { Dashboard as DashboardData } from '@workspace/api-client-react';
 import { ArrowRight, Eye, Sparkles } from 'lucide-react';
 import { useGetDashboard } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -32,7 +35,7 @@ export default function Dashboard() {
             <p className="mt-4 max-w-md text-primary-foreground/75">
               {d?.preview
                 ? 'You are looking at an illustrative sample pathway, not your own account. Sign in to start a real one — new accounts begin empty.'
-                : 'Pick up where you left off: mark modules, log your hours, and ask the AI tutor in Bangla or English.'}
+                : 'Pick up where you left off: mark modules, log your hours, and open the coach on any module, in Bangla or English.'}
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {d?.preview ? (
@@ -43,7 +46,7 @@ export default function Dashboard() {
               ) : (
                 <>
                   <Button asChild className="bg-accent hover:bg-accent/90" data-testid="button-hero-log"><Link href="/logbook">Log today's hours</Link></Button>
-                  <Button asChild variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10" data-testid="button-hero-ai"><Link href="/ai"><Sparkles className="mr-2 h-4 w-4" />Ask the tutor</Link></Button>
+                  <Button asChild variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10" data-testid="button-hero-ai"><Link href="/my-learning"><Sparkles className="mr-2 h-4 w-4" />Continue learning</Link></Button>
                 </>
               )}
             </div>
@@ -72,6 +75,7 @@ export default function Dashboard() {
             ))}
           </div>
           {d.preview && <p className="mt-2 text-xs text-muted-foreground">Sample figures from an illustrative pathway.</p>}
+          {!d.preview && d.user && <NextStep d={d} />}
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
             <section>
@@ -143,5 +147,66 @@ export default function Dashboard() {
         </>
       )}
     </div>
+  );
+}
+
+function NextStep({ d }: { d: DashboardData }) {
+  const [open, setOpen] = useState(false);
+  const [focus, setFocus] = useState<string>(d.enrollments[0]?.id ?? '');
+  const e = d.enrollments.find((x) => x.id === focus) ?? d.enrollments[0];
+  const p = e ? progressOf(e) : null;
+  const remaining = p && e ? p.mods.filter((m) => !e.completedModules.includes(m.id)) : [];
+  return (
+    <section className="ink-card rise mt-6 overflow-hidden" data-testid="section-next-step">
+      <div className="flex flex-wrap items-center gap-4 p-5">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-[hsl(40_88%_62%)]"><CoachMark className="h-5 w-5" /></span>
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Your next step</p>
+          <p className="font-display text-lg font-semibold text-primary" data-testid="text-next-step">
+            {!e ? 'Choose a first pathway that fits your discipline.' : remaining.length ? <>Next up in {e.course.title}: <em className="text-accent">{remaining[0].title}</em></> : <>All modules done in {e.course.title}. Time for the project.</>}
+          </p>
+        </div>
+        <CoachToggle open={open} onClick={() => setOpen((o) => !o)} label="Plan it with the coach" testId="button-coach-next" />
+      </div>
+      {open && (
+        <div className="space-y-3 border-t bg-secondary/30 p-4">
+          {d.enrollments.length > 1 && (
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Pathway to plan">
+              {d.enrollments.map((x) => (
+                <button key={x.id} type="button" role="radio" aria-checked={x.id === e?.id} onClick={() => setFocus(x.id)} data-testid={`button-focus-${x.id}`}
+                  className={`rounded-full px-3 py-1 text-xs ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${x.id === e?.id ? 'bg-primary text-primary-foreground ring-primary' : 'bg-card ring-border hover:ring-accent'}`}>
+                  {x.course.title}
+                </button>
+              ))}
+            </div>
+          )}
+          <Coach
+            contextKey={`next:${e?.id ?? 'none'}`}
+            contextLabel={e ? `Next step · ${e.course.title}` : 'Choosing a first pathway'}
+            courseId={e?.course.id}
+            tool="planner"
+            moves={e ? [
+              { id: 'plan', level: 'Plan', label: 'Plan my next 5 hours', request: 'Using my actual progress, plan my next 5 hours as small concrete blocks, starting with the next unfinished module. Include one self-check at the end of each block.' },
+              { id: 'gap', level: 'Analyse', label: 'Where am I falling behind?', request: 'Compare my module progress with my logged hours and tell me honestly where the imbalance is and what to prioritise this week.' },
+              { id: 'ready', level: 'Reflect', label: 'Am I ready for the project?', request: 'Based on what is done and not done, what should I be able to explain before I start the final deliverable? Ask me two readiness questions.' },
+            ] : [
+              { id: 'choose', level: 'Plan', label: 'Help me choose', request: 'I have not enrolled in any pathway yet. Ask me two questions about my interests and time, then suggest how to choose between internships for my discipline.' },
+            ]}
+            getContext={() => e && p ? [
+              `Student: ${d.user?.discipline ?? ''} at ${d.user?.college ?? ''}`,
+              `Internship: ${e.course.title} (${e.hours}-hour pathway, status ${statusLabel(e.status)})`,
+              `Modules done ${p.done}/${p.mods.length}. Hours logged ${e.loggedHours}/${e.hours}.`,
+              `Done: ${p.mods.filter((m) => e.completedModules.includes(m.id)).map((m) => m.title).join('; ') || 'none'}`,
+              `Remaining: ${remaining.map((m) => `${m.title} (${e.hours === 60 ? m.hours60 : m.hours120}h)`).join('; ') || 'none'}`,
+              `Deliverable: ${e.course.deliverable}`,
+              `Other pathways: ${d.enrollments.filter((x) => x.id !== e.id).map((x) => x.course.title).join('; ') || 'none'}`,
+            ].join('\n') : `Student: ${d.user?.discipline ?? ''} at ${d.user?.college ?? ''}. No enrollments yet.`}
+            intro="Built from your real progress. It suggests; you decide and tick modules yourself."
+            onClose={() => setOpen(false)}
+            testId="coach-next"
+          />
+        </div>
+      )}
+    </section>
   );
 }

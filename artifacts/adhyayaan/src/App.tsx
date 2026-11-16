@@ -15,11 +15,28 @@ import Logbook from '@/pages/logbook';
 import Practice from '@/pages/practice';
 import AiStudio from '@/pages/ai';
 import Profile from '@/pages/profile';
-import { Login, Register } from '@/pages/auth';
+import { AuthSplash, Login, Register, Welcome } from '@/pages/auth';
+import { useAuth } from '@/lib/app';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
 function Router() {
+  const [loc] = useLocation();
+  const { user, isLoading } = useAuth();
+  if (loc === '/login' || loc === '/register') {
+    return (
+      <RoutedErrorBoundary>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+        </Switch>
+      </RoutedErrorBoundary>
+    );
+  }
+  if (loc === '/') {
+    if (isLoading) return <AuthSplash />;
+    if (!user) return <RoutedErrorBoundary><Welcome /></RoutedErrorBoundary>;
+  }
   return (
     <Shell>
       <RoutedErrorBoundary>
@@ -32,8 +49,6 @@ function Router() {
           <Route path="/logbook" component={Logbook} />
           <Route path="/practice" component={Practice} />
           <Route path="/ai" component={AiStudio} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
           <Route path="/profile" component={Profile} />
           <Route component={NotFound} />
         </Switch>

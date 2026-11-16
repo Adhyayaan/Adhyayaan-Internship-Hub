@@ -19,32 +19,17 @@ router.get("/courses/:id", (req, res): void => {
   if (!course) { res.status(404).json({ error: "Internship not found." }); return; }
   res.json(GetCourseResponse.parse(course));
 });
-router.get("/dashboard", async (req, res): Promise<void> => {
-  if (!req.learner) {
-    const course = courses[0]!;
-    res.json(GetDashboardResponse.parse({
-      preview: true, user: null,
-      stats: { activeInternships: 1, learningHours: 18, completedModules: 3, submittedProjects: 0 },
-      enrollments: [{
-        id: "preview", course, hours: 60, completedModules: course.modules.slice(0, 3).map((m) => m.id), loggedHours: 18,
-        projectUrl: "", reflection: "", status: "in_progress", createdAt: "2026-11-01T00:00:00.000Z",
-      }],
-      recommendations: [courses[9], courses[10], courses[2]],
-      activity: [
-        { id: "sample-1", text: "Sample: completed Questionnaire design", date: "2026-11-16", type: "module" },
-        { id: "sample-2", text: "Sample: recorded 3 hours of practical work", date: "2026-11-15", type: "log" },
-      ],
-    })); return;
-  }
-  const [items, logs] = await Promise.all([userEnrollments(req.learner.id), userLogs(req.learner.id)]);
+router.get("/dashboard", requireLearner, async (req, res): Promise<void> => {
+  const user = req.learner!;
+  const [items, logs] = await Promise.all([userEnrollments(user.id), userLogs(user.id)]);
   const relevant = courses.filter((c) => !items.some((e) => e.course.id === c.id))
-    .sort((a, b) => Number(b.disciplines.some((d) => d.toLowerCase() === req.learner!.discipline.toLowerCase())) - Number(a.disciplines.some((d) => d.toLowerCase() === req.learner!.discipline.toLowerCase()))).slice(0, 3);
+    .sort((a, b) => Number(b.disciplines.some((d) => d.toLowerCase() === user.discipline.toLowerCase())) - Number(a.disciplines.some((d) => d.toLowerCase() === user.discipline.toLowerCase()))).slice(0, 3);
   const activity = [
     ...logs.slice(0, 8).map((l) => ({ id: l.id, text: `Logged ${l.hours}h: ${l.activity}`, date: l.date, type: "log" })),
     ...items.map((e) => ({ id: e.id, text: `Started ${e.course.title}`, date: e.createdAt.slice(0, 10), type: "enrollment" })),
   ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
   res.json(GetDashboardResponse.parse({
-    preview: false, user: publicUser(req.learner),
+    preview: false, user: publicUser(user),
     stats: { activeInternships: items.length, learningHours: logs.reduce((s, l) => s + l.hours, 0), completedModules: items.reduce((s, e) => s + e.completedModules.length, 0), submittedProjects: items.filter((e) => e.status === "submitted").length },
     enrollments: items, recommendations: relevant, activity,
   }));

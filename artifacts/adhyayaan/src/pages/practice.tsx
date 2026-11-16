@@ -11,6 +11,7 @@ import {
   type PracticeAttempt,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
+import { Coach, CoachToggle } from '@/components/app/coach';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -125,6 +126,20 @@ function Result({ a, title, onClose }: { a: PracticeAttempt; title: string; onCl
   const total = a.questions.length;
   const score = a.score ?? 0;
   const dir = a.nextDifficulty > a.difficulty ? 'up' : a.nextDifficulty < a.difficulty ? 'down' : 'same';
+  const [coach, setCoach] = useState(false);
+  const submitted = a.score !== null;
+  const resultContext = () => [
+    `Practice set result for: ${title}. Score ${score}/${total}. Difficulty ${DIFF[a.difficulty] ?? a.difficulty}; next ${DIFF[a.nextDifficulty] ?? a.nextDifficulty}.`,
+    `Adaptation: ${a.adaptationReason}`,
+    ...a.questions.map((q, i) => {
+      const f = fb[q.id];
+      return [
+        `Q${i + 1} [${q.cognitiveLevel}; concept: ${q.concept}] ${q.question}`,
+        `Options: ${q.options.map((o, oi) => `${String.fromCharCode(65 + oi)}) ${o}`).join(' | ')}`,
+        f ? `My answer: ${String.fromCharCode(65 + f.selectedIndex)}. Key: ${String.fromCharCode(65 + f.correctIndex)}. ${f.correct ? 'Correct' : 'Incorrect'}. Shown explanation: ${f.explanation}` : 'No feedback recorded.',
+      ].join('\n');
+    }),
+  ].join('\n\n');
   return (
     <section className="rise space-y-4" data-testid={`result-${a.id}`}>
       <div className="relative overflow-hidden rounded-[2rem] bg-primary p-7 text-primary-foreground md:p-9">
@@ -173,6 +188,27 @@ function Result({ a, title, onClose }: { a: PracticeAttempt; title: string; onCl
           </div>
         );
       })}
+      {submitted && (
+        <div className="space-y-3">
+          <CoachToggle open={coach} onClick={() => setCoach((o) => !o)} label="Work through my mistakes" testId="button-coach-practice" />
+          {coach && (
+            <Coach
+              contextKey={`practice:${a.id}`}
+              contextLabel={`Practice result · ${title} · ${score}/${total}`}
+              courseId={a.courseId}
+              moves={[
+                { id: 'misconceptions', level: 'Understand', label: 'Explain my misconceptions', request: 'Looking only at the questions I got wrong, explain the likely misconception behind each chosen answer and the reasoning that leads to the key. If I got everything right, explain what distinguishes the strongest distractor.' },
+                { id: 'transfer', level: 'Apply', label: 'Give me a transfer problem', request: 'Write one new practice question on my weakest concept from this set, set in a different practical context. Do not reveal the answer; wait for my attempt.' },
+                { id: 'why', level: 'Analyse', label: 'Why did the set adapt this way?', request: 'Explain, from my result and the adaptation reason, what my next set will likely emphasise and how I should prepare in 20 minutes.' },
+              ]}
+              getContext={resultContext}
+              intro="Uses only this submitted set and the feedback you can already see."
+              onClose={() => setCoach(false)}
+              testId="coach-practice"
+            />
+          )}
+        </div>
+      )}
       <Button variant="outline" onClick={onClose} data-testid="button-close-result">Back to practice</Button>
     </section>
   );
@@ -231,7 +267,7 @@ export default function Practice() {
       {isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="practise adaptively" /> : open ? (
         open.score === null
           ? <Runner key={open.id} a={open} title={titles[open.courseId] ?? 'Practice set'} onDone={() => setOpenId(null)} />
-          : <Result a={open} title={titles[open.courseId] ?? 'Practice set'} onClose={() => setOpenId(null)} />
+          : <Result key={open.id} a={open} title={titles[open.courseId] ?? 'Practice set'} onClose={() => setOpenId(null)} />
       ) : (
         <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
           <div className="space-y-4 self-start lg:sticky lg:top-8">

@@ -3,7 +3,8 @@ import { Link } from 'wouter';
 import { AlertTriangle, Lock, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { errMsg } from '@/lib/app';
+import { authHref, errMsg } from '@/lib/app';
+import { useHere } from '@/lib/use-here';
 
 export function PageHeader({ kicker, title, sub, children }: { kicker: string; title: ReactNode; sub?: ReactNode; children?: ReactNode }) {
   return (
@@ -74,6 +75,7 @@ export function Ring({ size = 56 }: { size?: number }) {
 }
 
 export function SignInWall({ what }: { what: string }) {
+  const here = useHere();
   return (
     <div className="ink-card relative overflow-hidden p-10">
       <div className="alpona-dots absolute inset-0 opacity-40" />
@@ -86,8 +88,8 @@ export function SignInWall({ what }: { what: string }) {
           Browsing is open to everyone. Your own pathways, logs, projects and AI conversations live behind a free account.
         </p>
         <div className="mt-6 flex justify-center gap-2">
-          <Button asChild data-testid="button-wall-login"><Link href="/login">Sign in</Link></Button>
-          <Button asChild variant="outline" data-testid="button-wall-register"><Link href="/register">Create account</Link></Button>
+          <Button asChild data-testid="button-wall-login"><Link href={authHref('login', here)}>Sign in</Link></Button>
+          <Button asChild variant="outline" data-testid="button-wall-register"><Link href={authHref('register', here)}>Create account</Link></Button>
         </div>
       </div>
     </div>

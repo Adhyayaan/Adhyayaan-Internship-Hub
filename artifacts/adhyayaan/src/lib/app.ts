@@ -79,3 +79,19 @@ export function statusLabel(s: string) {
 }
 
 export const fmtINR = (n: number) => `INR ${n.toLocaleString('en-IN')}`;
+
+/** Accept only same-app relative paths; reject protocol-relative, backslash, auth loops. */
+export function safeNext(raw: string | null | undefined, fallback = '/'): string {
+  if (!raw) return fallback;
+  let v = raw.trim();
+  try { v = decodeURIComponent(v); } catch { return fallback; }
+  if (!v.startsWith('/') || v.startsWith('//') || v.includes('\\') || /[\u0000-\u001f]/.test(v)) return fallback;
+  if (/^\/(login|register)(\/|\?|#|$)/.test(v)) return fallback;
+  if (v.length > 500) return fallback;
+  return v;
+}
+
+export function authHref(kind: 'login' | 'register', next?: string | null) {
+  const n = safeNext(next, '');
+  return n && n !== '/' ? `/${kind}?next=${encodeURIComponent(n)}` : `/${kind}`;
+}

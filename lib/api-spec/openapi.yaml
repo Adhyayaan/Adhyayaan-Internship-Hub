@@ -88,10 +88,12 @@ paths:
       operationId: getDashboard
       responses:
         "200":
-          description: Student overview or clearly labeled public preview
+          description: Authenticated student's actual learning overview
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Dashboard" }
+        "401":
+          description: Sign in to view your personal dashboard
   /enrollments:
     get:
       operationId: listEnrollments

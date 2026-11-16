@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Check, Loader2 } from 'lucide-react';
+import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
 import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +13,7 @@ function Pathway({ e }: { e: Enrollment }) {
   const inval = useInvalidateAll();
   const { toast } = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+  const [coachFor, setCoachFor] = useState<string | null>(null);
   const p = progressOf(e);
   const locked = statusLabel(e.status) === 'Awaiting mentor review';
 
@@ -46,8 +48,9 @@ function Pathway({ e }: { e: Enrollment }) {
           const done = e.completedModules.includes(m.id);
           return (
             <li key={m.id}>
+              <div className="flex items-center gap-2 pr-4 hover:bg-secondary/60">
               <button onClick={() => toggle(m.id)} disabled={!!busy || locked} data-testid={`button-module-${m.id}`}
-                className="group flex w-full items-center gap-4 px-6 py-3.5 text-left transition-colors hover:bg-secondary/60 disabled:cursor-not-allowed">
+                className="group flex min-w-0 flex-1 items-center gap-4 px-6 py-3.5 text-left transition-colors disabled:cursor-not-allowed">
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${done ? 'scale-105 border-accent bg-accent text-accent-foreground' : 'border-border group-hover:border-accent'}`}>
                   {busy === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : done ? <Check className="h-4 w-4" /> : <span className="font-mono text-[10px] text-muted-foreground">{i + 1}</span>}
                 </span>
@@ -56,6 +59,22 @@ function Pathway({ e }: { e: Enrollment }) {
                   <span className="text-xs text-muted-foreground">{m.type} · {e.hours === 60 ? m.hours60 : m.hours120} hrs</span>
                 </span>
               </button>
+              <CoachToggle size="sm" open={coachFor === m.id} onClick={() => setCoachFor((x) => (x === m.id ? null : m.id))} label="Coach" testId={`button-coach-${e.id}-${m.id}`} />
+              </div>
+              {coachFor === m.id && (
+                <div className="px-4 pb-4 md:px-6">
+                  <Coach
+                    contextKey={`learn:${e.id}:${m.id}`}
+                    contextLabel={m.title}
+                    courseId={e.course.id}
+                    moves={MODULE_MOVES}
+                    getContext={() => moduleContext(e.course, m, e.hours, `Student marked this module as ${done ? 'done' : 'not yet done'}. Modules done: ${p.done}/${p.mods.length}. Hours logged: ${e.loggedHours}/${e.hours}.`)}
+                    intro="Use this before you tick the module: can you explain it back?"
+                    onClose={() => setCoachFor(null)}
+                    testId={`coach-${e.id}-${m.id}`}
+                  />
+                </div>
+              )}
             </li>
           );
         })}

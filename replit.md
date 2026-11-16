@@ -29,7 +29,7 @@ An AI-supported, project-based internship learning platform for final-year colle
 ## Architecture and boundaries
 
 - Custom password authentication uses salted scrypt hashes and opaque random session cookies; only token hashes are stored in PostgreSQL. User identity and ownership are server-derived.
-- Public dashboard figures are an explicitly labelled illustrative preview. Actual accounts begin empty.
+- The dashboard is authenticated only; accounts begin empty. Signed-out visitors enter through dedicated login/sign-up pages rather than sample personal progress.
 - Programmes and modules came from 30 course-build workbooks. These are planning blueprints, not finished accredited teaching materials. Draft hour allocations and extended pathways require academic review.
 - INR500/1000 fees are indicative assumptions from the supplied portfolio, not payment-enabled enrolment. Pathway enrolment does not charge money or establish institutional approval.
 - AI quizzes are formative, not official assessment. Five questions cover all three cognitive levels. Server-side answer keys remain private until submission; prior scores adjust difficulty and wrong answers target weak concepts.

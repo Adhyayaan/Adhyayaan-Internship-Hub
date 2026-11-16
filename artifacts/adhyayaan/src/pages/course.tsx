@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
+import type { Course, Module } from '@workspace/api-client-react';
 import { Link, useLocation, useParams } from 'wouter';
 import { ArrowLeft, Check, FileWarning, Loader2 } from 'lucide-react';
 import { useEnroll, useGetCourse, useListEnrollments, getListEnrollmentsQueryKey } from '@workspace/api-client-react';
@@ -8,7 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel } from '@/components/app/bits';
 import { toneFor } from '@/components/app/course-card';
-import { errMsg, fmtINR, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
+import { authHref, errMsg, fmtINR, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +31,7 @@ export default function CoursePage() {
   const mods = c.modules.filter((m) => (hours === 60 ? m.hours60 > 0 : m.hours120 > 0 || m.hours60 > 0));
 
   const doEnroll = async () => {
-    if (!user) return nav('/login');
+    if (!user) return nav(authHref('login', `/courses/${c.id}`));
     try {
       await enroll.mutateAsync({ data: { courseId: c.id, hours } });
       await inval();
@@ -58,7 +60,7 @@ export default function CoursePage() {
       {(c.draft || c.extendedDraft) && (
         <div className="mt-5 flex gap-3 rounded-2xl border border-dashed border-accent/60 bg-accent/5 p-4 text-sm" data-testid="status-draft">
           <FileWarning className="h-5 w-5 shrink-0 text-accent" />
-          <p><strong>Course blueprint — draft lesson content.</strong> These modules come from planning workbooks, not finished teaching material.{c.extendedDraft && ' The extended 120-hour track is also a draft.'} Use the AI tutor to go deeper on any topic.</p>
+          <p><strong>Course blueprint — draft lesson content.</strong> These modules come from planning workbooks, not finished teaching material.{c.extendedDraft && ' The extended 120-hour track is also a draft.'} Open the coach inside any module to go deeper on it.</p>
         </div>
       )}
 
@@ -78,7 +80,10 @@ export default function CoursePage() {
                     </span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{m.content || 'No draft notes for this module yet.'}</AccordionContent>
+                <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="whitespace-pre-line">{m.content || 'No draft notes for this module yet.'}</p>
+                  <ModuleCoach course={c} m={m} hours={hours} />
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
@@ -117,6 +122,27 @@ export default function CoursePage() {
           </Link>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function ModuleCoach({ course, m, hours }: { course: Course; m: Module; hours: number }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-4 space-y-3 pb-1">
+      <CoachToggle open={open} onClick={() => setOpen((o) => !o)} label="Think this module through" testId={`button-coach-${m.id}`} />
+      {open && (
+        <Coach
+          contextKey={`course:${course.id}:${m.id}:${hours}`}
+          contextLabel={m.title}
+          courseId={course.id}
+          moves={MODULE_MOVES}
+          getContext={() => moduleContext(course, m, hours)}
+          intro="Pick a way in. The coach asks before it tells, so expect a question back."
+          onClose={() => setOpen(false)}
+          testId={`coach-${m.id}`}
+        />
+      )}
     </div>
   );
 }
