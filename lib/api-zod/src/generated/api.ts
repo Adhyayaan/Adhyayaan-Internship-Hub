@@ -8,6 +8,131 @@
 import * as zod from 'zod';
 
 
+export const getStudyMediaPathFileRegExp = new RegExp('^01-[0-9]{1,2}\\.(svg|mp4)$');
+
+
+export const GetStudyMediaParams = zod.object({
+  "file": zod.coerce.string().regex(getStudyMediaPathFileRegExp)
+})
+
+export const GetStudyMediaResponse = zod.unknown()
+
+
+export const GetStudyBookParams = zod.object({
+  "courseId": zod.coerce.string()
+})
+
+export const GetStudyBookResponse = zod.object({
+  "courseId": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "editorialNote": zod.string(),
+  "modules": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "extended": zod.boolean(),
+  "objectives": zod.array(zod.string()),
+  "lessons": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "minutes": zod.number().int(),
+  "sections": zod.array(zod.object({
+  "heading": zod.string(),
+  "body": zod.string()
+})),
+  "example": zod.string(),
+  "activity": zod.string()
+})),
+  "imageUrl": zod.string(),
+  "imageAlt": zod.string(),
+  "steps": zod.array(zod.object({
+  "heading": zod.string(),
+  "body": zod.string()
+})),
+  "videoUrl": zod.string(),
+  "transcript": zod.string(),
+  "questions": zod.object({
+  "understand": zod.string(),
+  "apply": zod.string(),
+  "analyze": zod.string()
+}),
+  "sourceUrls": zod.array(zod.string())
+})),
+  "progress": zod.array(zod.object({
+  "lessonId": zod.string(),
+  "read": zod.boolean(),
+  "bookmarked": zod.boolean(),
+  "updatedAt": zod.string()
+})),
+  "teaching": zod.array(zod.object({
+  "id": zod.string(),
+  "moduleId": zod.string(),
+  "level": zod.enum(['understand', 'apply', 'analyze']),
+  "answer": zod.string(),
+  "feedback": zod.string(),
+  "verdict": zod.enum(['revisit', 'developing', 'secure']),
+  "nextLevel": zod.enum(['understand', 'apply', 'analyze']),
+  "nextPrompt": zod.string(),
+  "revisit": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+export const SaveStudyProgressParams = zod.object({
+  "courseId": zod.coerce.string()
+})
+
+export const saveStudyProgressBodyLessonIdMax = 80;
+
+
+
+export const SaveStudyProgressBody = zod.object({
+  "lessonId": zod.string().min(1).max(saveStudyProgressBodyLessonIdMax),
+  "read": zod.boolean().optional(),
+  "bookmarked": zod.boolean().optional()
+})
+
+export const SaveStudyProgressResponse = zod.object({
+  "lessonId": zod.string(),
+  "read": zod.boolean(),
+  "bookmarked": zod.boolean(),
+  "updatedAt": zod.string()
+})
+
+
+export const TeachStudyParams = zod.object({
+  "courseId": zod.coerce.string()
+})
+
+export const teachStudyBodyModuleIdMax = 80;
+
+export const teachStudyBodyAnswerMin = 15;
+export const teachStudyBodyAnswerMax = 4000;
+
+
+
+export const TeachStudyBody = zod.object({
+  "moduleId": zod.string().max(teachStudyBodyModuleIdMax),
+  "level": zod.enum(['understand', 'apply', 'analyze']),
+  "answer": zod.string().min(teachStudyBodyAnswerMin).max(teachStudyBodyAnswerMax),
+  "language": zod.enum(['en', 'bn'])
+})
+
+export const TeachStudyResponse = zod.object({
+  "id": zod.string(),
+  "moduleId": zod.string(),
+  "level": zod.enum(['understand', 'apply', 'analyze']),
+  "answer": zod.string(),
+  "feedback": zod.string(),
+  "verdict": zod.enum(['revisit', 'developing', 'secure']),
+  "nextLevel": zod.enum(['understand', 'apply', 'analyze']),
+  "nextPrompt": zod.string(),
+  "revisit": zod.string(),
+  "createdAt": zod.string()
+})
+
+
 export const HealthCheckResponse = zod.object({
   "status": zod.string()
 })

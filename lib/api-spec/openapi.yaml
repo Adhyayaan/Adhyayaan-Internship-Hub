@@ -6,6 +6,70 @@ info:
 servers:
   - url: /api
 paths:
+  /study-media/01/{file}:
+    parameters:
+      - { name: file, in: path, required: true, schema: { type: string, pattern: '^01-[0-9]{1,2}\.(svg|mp4)$' } }
+    get:
+      operationId: getStudyMedia
+      responses:
+        "200":
+          description: Reproducible instructional diagram or captioned silent video summary
+          content:
+            image/svg+xml:
+              schema: { type: string, format: binary }
+            video/mp4:
+              schema: { type: string, format: binary }
+        "206":
+          description: Byte range for video playback
+        "404":
+          description: Media not found
+        "503":
+          description: Video renderer unavailable; the lesson transcript remains readable
+  /study/{courseId}:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: getStudyBook
+      responses:
+        "200":
+          description: Authored study book and the signed-in learner's reading state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudyBook" }
+        "404":
+          description: Course study book not yet authored
+  /study/{courseId}/progress:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: saveStudyProgress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StudyProgressInput" }
+      responses:
+        "200":
+          description: Saved reading state, never internship hours or official completion
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudyProgress" }
+  /study/{courseId}/teach:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: teachStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StudyTeachingInput" }
+      responses:
+        "200":
+          description: Saved, lesson-grounded formative feedback and adaptive next activity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudyTeaching" }
   /healthz:
     get:
       operationId: healthCheck
@@ -235,6 +299,92 @@ paths:
               schema: { $ref: "#/components/schemas/PracticeAttempt" }
 components:
   schemas:
+    StudySection:
+      type: object
+      required: [heading, body]
+      properties:
+        heading: { type: string }
+        body: { type: string }
+    StudyLesson:
+      type: object
+      required: [id, title, minutes, sections, example, activity]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        minutes: { type: integer }
+        sections: { type: array, items: { $ref: "#/components/schemas/StudySection" } }
+        example: { type: string }
+        activity: { type: string }
+    StudyModule:
+      type: object
+      required: [id, title, extended, objectives, lessons, imageUrl, imageAlt, steps, videoUrl, transcript, questions, sourceUrls]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        extended: { type: boolean }
+        objectives: { type: array, items: { type: string } }
+        lessons: { type: array, items: { $ref: "#/components/schemas/StudyLesson" } }
+        imageUrl: { type: string }
+        imageAlt: { type: string }
+        steps: { type: array, items: { $ref: "#/components/schemas/StudySection" } }
+        videoUrl: { type: string }
+        transcript: { type: string }
+        questions:
+          type: object
+          required: [understand, apply, analyze]
+          properties:
+            understand: { type: string }
+            apply: { type: string }
+            analyze: { type: string }
+        sourceUrls: { type: array, items: { type: string } }
+    StudyProgress:
+      type: object
+      required: [lessonId, read, bookmarked, updatedAt]
+      properties:
+        lessonId: { type: string }
+        read: { type: boolean }
+        bookmarked: { type: boolean }
+        updatedAt: { type: string }
+    StudyProgressInput:
+      type: object
+      required: [lessonId]
+      properties:
+        lessonId: { type: string, minLength: 1, maxLength: 80 }
+        read: { type: boolean }
+        bookmarked: { type: boolean }
+    StudyTeachingInput:
+      type: object
+      required: [moduleId, level, answer, language]
+      properties:
+        moduleId: { type: string, maxLength: 80 }
+        level: { type: string, enum: [understand, apply, analyze] }
+        answer: { type: string, minLength: 15, maxLength: 4000 }
+        language: { type: string, enum: [en, bn] }
+    StudyTeaching:
+      type: object
+      required: [id, moduleId, level, answer, feedback, verdict, nextLevel, nextPrompt, revisit, createdAt]
+      properties:
+        id: { type: string }
+        moduleId: { type: string }
+        level: { type: string, enum: [understand, apply, analyze] }
+        answer: { type: string }
+        feedback: { type: string }
+        verdict: { type: string, enum: [revisit, developing, secure] }
+        nextLevel: { type: string, enum: [understand, apply, analyze] }
+        nextPrompt: { type: string }
+        revisit: { type: string }
+        createdAt: { type: string }
+    StudyBook:
+      type: object
+      required: [courseId, title, introduction, editorialNote, modules, progress, teaching]
+      properties:
+        courseId: { type: string }
+        title: { type: string }
+        introduction: { type: string }
+        editorialNote: { type: string }
+        modules: { type: array, items: { $ref: "#/components/schemas/StudyModule" } }
+        progress: { type: array, items: { $ref: "#/components/schemas/StudyProgress" } }
+        teaching: { type: array, items: { $ref: "#/components/schemas/StudyTeaching" } }
     HealthStatus:
       type: object
       required: [status]

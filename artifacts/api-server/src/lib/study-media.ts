@@ -1,0 +1,77 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { access, mkdir, mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { createHash } from "node:crypto";
+import { findStudyModule } from "./study-content";
+
+const exec = promisify(execFile);
+type Chapter = NonNullable<ReturnType<typeof findStudyModule>>;
+const xml = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]!);
+function wrap(s: string, max = 42) {
+  const lines: string[] = [];
+  for (const word of s.split(/\s+/)) {
+    if (!lines.length || lines[lines.length - 1]!.length + word.length + 1 > max) lines.push(word);
+    else lines[lines.length - 1] += ` ${word}`;
+  }
+  return lines;
+}
+function svgText(s: string, x: number, y: number, size: number, color: string, max: number) {
+  return `<text x="${x}" y="${y}" fill="${color}" font-size="${size}" font-family="sans-serif">${wrap(s, max).map((l, i) => `<tspan x="${x}" dy="${i ? size * 1.4 : 0}">${xml(l)}</tspan>`).join("")}</text>`;
+}
+export function chapterDiagram(chapter: Chapter) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="680" viewBox="0 0 1000 680" role="img"><title>${xml(chapter.title)}</title><desc>${xml(chapter.imageAlt)}</desc><rect width="1000" height="680" rx="28" fill="#f7f0e4"/><circle cx="940" cy="45" r="95" fill="#f0c659" opacity=".35"/><text x="46" y="48" font-family="sans-serif" font-size="14" fill="#c34827" letter-spacing="3">ADHYAAYAAN / FIELD GUIDE</text>${svgText(chapter.title,46,96,29,"#20264d",52)}${chapter.steps.map((step, i) => {
+    const x = i % 2 === 0 ? 46 : 523, y = i < 2 ? 183 : 405;
+    return `<rect x="${x}" y="${y}" width="431" height="194" rx="18" fill="${i % 2 === 0 ? "#173f42" : "#22284f"}"/><circle cx="${x + 36}" cy="${y + 36}" r="17" fill="#f0c659"/><text x="${x + 31}" y="${y + 42}" fill="#22284f" font-size="17" font-family="sans-serif">${i + 1}</text>${svgText(step.heading,x+66,y+43,23,"#fcf7ed",25)}${svgText(step.body,x+26,y+89,19,"#f5eee0",35)}`;
+  }).join("")}<path d="M487 280 L510 280 M746 386 L746 399 M510 502 L487 502" stroke="#c34827" stroke-width="4" fill="none"/><text x="46" y="645" font-size="15" fill="#47565a" font-family="sans-serif">Read the idea. Try the process. Explain your reasoning.</text></svg>`;
+}
+
+// Reproducible instructional media: source lives with the lesson; rendered bytes are disposable.
+// Never depend on the ephemeral cache for content durability or commit rendered video to Git.
+const videos = new Map<string, Promise<string>>();
+let renderQueue = Promise.resolve();
+async function renderVideo(chapter: Chapter): Promise<string> {
+  const version = createHash("sha256").update(JSON.stringify(chapter.steps) + chapter.title + ":v1").digest("hex").slice(0, 16);
+  const dir = path.join(tmpdir(), "adhyayaan-study-videos");
+  await mkdir(dir, { recursive: true });
+  const out = path.join(dir, `${chapter.id}-${version}.mp4`);
+  try { await access(out); return out; } catch { /* Recreate missing disposable media. */ }
+  const work = await mkdtemp(path.join(tmpdir(), "adhya-render-"));
+  const files: string[] = [];
+  const addText = async (text: string, size: number, y: number, color: string, enable = "") => {
+    const file = path.join(work, `text-${files.length}.txt`);
+    await writeFile(file, text);
+    files.push(`drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${file}':expansion=none:fontcolor=${color}:fontsize=${size}:line_spacing=10:x=50:y=${y}${enable ? `:enable='${enable}'` : ""}`);
+  };
+  await addText("ADHYAAYAAN   /   COMMUNITY SURVEY", 16, 30, "0xe7bd55");
+  await addText(wrap(chapter.title, 43).join("\n"), 25, 72, "0xfff8eb");
+  for (const [i, step] of chapter.steps.entries()) {
+    const enable = `gte(t,${i * 7})*lt(t,${(i + 1) * 7})`;
+    await addText(`0${i + 1}   ${step.heading}`, 32, 180, "0xe7bd55", enable);
+    await addText(wrap(step.body, 49).join("\n"), 23, 242, "0xfff8eb", enable);
+    files.push(`drawbox=x=${50 + i * 180}:y=399:w=165:h=6:color=0xe7bd55:t=fill:enable='${enable}'`);
+  }
+  await addText("SILENT VISUAL SUMMARY   /   PAUSE AND REFLECT", 13, 427, "0xc4d6d2");
+  try {
+    await exec("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=0x20264d:s=854x480:r=12:d=28",
+      "-vf", files.join(","), "-an", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out],
+    { timeout: 60_000, maxBuffer: 1024 * 1024 });
+  } catch (error) {
+    await rm(out, { force: true });
+    throw error;
+  } finally {
+    await rm(work, { recursive: true, force: true });
+  }
+  return out;
+}
+export async function chapterVideo(chapter: Chapter) {
+  let job = videos.get(chapter.id);
+  if (!job) {
+    job = renderQueue.then(() => renderVideo(chapter));
+    renderQueue = job.then(() => undefined, () => undefined);
+    videos.set(chapter.id, job);
+    job.catch(() => videos.delete(chapter.id));
+  }
+  return job;
+}

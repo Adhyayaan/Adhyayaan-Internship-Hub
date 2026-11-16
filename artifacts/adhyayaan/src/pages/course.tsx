@@ -115,6 +115,13 @@ export default function CoursePage() {
               </Button>
             )}
           </div>
+          {c.id === '01' && (
+            <Link href="/study/01" className="ink-card lift mt-4 block overflow-hidden border-[hsl(var(--ledger))]/40 p-5" data-testid="link-course-study">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">Interactive study book · open to all</p>
+              <p className="mt-1 font-display text-lg font-semibold text-primary">Read the textbook with a teacher</p>
+              <p className="mt-1 text-sm text-muted-foreground">16 chapters with step-throughs, silent micro-videos and teach-back feedback. Reading is separate from internship hours.</p>
+            </Link>
+          )}
           <Link href={`/practice?course=${c.id}`} className="ink-card lift mt-4 block p-5" data-testid="link-course-practice">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Cognitive &amp; adaptive learning</p>
             <p className="mt-1 font-display text-lg font-semibold text-primary">Test yourself on this internship</p>

@@ -15,6 +15,7 @@ import Logbook from '@/pages/logbook';
 import Practice from '@/pages/practice';
 import AiStudio from '@/pages/ai';
 import Profile from '@/pages/profile';
+import StudyPage from '@/pages/study';
 import { AuthSplash, Login, Register, Welcome } from '@/pages/auth';
 import { useAuth } from '@/lib/app';
 
@@ -44,6 +45,8 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/explore" component={Explore} />
           <Route path="/courses/:id" component={CoursePage} />
+          <Route path="/study/:courseId/:lessonId" component={StudyPage} />
+          <Route path="/study/:courseId" component={StudyPage} />
           <Route path="/my-learning" component={MyLearning} />
           <Route path="/projects" component={Projects} />
           <Route path="/logbook" component={Logbook} />

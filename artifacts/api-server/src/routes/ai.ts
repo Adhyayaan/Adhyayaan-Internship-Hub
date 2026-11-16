@@ -1,5 +1,4 @@
-import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
-import { rateLimit } from "express-rate-limit";
+import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { db, aiMessages, practiceAttempts } from "@workspace/db";
@@ -8,18 +7,9 @@ import { AskAiBody, AskAiResponse, ListAiMessagesResponse, StartPracticeBody, St
 import { requireLearner } from "../lib/auth";
 import { findCourse } from "../lib/catalog";
 import { generateQuestions, learnerProfile, practiceView } from "../lib/adaptive";
+import { aiLimit, oneAtATime } from "../lib/ai-guard";
 
 const router: IRouter = Router();
-const aiLimit = rateLimit({ windowMs: 60_000, limit: 8, keyGenerator: (req) => req.learner!.id, standardHeaders: "draft-7", legacyHeaders: false, message: { error: "Please wait a minute before requesting more AI assistance." } });
-const activeRequests = new Set<string>();
-function oneAtATime(req: Request, res: Response, next: NextFunction) {
-  const id = req.learner!.id;
-  if (activeRequests.has(id)) { res.status(429).json({ error: "Your previous AI request is still being prepared. Please wait for it to finish." }); return; }
-  activeRequests.add(id);
-  res.once("finish", () => activeRequests.delete(id));
-  res.once("close", () => activeRequests.delete(id));
-  next();
-}
 
 router.get("/ai/messages", requireLearner, async (req, res): Promise<void> => {
   const messages = await db.select().from(aiMessages).where(eq(aiMessages.userId, req.learner!.id)).orderBy(desc(aiMessages.createdAt)).limit(100);

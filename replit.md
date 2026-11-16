@@ -25,6 +25,7 @@ An AI-supported, project-based internship learning platform for final-year colle
 - Frontend auth/cache helpers: `artifacts/adhyayaan/src/lib/app.ts`.
 - Backend authentication: `artifacts/api-server/src/lib/auth.ts` and `routes/auth.ts`.
 - Adaptive question generation and learner targeting: `artifacts/api-server/src/lib/adaptive.ts`.
+- Authored study book: `artifacts/api-server/src/data/study/`, with reader at `/study/01`. Study progress and teaching responses use `lib/db/src/schema/study.ts`.
 
 ## Architecture and boundaries
 
@@ -33,7 +34,8 @@ An AI-supported, project-based internship learning platform for final-year colle
 - Programmes and modules came from 30 course-build workbooks. These are planning blueprints, not finished accredited teaching materials. Draft hour allocations and extended pathways require academic review.
 - INR500/1000 fees are indicative assumptions from the supplied portfolio, not payment-enabled enrolment. Pathway enrolment does not charge money or establish institutional approval.
 - AI quizzes are formative, not official assessment. Five questions cover all three cognitive levels. Server-side answer keys remain private until submission; prior scores adjust difficulty and wrong answers target weak concepts.
-- Official mentor evaluation, approval workflows, complete lesson content, college acceptance, certificates, payment collection and email password recovery are not implemented. Do not imply that a submitted project has been approved.
+- Community Survey has 16 authored teaching-draft chapters (32 lessons), instructional diagrams, controlled step animations, silent summary clips and lesson-grounded AI teach-back. Other courses remain plans; no course has academic approval. Official mentor evaluation, approval workflows, college acceptance, certificates, payment collection and email password recovery are not implemented.
+- Reading positions, read/unread marks and bookmarks are private to the learner. Reading and formative teaching never award practical hours or mark supervised internship modules complete.
 - Project submission requires all applicable modules, logged target hours, a valid project URL and a substantive reflection. Changing submitted work or deleting supporting logs resets submission status.
 
 ## Stack
@@ -50,3 +52,4 @@ An AI-supported, project-based internship learning platform for final-year colle
 - HTTPS session cookies support the embedded preview. Mutation Origin checks protect against cross-site writes.
 - Runtime SQL is parameterized through Drizzle. Never add startup DDL or production migration scripts.
 - After backend changes restart the existing API workflow; frontend changes use the existing web workflow.
+- Study clips are reproducible H.264 summaries rendered serially with `ffmpeg` and DejaVu Sans into a disposable temporary cache; no uploaded footage or persistent media store is required. Render failures are explicit and the transcript remains readable. Retain the renderer's runtime dependencies when publishing. App Storage provisioning failed during this build; do not assume it is configured.

@@ -40,6 +40,11 @@ import type {
   PracticeInput,
   RegistrationInput,
   Session,
+  StudyBook,
+  StudyProgress,
+  StudyProgressInput,
+  StudyTeaching,
+  StudyTeachingInput,
   Success,
   WorkLog
 } from './api.schemas';
@@ -70,6 +75,362 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetStudyMediaUrl = (file: string,) => {
+
+
+
+
+  return `/api/study-media/01/${file}`
+}
+
+export const getStudyMedia = async (file: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob | void> => {
+
+  return customFetch<Blob | void>(getGetStudyMediaUrl(file),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStudyMediaQueryKey = (file: string,) => {
+    return [
+    `/api/study-media/01/${file}`
+    ] as const;
+    }
+
+
+export const getGetStudyMediaQueryOptions = <TData = Awaited<ReturnType<typeof getStudyMedia>>, TError = ErrorType<void>>(file: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudyMediaQueryKey(file);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudyMedia>>> = ({ signal }) => getStudyMedia(file, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: file !== null && file !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStudyMediaQueryResult = NonNullable<Awaited<ReturnType<typeof getStudyMedia>>>
+export type GetStudyMediaQueryError = ErrorType<void>
+
+
+export function useGetStudyMedia<TData = Awaited<ReturnType<typeof getStudyMedia>>, TError = ErrorType<void>>(
+ file: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyMedia>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyMedia>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyMedia<TData = Awaited<ReturnType<typeof getStudyMedia>>, TError = ErrorType<void>>(
+ file: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyMedia>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyMedia>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyMedia<TData = Awaited<ReturnType<typeof getStudyMedia>>, TError = ErrorType<void>>(
+ file: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetStudyMedia<TData = Awaited<ReturnType<typeof getStudyMedia>>, TError = ErrorType<void>>(
+ file: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMedia>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStudyMediaQueryOptions(file,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetStudyBookUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/study/${courseId}`
+}
+
+export const getStudyBook = async (courseId: string, options?: Parameters<typeof customFetch>[1]): Promise<StudyBook> => {
+
+  return customFetch<StudyBook>(getGetStudyBookUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStudyBookQueryKey = (courseId: string,) => {
+    return [
+    `/api/study/${courseId}`
+    ] as const;
+    }
+
+
+export const getGetStudyBookQueryOptions = <TData = Awaited<ReturnType<typeof getStudyBook>>, TError = ErrorType<void>>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudyBookQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudyBook>>> = ({ signal }) => getStudyBook(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStudyBookQueryResult = NonNullable<Awaited<ReturnType<typeof getStudyBook>>>
+export type GetStudyBookQueryError = ErrorType<void>
+
+
+export function useGetStudyBook<TData = Awaited<ReturnType<typeof getStudyBook>>, TError = ErrorType<void>>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyBook>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyBook>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyBook<TData = Awaited<ReturnType<typeof getStudyBook>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyBook>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyBook>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyBook<TData = Awaited<ReturnType<typeof getStudyBook>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetStudyBook<TData = Awaited<ReturnType<typeof getStudyBook>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBook>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStudyBookQueryOptions(courseId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveStudyProgressUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/study/${courseId}/progress`
+}
+
+export const saveStudyProgress = async (courseId: string,
+    studyProgressInput: StudyProgressInput, options?: Parameters<typeof customFetch>[1]): Promise<StudyProgress> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyProgress>(getSaveStudyProgressUrl(courseId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyProgressInput)
+  }
+);}
+
+
+
+
+
+export const getSaveStudyProgressMutationKey = () => ['saveStudyProgress'] as const;
+
+export const getSaveStudyProgressMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveStudyProgress>>, TError,SaveStudyProgressMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveStudyProgress>>, TError,SaveStudyProgressMutationVariables, TContext> => {
+
+const mutationKey = getSaveStudyProgressMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveStudyProgress>>, SaveStudyProgressMutationVariables> = (props) => {
+          const {courseId,data} = props ?? {};
+
+          return  saveStudyProgress(courseId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveStudyProgressMutationResult = NonNullable<Awaited<ReturnType<typeof saveStudyProgress>>>
+    export type SaveStudyProgressMutationBody = BodyType<StudyProgressInput>
+    export type SaveStudyProgressMutationError = ErrorType<unknown>
+    export type SaveStudyProgressMutationVariables = {courseId: string;data: BodyType<StudyProgressInput>}
+
+    export const useSaveStudyProgress = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveStudyProgress>>, TError,SaveStudyProgressMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof saveStudyProgress>>,
+        TError,
+        SaveStudyProgressMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveStudyProgressMutationOptions(options), queryClient);
+    }
+
+export const getTeachStudyUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/study/${courseId}/teach`
+}
+
+export const teachStudy = async (courseId: string,
+    studyTeachingInput: StudyTeachingInput, options?: Parameters<typeof customFetch>[1]): Promise<StudyTeaching> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudyTeaching>(getTeachStudyUrl(courseId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(studyTeachingInput)
+  }
+);}
+
+
+
+
+
+export const getTeachStudyMutationKey = () => ['teachStudy'] as const;
+
+export const getTeachStudyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teachStudy>>, TError,TeachStudyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof teachStudy>>, TError,TeachStudyMutationVariables, TContext> => {
+
+const mutationKey = getTeachStudyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teachStudy>>, TeachStudyMutationVariables> = (props) => {
+          const {courseId,data} = props ?? {};
+
+          return  teachStudy(courseId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeachStudyMutationResult = NonNullable<Awaited<ReturnType<typeof teachStudy>>>
+    export type TeachStudyMutationBody = BodyType<StudyTeachingInput>
+    export type TeachStudyMutationError = ErrorType<unknown>
+    export type TeachStudyMutationVariables = {courseId: string;data: BodyType<StudyTeachingInput>}
+
+    export const useTeachStudy = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teachStudy>>, TError,TeachStudyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teachStudy>>,
+        TError,
+        TeachStudyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTeachStudyMutationOptions(options), queryClient);
+    }
 
 export const getHealthCheckUrl = () => {
 

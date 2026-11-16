@@ -80,6 +80,7 @@ function Pathway({ e }: { e: Enrollment }) {
         })}
       </ul>
       <div className="flex flex-wrap gap-2 border-t bg-secondary/40 px-6 py-4">
+        {e.course.id === '01' && <Button asChild size="sm" className="bg-[hsl(var(--ledger))] hover:bg-[hsl(var(--ledger))]/90" data-testid={`button-study-${e.id}`}><Link href="/study/01">Open study book</Link></Button>}
         <Button asChild size="sm" variant="outline" data-testid={`button-log-${e.id}`}><Link href="/logbook">Log hours</Link></Button>
         <Button asChild size="sm" variant="outline" data-testid={`button-practice-${e.id}`}><Link href={`/practice?course=${e.course.id}`}>Adaptive practice</Link></Button>
         <Button asChild size="sm" data-testid={`button-project-${e.id}`}><Link href="/projects">Project & reflection</Link></Button>

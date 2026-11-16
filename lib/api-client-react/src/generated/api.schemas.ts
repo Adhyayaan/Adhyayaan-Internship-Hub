@@ -5,6 +5,137 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+export interface StudySection {
+  heading: string;
+  body: string;
+}
+
+export interface StudyLesson {
+  id: string;
+  title: string;
+  minutes: number;
+  sections: StudySection[];
+  example: string;
+  activity: string;
+}
+
+export type StudyModuleQuestions = {
+  understand: string;
+  apply: string;
+  analyze: string;
+};
+
+export interface StudyModule {
+  id: string;
+  title: string;
+  extended: boolean;
+  objectives: string[];
+  lessons: StudyLesson[];
+  imageUrl: string;
+  imageAlt: string;
+  steps: StudySection[];
+  videoUrl: string;
+  transcript: string;
+  questions: StudyModuleQuestions;
+  sourceUrls: string[];
+}
+
+export interface StudyProgress {
+  lessonId: string;
+  read: boolean;
+  bookmarked: boolean;
+  updatedAt: string;
+}
+
+export interface StudyProgressInput {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  lessonId: string;
+  read?: boolean;
+  bookmarked?: boolean;
+}
+
+export type StudyTeachingInputLevel = typeof StudyTeachingInputLevel[keyof typeof StudyTeachingInputLevel];
+
+
+export const StudyTeachingInputLevel = {
+  understand: 'understand',
+  apply: 'apply',
+  analyze: 'analyze',
+} as const;
+
+export type StudyTeachingInputLanguage = typeof StudyTeachingInputLanguage[keyof typeof StudyTeachingInputLanguage];
+
+
+export const StudyTeachingInputLanguage = {
+  en: 'en',
+  bn: 'bn',
+} as const;
+
+export interface StudyTeachingInput {
+  /** @maxLength 80 */
+  moduleId: string;
+  level: StudyTeachingInputLevel;
+  /**
+     * @minLength 15
+     * @maxLength 4000
+     */
+  answer: string;
+  language: StudyTeachingInputLanguage;
+}
+
+export type StudyTeachingLevel = typeof StudyTeachingLevel[keyof typeof StudyTeachingLevel];
+
+
+export const StudyTeachingLevel = {
+  understand: 'understand',
+  apply: 'apply',
+  analyze: 'analyze',
+} as const;
+
+export type StudyTeachingVerdict = typeof StudyTeachingVerdict[keyof typeof StudyTeachingVerdict];
+
+
+export const StudyTeachingVerdict = {
+  revisit: 'revisit',
+  developing: 'developing',
+  secure: 'secure',
+} as const;
+
+export type StudyTeachingNextLevel = typeof StudyTeachingNextLevel[keyof typeof StudyTeachingNextLevel];
+
+
+export const StudyTeachingNextLevel = {
+  understand: 'understand',
+  apply: 'apply',
+  analyze: 'analyze',
+} as const;
+
+export interface StudyTeaching {
+  id: string;
+  moduleId: string;
+  level: StudyTeachingLevel;
+  answer: string;
+  feedback: string;
+  verdict: StudyTeachingVerdict;
+  nextLevel: StudyTeachingNextLevel;
+  nextPrompt: string;
+  revisit: string;
+  createdAt: string;
+}
+
+export interface StudyBook {
+  courseId: string;
+  title: string;
+  introduction: string;
+  editorialNote: string;
+  modules: StudyModule[];
+  progress: StudyProgress[];
+  teaching: StudyTeaching[];
+}
+
 export interface HealthStatus {
   status: string;
 }
