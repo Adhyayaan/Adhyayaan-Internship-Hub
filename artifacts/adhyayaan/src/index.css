@@ -465,3 +465,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;op
 .page-in{animation:pageIn .5s cubic-bezier(.2,.8,.2,1) both}
 .step-node{transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .4s}
 @media (prefers-reduced-motion: reduce){.rise,.page-in,.auth-content,.auth-panel,.auth-form-side form{animation:none}.lift,.step-node{transition:none}.lift:hover{transform:none}}
+
+/* Adhya stays within reach without covering the learner's reading surface. */
+.adhya-dock{position:fixed;z-index:45;right:1.25rem;bottom:1.25rem;width:min(22rem,calc(100vw - 2rem));}
+.adhya-dock-open{width:min(25rem,calc(100vw - 2rem));}
+.adhya-invite{display:flex;width:100%;align-items:center;gap:.85rem;border:1px solid hsl(var(--border));border-radius:1.2rem;background:hsl(var(--card));padding:.7rem .85rem;box-shadow:0 16px 42px -22px hsl(232 55% 18%/.52);text-align:left;transition:transform .2s ease,box-shadow .2s ease}
+.adhya-invite:hover{transform:translateY(-2px);box-shadow:0 20px 48px -24px hsl(232 55% 18%/.62)}
+.adhya-avatar{position:relative;display:inline-flex;flex:none;align-items:flex-end;justify-content:center;overflow:hidden;border:1px solid hsl(var(--accent)/.3);border-radius:50%;background:linear-gradient(145deg,hsl(var(--turmeric)/.32),hsl(var(--secondary)));box-shadow:0 2px 8px hsl(var(--primary)/.12)}
+.adhya-avatar{animation:adhya-float 3.8s ease-in-out infinite}
+.adhya-avatar img{height:125%;width:125%;max-width:none;object-fit:contain;object-position:center bottom}
+.adhya-online-dot{position:absolute;right:0;bottom:.15rem;height:.75rem;width:.75rem;border:2px solid hsl(var(--card));border-radius:50%;background:hsl(var(--ledger))}
+.adhya-panel{overflow:hidden;border:1px solid hsl(var(--border));border-radius:1.35rem;background:hsl(var(--card));box-shadow:0 24px 70px -26px hsl(232 55% 16%/.55);animation:adhya-arrive .22s ease-out both}
+.adhya-launcher{position:fixed;z-index:45;right:1.25rem;bottom:1.25rem;display:flex;align-items:center;gap:.65rem;border:1px solid hsl(var(--border));border-radius:999px;background:hsl(var(--card));padding:.4rem .9rem .4rem .4rem;color:hsl(var(--primary));box-shadow:0 14px 36px -20px hsl(232 55% 18%/.6);font-size:.875rem;font-weight:600;transition:transform .2s ease}
+.adhya-launcher:hover{transform:translateY(-2px)}
+@keyframes adhya-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes adhya-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(max-width:767px){.adhya-dock,.adhya-launcher{right:.7rem;bottom:5.7rem}.adhya-dock-open{width:min(25rem,calc(100vw - 1.4rem))}.adhya-panel{max-height:calc(100dvh - 7rem)}}
+@media(prefers-reduced-motion:reduce){.adhya-panel,.adhya-avatar{animation:none}.adhya-invite,.adhya-launcher{transition:none}.adhya-invite:hover,.adhya-launcher:hover{transform:none}}

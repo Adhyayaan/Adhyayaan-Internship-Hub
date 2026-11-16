@@ -18,6 +18,9 @@ export const GetStudyMediaParams = zod.object({
 export const GetStudyMediaResponse = zod.unknown()
 
 
+export const GetStudyMentorAvatarResponse = zod.unknown()
+
+
 export const GetStudyBookParams = zod.object({
   "courseId": zod.coerce.string()
 })

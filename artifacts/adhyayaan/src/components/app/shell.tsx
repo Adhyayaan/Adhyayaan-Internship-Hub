@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn } from 'lucide-react';
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
+import { AdhyaGuide } from '@/components/app/adhya-guide';
 
 const NAV = [
   { href: '/', label: 'Today', icon: LayoutGrid },
@@ -91,6 +92,8 @@ export function Shell({ children }: { children: ReactNode }) {
       <main className="min-w-0 flex-1 px-4 pb-28 pt-6 md:px-10 md:pb-12 md:pt-10">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
+
+      {user && <AdhyaGuide />}
 
       <nav className="fixed inset-x-2 bottom-2 z-40 grid grid-cols-7 rounded-2xl bg-sidebar p-1.5 shadow-2xl md:hidden">
         {NAV.map((n) => (

@@ -171,6 +171,101 @@ export function useGetStudyMedia<TData = Awaited<ReturnType<typeof getStudyMedia
 
 
 
+export const getGetStudyMentorAvatarUrl = () => {
+
+
+
+
+  return `/api/study-media/mentor-avatar.png`
+}
+
+export const getStudyMentorAvatar = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetStudyMentorAvatarUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStudyMentorAvatarQueryKey = () => {
+    return [
+    `/api/study-media/mentor-avatar.png`
+    ] as const;
+    }
+
+
+export const getGetStudyMentorAvatarQueryOptions = <TData = Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudyMentorAvatarQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudyMentorAvatar>>> = ({ signal }) => getStudyMentorAvatar({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStudyMentorAvatarQueryResult = NonNullable<Awaited<ReturnType<typeof getStudyMentorAvatar>>>
+export type GetStudyMentorAvatarQueryError = ErrorType<unknown>
+
+
+export function useGetStudyMentorAvatar<TData = Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyMentorAvatar>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyMentorAvatar>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyMentorAvatar<TData = Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyMentorAvatar>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyMentorAvatar>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyMentorAvatar<TData = Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetStudyMentorAvatar<TData = Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyMentorAvatar>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStudyMentorAvatarQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getGetStudyBookUrl = (courseId: string,) => {
 
 

@@ -107,7 +107,14 @@ export default function CoursePage() {
             </div>
             <p className="mt-3 text-xs text-muted-foreground">Recommended: {c.hours} hrs. Listed fees are indicative programme fees only. Nothing is charged here, and enrolling is not institutional approval.</p>
             {existing ? (
-              <Button asChild className="mt-5 w-full" data-testid="button-go-learning"><Link href="/my-learning"><Check className="mr-2 h-4 w-4" /> Enrolled · {existing.hours} hrs — open</Link></Button>
+              <div className="mt-5 space-y-2">
+                <Button asChild className="h-12 w-full bg-accent text-base hover:bg-accent/90" data-testid="button-go-learning">
+                  <Link href={c.id === '01' ? '/study/01' : `/my-learning#pathway-${c.id}`}>
+                    <Check className="mr-2 h-4 w-4" /> {c.id === '01' ? 'Start / continue study book' : 'Continue enrolled pathway'}
+                  </Link>
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">Enrolled · {existing.hours}-hour pathway</p>
+              </div>
             ) : (
               <Button onClick={doEnroll} disabled={enroll.isPending} className="mt-5 h-12 w-full bg-accent text-base hover:bg-accent/90" data-testid="button-enroll">
                 {enroll.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -119,7 +126,7 @@ export default function CoursePage() {
             <Link href="/study/01" className="ink-card lift mt-4 block overflow-hidden border-[hsl(var(--ledger))]/40 p-5" data-testid="link-course-study">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">Interactive study book · open to all</p>
               <p className="mt-1 font-display text-lg font-semibold text-primary">Read the textbook with a teacher</p>
-              <p className="mt-1 text-sm text-muted-foreground">16 chapters with step-throughs, silent micro-videos and teach-back feedback. Reading is separate from internship hours.</p>
+              <p className="mt-1 text-sm text-muted-foreground">16 chapters with step-throughs, Adhya-led spoken lessons and teach-back feedback. Reading is separate from internship hours.</p>
             </Link>
           )}
           <Link href={`/practice?course=${c.id}`} className="ink-card lift mt-4 block p-5" data-testid="link-course-practice">

@@ -13,7 +13,7 @@ paths:
       operationId: getStudyMedia
       responses:
         "200":
-          description: Reproducible instructional diagram or captioned silent video summary
+          description: Reproducible instructional diagram or AI-narrated animated mentor lesson
           content:
             image/svg+xml:
               schema: { type: string, format: binary }
@@ -23,8 +23,21 @@ paths:
           description: Byte range for video playback
         "404":
           description: Media not found
+        "401":
+          description: Sign in to generate and play the narrated lesson
+        "429":
+          description: Video generation rate limit reached
         "503":
           description: Video renderer unavailable; the lesson transcript remains readable
+  /study-media/mentor-avatar.png:
+    get:
+      operationId: getStudyMentorAvatar
+      responses:
+        "200":
+          description: Adhya, the illustrated learning mentor
+          content:
+            image/png:
+              schema: { type: string, format: binary }
   /study/{courseId}:
     parameters:
       - { name: courseId, in: path, required: true, schema: { type: string } }

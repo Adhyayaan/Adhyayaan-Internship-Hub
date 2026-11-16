@@ -263,7 +263,7 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
             <div className="mt-12 space-y-6">
               <div className="flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Chapter review</span><span className="h-px flex-1 bg-border" /></div>
               <MotionSteps steps={module.steps} title={module.id} />
-              <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} />
+              <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} userId={userId} />
               <TeachPanel courseId={book.courseId} module={module} lessonTitles={module.lessons.map((l) => l.title)} teaching={book.teaching} userId={userId} />
               {module.sourceUrls.length > 0 && (
                 <section className="rounded-2xl border p-5 text-sm" aria-label="Further reading">

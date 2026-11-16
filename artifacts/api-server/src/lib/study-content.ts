@@ -8,7 +8,7 @@ export const communityBook = GetStudyBookResponse.parse({
   courseId: "01",
   title: "Community Survey & Data Analysis",
   introduction: "Learn to ask a worthwhile question, listen ethically, work with evidence and explain what your findings can—and cannot—say. This study book follows a fictional library-access survey from first question to an evidence-based recommendation. Read, explore a process, then teach the idea back in your own words. The 60-hour pathway uses chapters 1–10; the 120-hour extension adds chapters 11–16. Most internship hours are practical work, not video viewing.",
-  editorialNote: "Authored instructional draft, not an academically approved textbook. Supervisor review and local institutional ethics, safety and assessment requirements remain essential. Linked resources are further reading, not endorsements or evidence of approval. All worked examples are fictional; never submit them as field evidence. Reading marks and AI feedback do not award internship hours, official grades or certificates. Short silent videos summarise the chapter; they are not full lectures.",
+  editorialNote: "Authored instructional draft, not an academically approved textbook. Supervisor review and local institutional ethics, safety and assessment requirements remain essential. Linked resources are further reading, not endorsements or evidence of approval. All worked examples are fictional; never submit them as field evidence. Reading marks and AI feedback do not award internship hours, official grades or certificates. AI-narrated animated mentor videos introduce chapter ideas; they are short learning aids, not full lectures.",
   modules: course.modules.map((m, index) => {
     const s = sources[index]!;
     return {
@@ -22,7 +22,12 @@ export const communityBook = GetStudyBookResponse.parse({
       imageAlt: `${m.title}: ${s.steps.map(x => `${x.heading}—${x.body}`).join(" Then ")}`,
       steps: s.steps,
       videoUrl: `/api/study-media/01/${m.id}.mp4`,
-      transcript: s.steps.map(x => `${x.heading}. ${x.body}`).join(" "),
+      transcript: [
+        `Hi, I'm Adhya. Let's work through ${m.title}.`,
+        ...s.steps.map((step, stepIndex) => `${["First", "Next", "Then", "Finally"][stepIndex] ?? "Now"}, ${step.heading}. ${step.body}`),
+        `Before you move on, pause and think: ${s.questions.understand}`,
+        "Try to explain your reasoning in your own words. You can pause here and use the study coach whenever you are ready.",
+      ].join(" "),
       questions: s.questions,
       sourceUrls: s.sources,
     };
