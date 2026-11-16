@@ -1,0 +1,3348 @@
+[
+  {
+    "id": "01",
+    "title": "Community Survey & Data Analysis",
+    "category": "Social Sciences",
+    "description": "Build practical skills through community survey & data analysis. Complete guided work and an evidence-based portfolio mapped to General and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Hybrid",
+    "disciplines": [
+      "General",
+      "Sociology",
+      "Social Science"
+    ],
+    "modules": [
+      {
+        "id": "01-1",
+        "title": "Orientation, research ethics and consent",
+        "type": "Core",
+        "hours60": 5.0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Orientation, research ethics and consent. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-2",
+        "title": "Defining the research question and survey objectives",
+        "type": "Core",
+        "hours60": 3.0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Defining the research question and survey objectives. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-3",
+        "title": "Questionnaire design",
+        "type": "Core",
+        "hours60": 6.0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Questionnaire design. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-4",
+        "title": "Sampling basics",
+        "type": "Core",
+        "hours60": 3.0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Sampling basics. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-5",
+        "title": "Interviewing skills and field preparation (incl. pilot)",
+        "type": "Core",
+        "hours60": 4.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Interviewing skills and field preparation (incl. pilot). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-6",
+        "title": "Fieldwork and field log",
+        "type": "Core",
+        "hours60": 22.0,
+        "hours120": 30.0,
+        "content": "Planning blueprint: Fieldwork and field log. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-7",
+        "title": "Data entry and cleaning in spreadsheets",
+        "type": "Core",
+        "hours60": 5.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Data entry and cleaning in spreadsheets. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-8",
+        "title": "Descriptive statistics and charts",
+        "type": "Core",
+        "hours60": 5.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Descriptive statistics and charts. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-9",
+        "title": "Report writing and presentation",
+        "type": "Core",
+        "hours60": 4.0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Report writing and presentation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-10",
+        "title": "Viva preparation",
+        "type": "Core",
+        "hours60": 3.0,
+        "hours120": 3.0,
+        "content": "Planning blueprint: Viva preparation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-11",
+        "title": "Digital data collection (Google Forms / KoBoToolbox)",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Digital data collection (Google Forms / KoBoToolbox). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-12",
+        "title": "Cross-tabulation, correlation and basic confidence intervals",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Cross-tabulation, correlation and basic confidence intervals. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-13",
+        "title": "Qualitative responses and simple coding",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Qualitative responses and simple coding. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-14",
+        "title": "Data storytelling and dashboards",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Data storytelling and dashboards. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-15",
+        "title": "Larger or second-round survey with comparison",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Larger or second-round survey with comparison. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "01-16",
+        "title": "Policy-style recommendations memo",
+        "type": "Extended",
+        "hours60": 0.0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Policy-style recommendations memo. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An anonymised 75–150-response community survey dataset, charts and a 1,500–2,500-word findings report.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "02",
+    "title": "Bengali Editing & Digital Publishing",
+    "category": "Languages & Communication",
+    "description": "Build practical skills through bengali editing & digital publishing. Complete guided work and an evidence-based portfolio mapped to Bengali and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online",
+    "disciplines": [
+      "Bengali",
+      "English",
+      "Sanskrit"
+    ],
+    "modules": [
+      {
+        "id": "02-1",
+        "title": "Orientation, house style and copyright/licensing rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, house style and copyright/licensing rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-2",
+        "title": "Bengali copy-editing and proofreading conventions",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Bengali copy-editing and proofreading conventions. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-3",
+        "title": "Headlines, captions and style-sheet building",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Headlines, captions and style-sheet building. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-4",
+        "title": "Page preparation, accessibility and publishing workflow",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Page preparation, accessibility and publishing workflow. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-5",
+        "title": "Register, tone and advanced style editing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Register, tone and advanced style editing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-6",
+        "title": "Editing the 20-30-page source text (tracked corrections)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 20.0,
+        "content": "Planning blueprint: Editing the 20-30-page source text (tracked corrections). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-7",
+        "title": "Proof rounds and publishing workflow log",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Proof rounds and publishing workflow log. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-8",
+        "title": "Second editing project in a different text type",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second editing project in a different text type. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-9",
+        "title": "Accessible digital edition (ePub/tagged PDF)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Accessible digital edition (ePub/tagged PDF). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-10",
+        "title": "Final layout, style sheet and accuracy self-audit",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Final layout, style sheet and accuracy self-audit. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-11",
+        "title": "Editorial case study and workflow-improvement memo",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Editorial case study and workflow-improvement memo. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "02-12",
+        "title": "Edit-accuracy audit, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Edit-accuracy audit, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A professionally edited 20–30-page booklet with tracked corrections and a style sheet, using authorised text.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "03",
+    "title": "Heritage Digitisation & Archival Metadata",
+    "category": "Arts & Heritage",
+    "description": "Build practical skills through heritage digitisation & archival metadata. Complete guided work and an evidence-based portfolio mapped to History and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid",
+    "disciplines": [
+      "History",
+      "Bengali",
+      "Sanskrit"
+    ],
+    "modules": [
+      {
+        "id": "03-1",
+        "title": "Orientation, permissions, ethics and document-handling safety",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, permissions, ethics and document-handling safety. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-2",
+        "title": "Document handling and image capture",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Document handling and image capture. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-3",
+        "title": "File naming conventions and OCR correction",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: File naming conventions and OCR correction. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-4",
+        "title": "Descriptive metadata and provenance (NAI SOP, NDLI standard)",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Descriptive metadata and provenance (NAI SOP, NDLI standard). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-5",
+        "title": "Collection selection, condition check and prioritisation",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Collection selection, condition check and prioritisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-6",
+        "title": "Imaging of ~50-100 items",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Imaging of ~50-100 items. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-7",
+        "title": "Metadata entry and OCR correction",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 11.0,
+        "content": "Planning blueprint: Metadata entry and OCR correction. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-8",
+        "title": "Catalogue build and quality check",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Catalogue build and quality check. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-9",
+        "title": "Contextual essay",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Contextual essay. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "03-10",
+        "title": "Portfolio, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Portfolio, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A curated collection of 50–100 authorised digitised items, metadata and a contextual essay.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "04",
+    "title": "Local Governance & Civic Data",
+    "category": "Social Sciences",
+    "description": "Build practical skills through local governance & civic data. Complete guided work and an evidence-based portfolio mapped to Political Science and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Political Science",
+      "History",
+      "General"
+    ],
+    "modules": [
+      {
+        "id": "04-1",
+        "title": "Orientation, public-information ethics and non-partisan rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, public-information ethics and non-partisan rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-2",
+        "title": "Reading public notices, budgets and scheme documents",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Reading public notices, budgets and scheme documents. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-3",
+        "title": "Official-source verification practice",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Official-source verification practice. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-4",
+        "title": "Civic indicators and sourced data tables",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Civic indicators and sourced data tables. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-5",
+        "title": "Budget analysis and scheme-coverage indicators",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Budget analysis and scheme-coverage indicators. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-6",
+        "title": "Ward/gram-panchayat profile data compilation",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 16.0,
+        "content": "Planning blueprint: Ward/gram-panchayat profile data compilation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-7",
+        "title": "Public-services inventory and voluntary interviews",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Public-services inventory and voluntary interviews. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-8",
+        "title": "Comparison with a second ward/gram panchayat",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Comparison with a second ward/gram panchayat. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-9",
+        "title": "Voluntary citizen-feedback interviews",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Voluntary citizen-feedback interviews. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-10",
+        "title": "Profile drafting and Bengali citizen explainer",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Profile drafting and Bengali citizen explainer. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-11",
+        "title": "Civic dashboard and data visualisation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Civic dashboard and data visualisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "04-12",
+        "title": "Source-verification review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Source-verification review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A sourced local civic profile, public-services inventory and two-page Bengali citizen explainer.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "05",
+    "title": "Teaching Assistant & Learning-Resource Design",
+    "category": "Education",
+    "description": "Build practical skills through teaching assistant & learning-resource design. Complete guided work and an evidence-based portfolio mapped to Education and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "Education",
+      "Bengali",
+      "English"
+    ],
+    "modules": [
+      {
+        "id": "05-1",
+        "title": "Orientation, school-partner protocols and child-safety rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, school-partner protocols and child-safety rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-2",
+        "title": "Learning objectives and lesson planning",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Learning objectives and lesson planning. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-3",
+        "title": "Worksheet design and accessibility",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Worksheet design and accessibility. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-4",
+        "title": "Classroom observation methods",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Classroom observation methods. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-5",
+        "title": "Inclusive and differentiated teaching strategies",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Inclusive and differentiated teaching strategies. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-6",
+        "title": "Drafting four lesson plans",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Drafting four lesson plans. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-7",
+        "title": "Designing two worksheets",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Designing two worksheets. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-8",
+        "title": "Observed teaching session / small-group recording",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Observed teaching session / small-group recording. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-9",
+        "title": "Second observed teaching cycle with feedback",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second observed teaching cycle with feedback. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-10",
+        "title": "Learner-support and remedial worksheet set",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Learner-support and remedial worksheet set. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-11",
+        "title": "Reflective diary and portfolio compilation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Reflective diary and portfolio compilation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-12",
+        "title": "Learning-impact review",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Learning-impact review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "05-13",
+        "title": "Lesson-design rubric review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Lesson-design rubric review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Four lesson plans, two worksheets, a supervised teaching recording or observation report and reflective diary.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "06",
+    "title": "Professional English & Workplace Communication",
+    "category": "Languages & Communication",
+    "description": "Build practical skills through professional english & workplace communication. Complete guided work and an evidence-based portfolio mapped to English and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online",
+    "disciplines": [
+      "English",
+      "General",
+      "Business Administration"
+    ],
+    "modules": [
+      {
+        "id": "06-1",
+        "title": "Orientation and workplace-communication brief (simulated organisation)",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation and workplace-communication brief (simulated organisation). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-2",
+        "title": "Professional email and meeting notes",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Professional email and meeting notes. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-3",
+        "title": "Concise reports and presentation skills",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Concise reports and presentation skills. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-4",
+        "title": "CV/portfolio writing and Bengali-English workplace translation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: CV/portfolio writing and Bengali-English workplace translation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-5",
+        "title": "Negotiation and difficult-conversation communication",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Negotiation and difficult-conversation communication. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-6",
+        "title": "Role-based email set and meeting minutes",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Role-based email set and meeting minutes. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-7",
+        "title": "Client-response scripts and simulated client calls",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Client-response scripts and simulated client calls. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-8",
+        "title": "Two-page business report draft",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Two-page business report draft. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-9",
+        "title": "Second simulation: cross-team project communication",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second simulation: cross-team project communication. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-10",
+        "title": "Bengali-English workplace translation tasks",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Bengali-English workplace translation tasks. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-11",
+        "title": "Presentation and portfolio finalisation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Presentation and portfolio finalisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-12",
+        "title": "Interview preparation and professional portfolio",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Interview preparation and professional portfolio. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "06-13",
+        "title": "Timed writing task, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Timed writing task, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Professional emails, meeting minutes, client-response scripts, presentation and a two-page simulated business report.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "07",
+    "title": "Accounting, GST & Digital Bookkeeping",
+    "category": "Business & Finance",
+    "description": "Build practical skills through accounting, gst & digital bookkeeping. Complete guided work and an evidence-based portfolio mapped to Accountancy and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Online",
+    "disciplines": [
+      "Accountancy",
+      "Accounting & Finance",
+      "Commerce"
+    ],
+    "modules": [
+      {
+        "id": "07-1",
+        "title": "Orientation, fictional dataset and professional ethics",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, fictional dataset and professional ethics. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-2",
+        "title": "Transaction classification, journals and ledgers",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Transaction classification, journals and ledgers. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-3",
+        "title": "Bank reconciliation and invoice checking",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Bank reconciliation and invoice checking. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-4",
+        "title": "GST concepts and portal manuals",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: GST concepts and portal manuals. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-5",
+        "title": "Recording a full month's books",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Recording a full month's books. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-6",
+        "title": "Bank reconciliation statement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Bank reconciliation statement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-7",
+        "title": "GST working papers",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: GST working papers. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-8",
+        "title": "Error-detection exercise",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Error-detection exercise. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-9",
+        "title": "Management summary",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Management summary. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-10",
+        "title": "Working-paper portfolio finalisation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Working-paper portfolio finalisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "07-11",
+        "title": "Portfolio review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Portfolio review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A fictional month's books, reconciliation, GST working papers and management summary; no unsupervised real tax filing.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "08",
+    "title": "Financial Literacy & Household Budget Analytics",
+    "category": "Business & Finance",
+    "description": "Build practical skills through financial literacy & household budget analytics. Complete guided work and an evidence-based portfolio mapped to General and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "General",
+      "Commerce",
+      "Economics"
+    ],
+    "modules": [
+      {
+        "id": "08-1",
+        "title": "Orientation, scope and no-personal-investment-advice rule",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, scope and no-personal-investment-advice rule. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-2",
+        "title": "Budgeting, interest, inflation and responsible borrowing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Budgeting, interest, inflation and responsible borrowing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-3",
+        "title": "Digital-payment awareness and basic risk management",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Digital-payment awareness and basic risk management. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-4",
+        "title": "Survey design and data visualisation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Survey design and data visualisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-5",
+        "title": "Interest, inflation and loan calculators in spreadsheets",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Interest, inflation and loan calculators in spreadsheets. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-6",
+        "title": "Financial-literacy survey fieldwork",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Financial-literacy survey fieldwork. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-7",
+        "title": "Household budget workbook build",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Household budget workbook build. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-8",
+        "title": "Bengali financial-awareness resource drafting",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Bengali financial-awareness resource drafting. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-9",
+        "title": "Second-round survey or pre/post awareness test",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second-round survey or pre/post awareness test. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-10",
+        "title": "Community awareness workshop (non-advisory)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Community awareness workshop (non-advisory). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-11",
+        "title": "Survey analysis and resource finalisation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Survey analysis and resource finalisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-12",
+        "title": "Awareness dashboard and policy-style memo",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Awareness dashboard and policy-style memo. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "08-13",
+        "title": "Assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An anonymised financial-literacy survey, household budget workbook and Bengali awareness resource; not investment advice.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "09",
+    "title": "GIS & Community Mapping",
+    "category": "Environment & Geography",
+    "description": "Build practical skills through gis & community mapping. Complete guided work and an evidence-based portfolio mapped to Geography and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Geography",
+      "Environmental Science",
+      "Geology"
+    ],
+    "modules": [
+      {
+        "id": "09-1",
+        "title": "Orientation, data-use permissions and field safety",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, data-use permissions and field safety. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-2",
+        "title": "Spatial-data concepts and coordinate systems",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Spatial-data concepts and coordinate systems. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-3",
+        "title": "QGIS and Bhuvan workflows",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: QGIS and Bhuvan workflows. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-4",
+        "title": "GPS collection and cartographic communication",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: GPS collection and cartographic communication. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-5",
+        "title": "Project scoping and base-layer assembly",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Project scoping and base-layer assembly. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-6",
+        "title": "GPS field data collection",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 18.0,
+        "content": "Planning blueprint: GPS field data collection. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-7",
+        "title": "Digitising and georeferencing layers",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Digitising and georeferencing layers. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-8",
+        "title": "Spatial analysis",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Spatial analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-9",
+        "title": "Map design and short report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Map design and short report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "09-10",
+        "title": "Field-validation review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Field-validation review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A georeferenced community map, field-validation log and short spatial-analysis report.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "10",
+    "title": "Data Analysis with Spreadsheets & Python",
+    "category": "Technology & Data",
+    "description": "Build practical skills through data analysis with spreadsheets & python. Complete guided work and an evidence-based portfolio mapped to Mathematics and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Online",
+    "disciplines": [
+      "Mathematics",
+      "Computer Science",
+      "Statistics"
+    ],
+    "modules": [
+      {
+        "id": "10-1",
+        "title": "Orientation, dataset selection and reproducibility rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, dataset selection and reproducibility rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-2",
+        "title": "Spreadsheet formulas and pivot tables",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Spreadsheet formulas and pivot tables. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-3",
+        "title": "Data cleaning techniques",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Data cleaning techniques. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-4",
+        "title": "Introductory Python and notebooks",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Introductory Python and notebooks. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-5",
+        "title": "Dataset acquisition and cleaning",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Dataset acquisition and cleaning. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-6",
+        "title": "Descriptive statistics and visualisation",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 16.0,
+        "content": "Planning blueprint: Descriptive statistics and visualisation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-7",
+        "title": "Reproducible Python notebook",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Reproducible Python notebook. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-8",
+        "title": "Findings interpretation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Findings interpretation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-9",
+        "title": "Findings memo",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Findings memo. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "10-10",
+        "title": "Reproducibility check, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Reproducibility check, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A reproducible public-dataset analysis, cleaned data, Python notebook or spreadsheet, charts and findings memo.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "11",
+    "title": "Responsible AI Evaluation & Prompt Testing",
+    "category": "Technology & Data",
+    "description": "Build practical skills through responsible ai evaluation & prompt testing. Complete guided work and an evidence-based portfolio mapped to Philosophy and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online",
+    "disciplines": [
+      "Philosophy",
+      "English",
+      "Computer Science"
+    ],
+    "modules": [
+      {
+        "id": "11-1",
+        "title": "Orientation, responsible-AI principles and evaluation scope",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, responsible-AI principles and evaluation scope. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-2",
+        "title": "Prompt construction and structured evaluation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Prompt construction and structured evaluation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-3",
+        "title": "Hallucination detection, source checking and bias testing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Hallucination detection, source checking and bias testing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-4",
+        "title": "Error taxonomy design",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Error taxonomy design. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-5",
+        "title": "Bias and fairness testing methods",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Bias and fairness testing methods. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-6",
+        "title": "Building a 75-100 prompt evaluation set (Bengali/English)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Building a 75-100 prompt evaluation set (Bengali/English). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-7",
+        "title": "Executing and scoring tests with evidence",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 16.0,
+        "content": "Planning blueprint: Executing and scoring tests with evidence. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-8",
+        "title": "Second evaluation set: safety and refusal behaviour",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second evaluation set: safety and refusal behaviour. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-9",
+        "title": "Cross-model comparison with consistent scoring",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Cross-model comparison with consistent scoring. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-10",
+        "title": "Taxonomy, findings and recommendations",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Taxonomy, findings and recommendations. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-11",
+        "title": "Recommendations brief and evaluation dashboard",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Recommendations brief and evaluation dashboard. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "11-12",
+        "title": "Scoring-consistency review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Scoring-consistency review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An evidence-backed evaluation of 75–100 Bengali or English prompts, error taxonomy and responsible-AI recommendations.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "12",
+    "title": "Digital Journalism & Fact-Checking",
+    "category": "Languages & Communication",
+    "description": "Build practical skills through digital journalism & fact-checking. Complete guided work and an evidence-based portfolio mapped to Journalism & Mass Communication and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "Journalism & Mass Communication",
+      "English",
+      "Political Science"
+    ],
+    "modules": [
+      {
+        "id": "12-1",
+        "title": "Orientation, ethics, safety and non-partisan standards",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, ethics, safety and non-partisan standards. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-2",
+        "title": "News research and source hierarchy",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: News research and source hierarchy. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-3",
+        "title": "Claim decomposition and reverse search",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Claim decomposition and reverse search. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-4",
+        "title": "Interview preparation, headlines and corrections",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Interview preparation, headlines and corrections. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-5",
+        "title": "Image, video and manipulated-media verification",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Image, video and manipulated-media verification. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-6",
+        "title": "Five fact-check files",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 18.0,
+        "content": "Planning blueprint: Five fact-check files. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-7",
+        "title": "Two short news reports",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Two short news reports. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-8",
+        "title": "Second set of five fact-check files",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second set of five fact-check files. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-9",
+        "title": "Data-journalism mini-story",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Data-journalism mini-story. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-10",
+        "title": "Verification checklist and portfolio",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Verification checklist and portfolio. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-11",
+        "title": "Corrections policy and editorial standards review",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Corrections policy and editorial standards review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "12-12",
+        "title": "Evidence-trail review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Evidence-trail review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Five fact-check files, two short news reports and a verification checklist with a traceable evidence trail.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "13",
+    "title": "Translation, Subtitling & Localisation",
+    "category": "Languages & Communication",
+    "description": "Build practical skills through translation, subtitling & localisation. Complete guided work and an evidence-based portfolio mapped to Bengali and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online",
+    "disciplines": [
+      "Bengali",
+      "English",
+      "Hindi"
+    ],
+    "modules": [
+      {
+        "id": "13-1",
+        "title": "Orientation, authorised-content rules and translation brief",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, authorised-content rules and translation brief. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-2",
+        "title": "Translation vs localisation principles",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Translation vs localisation principles. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-3",
+        "title": "Terminology management and glossary building",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Terminology management and glossary building. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-4",
+        "title": "Transcription and subtitling tools/timing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Transcription and subtitling tools/timing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-5",
+        "title": "Specialised-domain translation (education, health, public information)",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Specialised-domain translation (education, health, public information). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-6",
+        "title": "Translating the document set",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Translating the document set. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-7",
+        "title": "Subtitling 15-25 minutes of video",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Subtitling 15-25 minutes of video. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-8",
+        "title": "Second translation set in a different text type",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second translation set in a different text type. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-9",
+        "title": "Transcreation and cultural adaptation tasks",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Transcreation and cultural adaptation tasks. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-10",
+        "title": "Glossary, editorial-decision notes and proofreading",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Glossary, editorial-decision notes and proofreading. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-11",
+        "title": "Peer review and quality-assurance checklist",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Peer review and quality-assurance checklist. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "13-12",
+        "title": "Bilingual quality review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Bilingual quality review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A bilingual terminology glossary, translated documents and subtitles for 15–25 minutes of authorised video.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "14",
+    "title": "Social Media & Public-Information Campaigns",
+    "category": "Languages & Communication",
+    "description": "Build practical skills through social media & public-information campaigns. Complete guided work and an evidence-based portfolio mapped to Journalism & Mass Communication and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online",
+    "disciplines": [
+      "Journalism & Mass Communication",
+      "English",
+      "Business Administration"
+    ],
+    "modules": [
+      {
+        "id": "14-1",
+        "title": "Orientation, partner brief and image/ethics rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, partner brief and image/ethics rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-2",
+        "title": "Audience research and content strategy",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Audience research and content strategy. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-3",
+        "title": "Short-form copy, basic design and ethical image use",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Short-form copy, basic design and ethical image use. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-4",
+        "title": "Analytics basics",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Analytics basics. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-5",
+        "title": "Visual design and short-video basics",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Visual design and short-video basics. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-6",
+        "title": "Content calendar and 12-20 posts",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 18.0,
+        "content": "Planning blueprint: Content calendar and 12-20 posts. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-7",
+        "title": "Captions, fact sourcing and partner review",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Captions, fact sourcing and partner review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-8",
+        "title": "Second campaign cycle with A/B comparison",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second campaign cycle with A/B comparison. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-9",
+        "title": "Community engagement and moderation practice",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Community engagement and moderation practice. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-10",
+        "title": "Performance-analysis template and campaign package",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Performance-analysis template and campaign package. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-11",
+        "title": "Campaign performance report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Campaign performance report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "14-12",
+        "title": "Campaign review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Campaign review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A four-week public-information campaign with 12–20 posts, captions, calendar and analytics template.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "15",
+    "title": "Oral History & Cultural Documentation",
+    "category": "Arts & Heritage",
+    "description": "Build practical skills through oral history & cultural documentation. Complete guided work and an evidence-based portfolio mapped to History and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid",
+    "disciplines": [
+      "History",
+      "Bengali",
+      "Anthropology"
+    ],
+    "modules": [
+      {
+        "id": "15-1",
+        "title": "Orientation, consent, ethics and recording-use agreements",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, consent, ethics and recording-use agreements. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-2",
+        "title": "Interview planning and consent practice",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Interview planning and consent practice. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-3",
+        "title": "Audio recording and transcription techniques",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Audio recording and transcription techniques. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-4",
+        "title": "Contextual research and metadata for oral sources",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Contextual research and metadata for oral sources. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-5",
+        "title": "Informant identification and pre-interviews",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Informant identification and pre-interviews. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-6",
+        "title": "Conducting 3-5 recorded interviews",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 13.0,
+        "content": "Planning blueprint: Conducting 3-5 recorded interviews. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-7",
+        "title": "Transcription and metadata sheets",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Transcription and metadata sheets. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-8",
+        "title": "Editing transcripts and narrative",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Editing transcripts and narrative. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-9",
+        "title": "Contextual essay or digital exhibition",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Contextual essay or digital exhibition. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "15-10",
+        "title": "Consent audit, portfolio, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Consent audit, portfolio, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Three to five consented oral-history interviews, edited transcripts, metadata and contextual essay.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "16",
+    "title": "Undergraduate Research Assistantship",
+    "category": "Social Sciences",
+    "description": "Build practical skills through undergraduate research assistantship. Complete guided work and an evidence-based portfolio mapped to General and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "General",
+      "History",
+      "Political Science"
+    ],
+    "modules": [
+      {
+        "id": "16-1",
+        "title": "Orientation, research ethics and plagiarism rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, research ethics and plagiarism rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-2",
+        "title": "Research questions and database searching",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Research questions and database searching. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-3",
+        "title": "Literature review and reference management",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Literature review and reference management. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-4",
+        "title": "Evidence matrices and academic synthesis",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Evidence matrices and academic synthesis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-5",
+        "title": "Systematic search and source-quality appraisal",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Systematic search and source-quality appraisal. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-6",
+        "title": "Annotated bibliography (20-30 sources)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Annotated bibliography (20-30 sources). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-7",
+        "title": "Literature matrix and 2,000-word review",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Literature matrix and 2,000-word review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-8",
+        "title": "Second thematic literature review",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second thematic literature review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-9",
+        "title": "Primary-source or dataset evidence note",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Primary-source or dataset evidence note. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-10",
+        "title": "Short research proposal",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Short research proposal. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-11",
+        "title": "Extended proposal with methodology",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Extended proposal with methodology. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "16-12",
+        "title": "Citation audit, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Citation audit, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An annotated bibliography of 20–30 sources, literature matrix, 2,000-word review and research proposal.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "17",
+    "title": "School Assessment & Question-Bank Design",
+    "category": "Education",
+    "description": "Build practical skills through school assessment & question-bank design. Complete guided work and an evidence-based portfolio mapped to Education and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "Education",
+      "Bengali",
+      "English"
+    ],
+    "modules": [
+      {
+        "id": "17-1",
+        "title": "Orientation, child-data protection and partner-school rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, child-data protection and partner-school rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-2",
+        "title": "Learning-outcome mapping and test blueprint",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Learning-outcome mapping and test blueprint. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-3",
+        "title": "Question construction and difficulty balancing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Question construction and difficulty balancing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-4",
+        "title": "Rubrics, answer keys and basic item analysis",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Rubrics, answer keys and basic item analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-5",
+        "title": "Item analysis and distractor evaluation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Item analysis and distractor evaluation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-6",
+        "title": "Drafting 80-100 questions",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 16.0,
+        "content": "Planning blueprint: Drafting 80-100 questions. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-7",
+        "title": "Peer review and revision rounds",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Peer review and revision rounds. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-8",
+        "title": "Optional partner-school pilot",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Optional partner-school pilot. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-9",
+        "title": "Second-topic question bank (extra 40-60 items)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second-topic question bank (extra 40-60 items). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-10",
+        "title": "Pilot analysis with a partner-school sample",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Pilot analysis with a partner-school sample. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-11",
+        "title": "Marking scheme and sample worksheet",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Marking scheme and sample worksheet. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-12",
+        "title": "Reliability and validity review",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Reliability and validity review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "17-13",
+        "title": "Marking-reliability check, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Marking-reliability check, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An 80–100-question bank, learning-outcome blueprint, marking scheme, worksheet and reviewer log.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "18",
+    "title": "Library Digitisation & Information Organisation",
+    "category": "Arts & Heritage",
+    "description": "Build practical skills through library digitisation & information organisation. Complete guided work and an evidence-based portfolio mapped to History and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid",
+    "disciplines": [
+      "History",
+      "Bengali",
+      "Library & Information Science"
+    ],
+    "modules": [
+      {
+        "id": "18-1",
+        "title": "Orientation, collection access and handling rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, collection access and handling rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-2",
+        "title": "Cataloguing concepts and controlled naming",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Cataloguing concepts and controlled naming. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-3",
+        "title": "Scanning workflow and OCR correction",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Scanning workflow and OCR correction. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-4",
+        "title": "Metadata schemas and data-dictionary design",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Metadata schemas and data-dictionary design. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-5",
+        "title": "Collection audit and arrangement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Collection audit and arrangement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-6",
+        "title": "Scanning sample records",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Scanning sample records. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-7",
+        "title": "Catalogue record entry",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Catalogue record entry. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-8",
+        "title": "Search and discovery testing",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Search and discovery testing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-9",
+        "title": "Data-dictionary template and documentation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Data-dictionary template and documentation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "18-10",
+        "title": "File-integrity check, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: File-integrity check, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A searchable collection catalogue, digitised sample records and a documented metadata dictionary.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "19",
+    "title": "Biodiversity Field Documentation",
+    "category": "Environment & Geography",
+    "description": "Build practical skills through biodiversity field documentation. Complete guided work and an evidence-based portfolio mapped to Zoology and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Zoology",
+      "Botany",
+      "Biological Sciences"
+    ],
+    "modules": [
+      {
+        "id": "19-1",
+        "title": "Orientation, wildlife-protection rules and field safety",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, wildlife-protection rules and field safety. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-2",
+        "title": "Field observation and species recording discipline",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Field observation and species recording discipline. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-3",
+        "title": "Photographic evidence and habitat notes",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Photographic evidence and habitat notes. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-4",
+        "title": "Sampling concepts and spreadsheet recording",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Sampling concepts and spreadsheet recording. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-5",
+        "title": "Site survey and transect/point observations",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Site survey and transect/point observations. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-6",
+        "title": "Geotagged biodiversity inventory",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 9.0,
+        "content": "Planning blueprint: Geotagged biodiversity inventory. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-7",
+        "title": "Field notebook and identification verification",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Field notebook and identification verification. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-8",
+        "title": "Ecological data analysis",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Ecological data analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-9",
+        "title": "Illustrated ecological report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Illustrated ecological report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "19-10",
+        "title": "Field-log review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Field-log review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A non-invasive local biodiversity inventory, field notebook, identification evidence and illustrated ecological report.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "20",
+    "title": "Plant Propagation & Urban Ecology",
+    "category": "Environment & Geography",
+    "description": "Build practical skills through plant propagation & urban ecology. Complete guided work and an evidence-based portfolio mapped to Botany and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Field / Hybrid",
+    "disciplines": [
+      "Botany",
+      "Environmental Science",
+      "Agriculture & Rural Development"
+    ],
+    "modules": [
+      {
+        "id": "20-1",
+        "title": "Orientation, nursery safety and partner agreement",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, nursery safety and partner agreement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-2",
+        "title": "Propagation methods and potting media",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Propagation methods and potting media. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-3",
+        "title": "Nursery records and plant-health observation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Nursery records and plant-health observation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-4",
+        "title": "Urban-greening design basics",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Urban-greening design basics. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-5",
+        "title": "Setting up a supervised propagation batch",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Setting up a supervised propagation batch. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-6",
+        "title": "Maintenance and plant-health monitoring",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Maintenance and plant-health monitoring. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-7",
+        "title": "Survival data logging",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Survival data logging. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-8",
+        "title": "Survival and maintenance analysis",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Survival and maintenance analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-9",
+        "title": "Campus/community planting plan",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Campus/community planting plan. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "20-10",
+        "title": "Practical demonstration, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Practical demonstration, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A supervised propagation log, survival dataset and campus planting plan. Partner facilities and safe tools required.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "21",
+    "title": "Water Quality & Environmental Monitoring",
+    "category": "Environment & Geography",
+    "description": "Build practical skills through water quality & environmental monitoring. Complete guided work and an evidence-based portfolio mapped to Geography and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Hybrid / Lab",
+    "disciplines": [
+      "Geography",
+      "Chemistry",
+      "Environmental Science"
+    ],
+    "modules": [
+      {
+        "id": "21-1",
+        "title": "Orientation, field safety and measurement scope",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, field safety and measurement scope. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-2",
+        "title": "Sampling plans and chain-of-custody concepts",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Sampling plans and chain-of-custody concepts. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-3",
+        "title": "Field measurement: pH, TDS, turbidity",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Field measurement: pH, TDS, turbidity. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-4",
+        "title": "IS 10500 standard; screening vs accredited testing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: IS 10500 standard; screening vs accredited testing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-5",
+        "title": "Site selection and sample collection",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 13.0,
+        "content": "Planning blueprint: Site selection and sample collection. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-6",
+        "title": "Field measurements of local water sources",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 15.0,
+        "content": "Planning blueprint: Field measurements of local water sources. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-7",
+        "title": "Supervised lab analysis (where partner lab exists)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Supervised lab analysis (where partner lab exists). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-8",
+        "title": "Data analysis against IS 10500",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Data analysis against IS 10500. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-9",
+        "title": "Environmental report with limitations statement",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Environmental report with limitations statement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "21-10",
+        "title": "Sampling-documentation review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Sampling-documentation review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A safe supervised water-source comparison, sampling records and analysis. Student screening is not regulatory certification.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "22",
+    "title": "Microbiology & Biotechnology Lab Documentation",
+    "category": "Science & Laboratory",
+    "description": "Build practical skills through microbiology & biotechnology lab documentation. Complete guided work and an evidence-based portfolio mapped to Microbiology and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Lab",
+    "disciplines": [
+      "Microbiology",
+      "Molecular Biology & Biotechnology",
+      "Bio-Chemistry"
+    ],
+    "modules": [
+      {
+        "id": "22-1",
+        "title": "Orientation, biosafety induction and lab rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, biosafety induction and lab rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-2",
+        "title": "Lab record-keeping and aseptic-workflow concepts",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Lab record-keeping and aseptic-workflow concepts. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-3",
+        "title": "Dilution calculations and sample labelling",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Dilution calculations and sample labelling. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-4",
+        "title": "Basic microscopy, data recording and QC",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Basic microscopy, data recording and QC. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-5",
+        "title": "Supervised low-risk method execution",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 17.0,
+        "content": "Planning blueprint: Supervised low-risk method execution. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-6",
+        "title": "Raw observation recording and calculations",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 11.0,
+        "content": "Planning blueprint: Raw observation recording and calculations. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-7",
+        "title": "Host-selected mini-project",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Host-selected mini-project. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-8",
+        "title": "Data and QC review",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 3.0,
+        "content": "Planning blueprint: Data and QC review. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-9",
+        "title": "Scientific report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Scientific report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "22-10",
+        "title": "Notebook audit, supervisor rating and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Notebook audit, supervisor rating and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A low-risk supervised laboratory portfolio with methods, calculations, observations and QC notes; approved facilities required.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "23",
+    "title": "Nutrition Survey & Food Environment",
+    "category": "Health & Wellbeing",
+    "description": "Build practical skills through nutrition survey & food environment. Complete guided work and an evidence-based portfolio mapped to Physiology and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Physiology",
+      "Nutrition",
+      "Food & Nutrition"
+    ],
+    "modules": [
+      {
+        "id": "23-1",
+        "title": "Orientation, consent and health-data privacy",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, consent and health-data privacy. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-2",
+        "title": "Food groups, diet-recall basics and food-label reading",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Food groups, diet-recall basics and food-label reading. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-3",
+        "title": "Survey design for dietary data",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Survey design for dietary data. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-4",
+        "title": "Spreadsheet analysis of dietary data",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Spreadsheet analysis of dietary data. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-5",
+        "title": "Structured dietary assessment tools (24-hour recall, FFQ)",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Structured dietary assessment tools (24-hour recall, FFQ). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-6",
+        "title": "Survey fieldwork",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 16.0,
+        "content": "Planning blueprint: Survey fieldwork. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-7",
+        "title": "Data entry and food-environment observation",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 12.0,
+        "content": "Planning blueprint: Data entry and food-environment observation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-8",
+        "title": "Second-site survey or follow-up round",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second-site survey or follow-up round. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-9",
+        "title": "Food-label and local market audit",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Food-label and local market audit. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-10",
+        "title": "Analysis and Bengali educational resource",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Analysis and Bengali educational resource. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-11",
+        "title": "Nutrition communication toolkit",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Nutrition communication toolkit. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "23-12",
+        "title": "Assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "An anonymised nutrition survey, food-environment report and Bengali educational resource; no diagnostic advice.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "24",
+    "title": "Community Health Communication",
+    "category": "Health & Wellbeing",
+    "description": "Build practical skills through community health communication. Complete guided work and an evidence-based portfolio mapped to Physiology and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Physiology",
+      "Nutrition",
+      "Health Care"
+    ],
+    "modules": [
+      {
+        "id": "24-1",
+        "title": "Orientation, health-message ethics and referral language",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, health-message ethics and referral language. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-2",
+        "title": "Health-literacy writing and source evaluation",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Health-literacy writing and source evaluation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-3",
+        "title": "Audience analysis and campaign planning",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Audience analysis and campaign planning. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-4",
+        "title": "Survey methods and pre/post feedback design",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Survey methods and pre/post feedback design. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-5",
+        "title": "Behaviour-change communication principles",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Behaviour-change communication principles. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-6",
+        "title": "Developing campaign materials",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Developing campaign materials. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-7",
+        "title": "Running pre/post knowledge feedback",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Running pre/post knowledge feedback. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-8",
+        "title": "Second health-topic mini-campaign",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second health-topic mini-campaign. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-9",
+        "title": "Community outreach session",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Community outreach session. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-10",
+        "title": "Feedback analysis and campaign report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Feedback analysis and campaign report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-11",
+        "title": "Campaign evaluation report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Campaign evaluation report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "24-12",
+        "title": "Source/accuracy review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Source/accuracy review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A sourced public-health campaign, Bengali resources and knowledge feedback analysis; no diagnosis or prescriptions.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "25",
+    "title": "Fitness Assessment & Sports Coaching Assistant",
+    "category": "Health & Wellbeing",
+    "description": "Build practical skills through fitness assessment & sports coaching assistant. Complete guided work and an evidence-based portfolio mapped to Physical Education and Sports and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Field / Hybrid",
+    "disciplines": [
+      "Physical Education and Sports",
+      "Physical Education",
+      "Physiology"
+    ],
+    "modules": [
+      {
+        "id": "25-1",
+        "title": "Orientation, safety, first-aid and escalation procedures",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, safety, first-aid and escalation procedures. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-2",
+        "title": "Warm-up and session planning",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Warm-up and session planning. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-3",
+        "title": "Non-clinical fitness measurement",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Non-clinical fitness measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-4",
+        "title": "Participant communication and training logs",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Participant communication and training logs. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-5",
+        "title": "Supervised coaching sessions",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Supervised coaching sessions. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-6",
+        "title": "Participant logs (non-sensitive data)",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Participant logs (non-sensitive data). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-7",
+        "title": "Coaching diary",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 7.0,
+        "content": "Planning blueprint: Coaching diary. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-8",
+        "title": "Programme-evaluation analysis",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Programme-evaluation analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-9",
+        "title": "Evaluation report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Evaluation report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "25-10",
+        "title": "Observed session, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Observed session, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Supervised fitness-session plans, non-sensitive participant logs, coaching diary and evaluation; qualified supervisor required.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "26",
+    "title": "Electronics & Sensor Prototyping",
+    "category": "Technology & Data",
+    "description": "Build practical skills through electronics & sensor prototyping. Complete guided work and an evidence-based portfolio mapped to Physics and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Lab / Hybrid",
+    "disciplines": [
+      "Physics",
+      "Electronics",
+      "Mathematics & Computer Science"
+    ],
+    "modules": [
+      {
+        "id": "26-1",
+        "title": "Orientation, electrical safety and workspace rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, electrical safety and workspace rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-2",
+        "title": "Breadboarding and voltage/current measurement",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Breadboarding and voltage/current measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-3",
+        "title": "Sensor interfacing and microcontroller logic",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Sensor interfacing and microcontroller logic. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-4",
+        "title": "Troubleshooting and data logging",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Troubleshooting and data logging. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-5",
+        "title": "Design and bill of materials",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Design and bill of materials. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-6",
+        "title": "Prototype build",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 13.0,
+        "content": "Planning blueprint: Prototype build. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-7",
+        "title": "Testing and data logging",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Testing and data logging. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-8",
+        "title": "Test analysis and accuracy check",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Test analysis and accuracy check. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-9",
+        "title": "Technical documentation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Technical documentation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "26-10",
+        "title": "Functional demonstration, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Functional demonstration, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A safe low-voltage sensor prototype, circuit diagram, bill of materials, code and test results; partner hardware required.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "27",
+    "title": "Physics Measurement & Experimental Data",
+    "category": "Science & Laboratory",
+    "description": "Build practical skills through physics measurement & experimental data. Complete guided work and an evidence-based portfolio mapped to Mathematics and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Lab / Hybrid",
+    "disciplines": [
+      "Mathematics",
+      "Physics",
+      "Physical Science"
+    ],
+    "modules": [
+      {
+        "id": "27-1",
+        "title": "Orientation and laboratory safety",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation and laboratory safety. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-2",
+        "title": "Uncertainty, calibration and repeated measurement",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Uncertainty, calibration and repeated measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-3",
+        "title": "Graphing and curve fitting",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Graphing and curve fitting. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-4",
+        "title": "Scientific notebook practice",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Scientific notebook practice. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-5",
+        "title": "Advanced error propagation and curve fitting",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Advanced error propagation and curve fitting. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-6",
+        "title": "Experiment 1: supervised measurement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Experiment 1: supervised measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-7",
+        "title": "Experiment 2: supervised measurement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Experiment 2: supervised measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-8",
+        "title": "Experiment 3: supervised measurement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Experiment 3: supervised measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-9",
+        "title": "Error discussion across experiments",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Error discussion across experiments. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-10",
+        "title": "Experiment 4: independently designed measurement",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Experiment 4: independently designed measurement. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-11",
+        "title": "Instrument calibration project",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Instrument calibration project. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-12",
+        "title": "Capstone data-analysis report",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Capstone data-analysis report. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-13",
+        "title": "Comparative analysis across experiments",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Comparative analysis across experiments. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "27-14",
+        "title": "Practical demonstration, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Practical demonstration, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Three supervised measurement experiments, traceable raw observations, uncertainty analysis and capstone report.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "28",
+    "title": "Chemistry Lab Safety & Analytical Practice",
+    "category": "Science & Laboratory",
+    "description": "Build practical skills through chemistry lab safety & analytical practice. Complete guided work and an evidence-based portfolio mapped to Chemistry and related disciplines.",
+    "hours": 120,
+    "price": 1000,
+    "mode": "Lab",
+    "disciplines": [
+      "Chemistry",
+      "Bio-Chemistry",
+      "Industrial Chemistry"
+    ],
+    "modules": [
+      {
+        "id": "28-1",
+        "title": "Orientation, lab safety and waste-handling rules",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, lab safety and waste-handling rules. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-2",
+        "title": "Lab behaviour, labelling, glassware and balance use",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Lab behaviour, labelling, glassware and balance use. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-3",
+        "title": "Solution calculations and calibration concepts",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Solution calculations and calibration concepts. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-4",
+        "title": "Waste segregation and technical reporting",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Waste segregation and technical reporting. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-5",
+        "title": "Supervised analytical exercises",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 19.0,
+        "content": "Planning blueprint: Supervised analytical exercises. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-6",
+        "title": "Titration/measurement documentation",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 9.0,
+        "content": "Planning blueprint: Titration/measurement documentation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-7",
+        "title": "Small comparative-analysis project",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Small comparative-analysis project. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-8",
+        "title": "Calculation and comparison analysis",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 3.0,
+        "content": "Planning blueprint: Calculation and comparison analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-9",
+        "title": "Technical report (no accredited-compliance claims)",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Technical report (no accredited-compliance claims). Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "28-10",
+        "title": "Practical demonstration, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Practical demonstration, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "Supervised analytical exercises, safety checklists, calculations and a comparative-analysis project at an approved lab.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "29",
+    "title": "Tourism, Heritage Interpretation & Itinerary Design",
+    "category": "Arts & Heritage",
+    "description": "Build practical skills through tourism, heritage interpretation & itinerary design. Complete guided work and an evidence-based portfolio mapped to Hospitality and Tourism Management and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Hybrid",
+    "disciplines": [
+      "Hospitality and Tourism Management",
+      "History",
+      "Geography"
+    ],
+    "modules": [
+      {
+        "id": "29-1",
+        "title": "Orientation, responsible-tourism brief",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, responsible-tourism brief. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-2",
+        "title": "Destination research and itinerary construction",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Destination research and itinerary construction. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-3",
+        "title": "Heritage interpretation and visitor communication",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Heritage interpretation and visitor communication. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-4",
+        "title": "Costing, mapping and accessibility",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Costing, mapping and accessibility. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-5",
+        "title": "Responsible-tourism and sustainability planning",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Responsible-tourism and sustainability planning. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-6",
+        "title": "Two/three-day West Bengal itinerary design",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 14.0,
+        "content": "Planning blueprint: Two/three-day West Bengal itinerary design. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-7",
+        "title": "Annotated map and costing sheet",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Annotated map and costing sheet. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-8",
+        "title": "Visitor information pack",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Visitor information pack. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-9",
+        "title": "Second itinerary in a different theme or region",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second itinerary in a different theme or region. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-10",
+        "title": "Site visit and visitor-feedback collection",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Site visit and visitor-feedback collection. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-11",
+        "title": "Heritage interpretation script and final pack",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Heritage interpretation script and final pack. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-12",
+        "title": "Marketing brief and heritage trail leaflet",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Marketing brief and heritage trail leaflet. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "29-13",
+        "title": "Feasibility review, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Feasibility review, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A two- or three-day West Bengal itinerary, annotated map, costing sheet, accessible visitor pack and heritage script.",
+    "draft": true,
+    "extendedDraft": true
+  },
+  {
+    "id": "30",
+    "title": "Small Business Operations, CRM & Retail Analytics",
+    "category": "Business & Finance",
+    "description": "Build practical skills through small business operations, crm & retail analytics. Complete guided work and an evidence-based portfolio mapped to Commerce and related disciplines.",
+    "hours": 60,
+    "price": 500,
+    "mode": "Online / Hybrid",
+    "disciplines": [
+      "Commerce",
+      "Business Administration",
+      "Business Management"
+    ],
+    "modules": [
+      {
+        "id": "30-1",
+        "title": "Orientation, data-privacy and case brief",
+        "type": "Orientation",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Orientation, data-privacy and case brief. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-2",
+        "title": "Customer records and simple CRM processes",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 5.0,
+        "content": "Planning blueprint: Customer records and simple CRM processes. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-3",
+        "title": "Stock sheets and sales analysis",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 6.0,
+        "content": "Planning blueprint: Stock sheets and sales analysis. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-4",
+        "title": "Service scripts and SOP writing",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Service scripts and SOP writing. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-5",
+        "title": "Customer segmentation and basic forecasting",
+        "type": "Skill training",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Customer segmentation and basic forecasting. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-6",
+        "title": "Customer categories and CRM build",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Customer categories and CRM build. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-7",
+        "title": "Stock tracker",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: Stock tracker. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-8",
+        "title": "Sales dashboard",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 10.0,
+        "content": "Planning blueprint: Sales dashboard. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-9",
+        "title": "Second business case for comparison",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Second business case for comparison. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-10",
+        "title": "Service-quality audit and feedback loop",
+        "type": "Field / practical",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Service-quality audit and feedback loop. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-11",
+        "title": "SOP and improvement memo",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 8.0,
+        "content": "Planning blueprint: SOP and improvement memo. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-12",
+        "title": "Improvement roadmap and presentation",
+        "type": "Analysis & artefact",
+        "hours60": 0,
+        "hours120": 0.0,
+        "content": "Planning blueprint: Improvement roadmap and presentation. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      },
+      {
+        "id": "30-13",
+        "title": "Case presentation, assessment and viva",
+        "type": "Report & viva",
+        "hours60": 0,
+        "hours120": 4.0,
+        "content": "Planning blueprint: Case presentation, assessment and viva. Document your practical work, evidence and reflections for supervisor discussion. Detailed lesson material and assessment handouts are in development. Use the AI tutor for guided explanations; it does not replace a qualified supervisor."
+      }
+    ],
+    "deliverable": "A simulated microbusiness operations pack: CRM records, sales analysis, stock tracker, SOP and improvement memo.",
+    "draft": true,
+    "extendedDraft": true
+  }
+]

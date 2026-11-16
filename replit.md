@@ -1,45 +1,52 @@
-# [Project name]
+# Adhyayaan
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An AI-supported, project-based internship learning platform for final-year college students in West Bengal.
 
-## Run & Operate
+## Product requirements
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Support 60/120-hour pathways, practical projects, work logs, portfolio submission and evaluation preparation.
+- See `.agents/memory/` for the user's standing learning and visual-quality requirements.
+
+## Run & operate
+
+- Use managed workflows `artifacts/api-server: API Server` and `artifacts/adhyayaan: web`.
+- `pnpm run typecheck` checks libraries, apps and scripts.
+- `pnpm --filter @workspace/api-spec run codegen` regenerates hooks and validation schemas.
+- `pnpm --filter @workspace/db run push` updates development schema. Production schema changes use the Publish flow.
+- `python3 scripts/import-course-plans.py` imports the supplied workbook archive without extracting archive paths into the project.
+- AI uses Replit AI Integrations for OpenAI; no user API key is needed. Usage consumes Replit credits.
+
+## Source of truth
+
+- API contract: `lib/api-spec/openapi.yaml`.
+- Database: `lib/db/src/schema/learning.ts` and `practice.ts`.
+- Imported catalogue: `artifacts/api-server/src/data/courses.json`.
+- Student UI: `artifacts/adhyayaan/src/pages/`, shared layout in `src/components/app/`.
+- Frontend auth/cache helpers: `artifacts/adhyayaan/src/lib/app.ts`.
+- Backend authentication: `artifacts/api-server/src/lib/auth.ts` and `routes/auth.ts`.
+- Adaptive question generation and learner targeting: `artifacts/api-server/src/lib/adaptive.ts`.
+
+## Architecture and boundaries
+
+- Custom password authentication uses salted scrypt hashes and opaque random session cookies; only token hashes are stored in PostgreSQL. User identity and ownership are server-derived.
+- Public dashboard figures are an explicitly labelled illustrative preview. Actual accounts begin empty.
+- Programmes and modules came from 30 course-build workbooks. These are planning blueprints, not finished accredited teaching materials. Draft hour allocations and extended pathways require academic review.
+- INR500/1000 fees are indicative assumptions from the supplied portfolio, not payment-enabled enrolment. Pathway enrolment does not charge money or establish institutional approval.
+- AI quizzes are formative, not official assessment. Five questions cover all three cognitive levels. Server-side answer keys remain private until submission; prior scores adjust difficulty and wrong answers target weak concepts.
+- Official mentor evaluation, approval workflows, complete lesson content, college acceptance, certificates, payment collection and email password recovery are not implemented. Do not imply that a submitted project has been approved.
+- Project submission requires all applicable modules, logged target hours, a valid project URL and a substantive reflection. Changing submitted work or deleting supporting logs resets submission status.
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- React/Vite, Tailwind, Wouter, React Query; Express 5 and PostgreSQL/Drizzle.
+- OpenAPI/Orval generates typed hooks and Zod 3 schemas. Keep request bodies as named components.
+- SDK client comes from `@workspace/integrations-openai-ai-server`; use server-side calls only.
+- Do not store uploaded file bytes in PostgreSQL. Current projects submit portfolio/repository links, not file uploads.
 
-## Where things live
+## Operational notes
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
-
-## Architecture decisions
-
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- All API traffic goes through `/api`; never hardcode backend ports in browser code.
+- Clear **all** user-specific caches, including adaptive practice, when the session changes.
+- HTTPS session cookies support the embedded preview. Mutation Origin checks protect against cross-site writes.
+- Runtime SQL is parameterized through Drizzle. Never add startup DDL or production migration scripts.
+- After backend changes restart the existing API workflow; frontend changes use the existing web workflow.

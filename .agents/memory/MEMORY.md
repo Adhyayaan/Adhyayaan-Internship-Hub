@@ -1,0 +1,2 @@
+- [Learning principles](learning-principles.md) — cognitive and adaptive learning are the product's core; questionnaires must follow both.
+- [Programme scope](programme-scope.md) — custom auth, visual quality, source-plan caveats and supervised internship requirements.

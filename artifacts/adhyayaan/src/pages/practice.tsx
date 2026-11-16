@@ -1,0 +1,313 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearch } from 'wouter';
+import { useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, ArrowRight, Brain, Check, Layers, Loader2, RotateCcw, Sparkles, Workflow, X } from 'lucide-react';
+import {
+  useListCourses,
+  useListPractice,
+  useStartPractice,
+  useSubmitPractice,
+  getListPracticeQueryKey,
+  type PracticeAttempt,
+} from '@workspace/api-client-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { Empty, ErrorPanel, Meter, PageHeader, SignInWall } from '@/components/app/bits';
+import { errMsg, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
+
+const LEVEL: Record<string, { l: string; bn: string; icon: typeof Brain; cls: string }> = {
+  understand: { l: 'Understand', bn: 'বোঝা', icon: Brain, cls: 'bg-primary/10 text-primary' },
+  apply: { l: 'Apply', bn: 'প্রয়োগ', icon: Workflow, cls: 'bg-accent/10 text-accent' },
+  analyze: { l: 'Analyse', bn: 'বিশ্লেষণ', icon: Layers, cls: 'bg-[hsl(168_40%_36%/.12)] text-[hsl(168_40%_30%)]' },
+};
+const DIFF = ['', 'Foundation', 'Intermediate', 'Advanced'];
+
+function LevelTag({ level }: { level: string }) {
+  const L = LEVEL[level] ?? { l: level, bn: '', icon: Brain, cls: 'bg-secondary' };
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${L.cls}`}>
+      <L.icon className="h-3.5 w-3.5" /> {L.l} {L.bn && <span className="opacity-70">· {L.bn}</span>}
+    </span>
+  );
+}
+
+function DiffDots({ n }: { n: number }) {
+  return (
+    <span className="inline-flex items-center gap-1" aria-label={`Difficulty ${n} of 3`}>
+      {[1, 2, 3].map((i) => <span key={i} className={`h-2 w-2 rounded-full ${i <= n ? 'bg-accent' : 'bg-border'}`} />)}
+      <span className="ml-1.5 text-xs text-muted-foreground">{DIFF[n] ?? n}</span>
+    </span>
+  );
+}
+
+function Runner({ a, title, onDone }: { a: PracticeAttempt; title: string; onDone: () => void }) {
+  const submit = useSubmitPractice();
+  const qc = useQueryClient();
+  const inval = useInvalidateAll();
+  const { toast } = useToast();
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [step, setStep] = useState(0);
+  const [err, setErr] = useState<string | null>(null);
+  const q = a.questions[step];
+  const answered = a.questions.filter((x) => answers[x.id] !== undefined).length;
+  const all = answered === a.questions.length;
+
+  const send = async () => {
+    if (!all) return setErr('Answer all questions before submitting.');
+    setErr(null);
+    try {
+      const res = await submit.mutateAsync({ id: a.id, data: { answers: a.questions.map((x) => ({ questionId: x.id, selectedIndex: answers[x.id] })) } });
+      qc.setQueryData<PracticeAttempt[]>(getListPracticeQueryKey(), (old) => (old ? old.map((o) => (o.id === res.id ? res : o)) : old));
+      await qc.invalidateQueries({ queryKey: getListPracticeQueryKey() });
+      await inval();
+      toast({ title: `Scored ${res.score ?? 0} / ${res.questions.length}` });
+    } catch (e) {
+      setErr(errMsg(e));
+    }
+  };
+
+  return (
+    <section className="ink-card rise overflow-hidden" data-testid={`runner-${a.id}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-secondary/40 px-6 py-4">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">In progress · {a.language === 'bn' ? 'বাংলা' : 'English'}</p>
+          <h2 className="font-display text-xl font-semibold text-primary">{title}</h2>
+        </div>
+        <div className="flex items-center gap-4"><DiffDots n={a.difficulty} /><Button variant="ghost" size="sm" onClick={onDone} data-testid="button-close-runner">Close set</Button></div>
+      </div>
+      <p className="px-6 pt-4 text-xs text-muted-foreground">The question set is saved. Your answer selections are saved only when you submit all five answers.</p>
+      <div className="flex gap-1.5 px-6 pt-5">
+        {a.questions.map((x, i) => (
+          <button key={x.id} onClick={() => setStep(i)} aria-label={`Question ${i + 1}`} data-testid={`button-step-${i}`}
+            className={`h-1.5 flex-1 rounded-full transition-all ${i === step ? 'bg-primary' : answers[x.id] !== undefined ? 'bg-accent' : 'bg-border'}`} />
+        ))}
+      </div>
+      <div key={q.id} className="rise p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-xs text-muted-foreground">Q{step + 1} of {a.questions.length}</span>
+          <LevelTag level={q.cognitiveLevel} />
+          <span className="text-xs text-muted-foreground">Concept: {q.concept}</span>
+        </div>
+        <p className="mt-4 font-display text-2xl leading-snug text-primary" data-testid="text-question">{q.question}</p>
+        <div className="mt-6 grid gap-2.5" role="radiogroup">
+          {q.options.map((o, i) => {
+            const sel = answers[q.id] === i;
+            return (
+              <button key={i} role="radio" aria-checked={sel} onClick={() => setAnswers({ ...answers, [q.id]: i })} data-testid={`button-option-${i}`}
+                className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition-all duration-200 ${sel ? 'border-primary bg-primary/5 -translate-y-0.5' : 'border-border hover:border-primary/40'}`}>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs transition-colors ${sel ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>{String.fromCharCode(65 + i)}</span>
+                <span className="pt-0.5">{o}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4">
+        <Button variant="outline" onClick={() => setStep(step - 1)} disabled={step === 0} data-testid="button-prev"><ArrowLeft className="mr-1 h-4 w-4" />Back</Button>
+        <span className="font-mono text-xs text-muted-foreground">{answered}/{a.questions.length} answered</span>
+        {step < a.questions.length - 1 ? (
+          <Button onClick={() => setStep(step + 1)} data-testid="button-next">Next<ArrowRight className="ml-1 h-4 w-4" /></Button>
+        ) : (
+          <Button onClick={send} disabled={!all || submit.isPending} className="bg-accent hover:bg-accent/90" data-testid="button-submit-practice">
+            {submit.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit for scoring
+          </Button>
+        )}
+      </div>
+      {err && <p className="mx-6 mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive" data-testid="text-practice-error">{err}</p>}
+    </section>
+  );
+}
+
+function Result({ a, title, onClose }: { a: PracticeAttempt; title: string; onClose: () => void }) {
+  const fb = useMemo(() => Object.fromEntries(a.feedback.map((f) => [f.questionId, f])), [a.feedback]);
+  const total = a.questions.length;
+  const score = a.score ?? 0;
+  const dir = a.nextDifficulty > a.difficulty ? 'up' : a.nextDifficulty < a.difficulty ? 'down' : 'same';
+  return (
+    <section className="rise space-y-4" data-testid={`result-${a.id}`}>
+      <div className="relative overflow-hidden rounded-[2rem] bg-primary p-7 text-primary-foreground md:p-9">
+        <div className="alpona-dots absolute inset-0 opacity-20" />
+        <div className="relative flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary-foreground/60">Result · {title}</p>
+            <p className="mt-2 font-display text-7xl font-semibold leading-none" data-testid="text-score">{score}<span className="text-3xl text-primary-foreground/50"> / {total}</span></p>
+          </div>
+          <div className="max-w-sm rounded-2xl bg-primary-foreground/10 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-primary-foreground/60">Next set</p>
+            <p className="mt-1 font-display text-xl">
+              {DIFF[a.nextDifficulty]} <span className="text-sm text-[hsl(40_88%_62%)]">{dir === 'up' ? 'stepping up' : dir === 'down' ? 'easing back' : 'holding steady'}</span>
+            </p>
+            <p className="mt-1 text-sm text-primary-foreground/75" data-testid="text-adaptation">{a.adaptationReason}</p>
+          </div>
+        </div>
+      </div>
+      <p className="rounded-xl border border-dashed border-accent/60 bg-accent/5 p-3 text-sm">Formative practice only, not official grading. Answer keys are AI-generated and can be mistaken; check anything doubtful with your mentor.</p>
+      {a.questions.map((q, i) => {
+        const f = fb[q.id];
+        return (
+          <div key={q.id} className="ink-card p-5" data-testid={`feedback-${q.id}`}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`flex h-6 w-6 items-center justify-center rounded-full ${f?.correct ? 'bg-[hsl(168_40%_36%)] text-primary-foreground' : 'bg-destructive text-destructive-foreground'}`}>{f?.correct ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}</span>
+              <span className="font-mono text-xs text-muted-foreground">Q{i + 1}</span>
+              <LevelTag level={q.cognitiveLevel} />
+              <span className="text-xs text-muted-foreground">{q.concept}</span>
+            </div>
+            <p className="mt-3 font-medium">{q.question}</p>
+            <ul className="mt-3 grid gap-1.5 text-sm">
+              {q.options.map((o, oi) => {
+                const isCorrect = f?.correctIndex === oi;
+                const isMine = f?.selectedIndex === oi;
+                return (
+                  <li key={oi} className={`flex items-start gap-2 rounded-lg px-3 py-2 ${isCorrect ? 'bg-[hsl(168_40%_36%/.12)]' : isMine ? 'bg-destructive/10' : ''}`}>
+                    <span className="font-mono text-xs text-muted-foreground">{String.fromCharCode(65 + oi)}</span>
+                    <span className="flex-1">{o}</span>
+                    {isMine && <span className="text-xs text-muted-foreground">your answer</span>}
+                    {isCorrect && <span className="text-xs font-medium text-[hsl(168_40%_30%)]">key</span>}
+                  </li>
+                );
+              })}
+            </ul>
+            {f?.explanation && <p className="mt-3 border-l-2 border-accent/60 pl-3 text-sm text-muted-foreground">{f.explanation}</p>}
+          </div>
+        );
+      })}
+      <Button variant="outline" onClick={onClose} data-testid="button-close-result">Back to practice</Button>
+    </section>
+  );
+}
+
+export default function Practice() {
+  useTitle('Adaptive practice');
+  const { user, isLoading } = useAuth();
+  const search = useSearch();
+  const courses = useListCourses();
+  const hist = useListPractice({ query: { enabled: !!user, queryKey: getListPracticeQueryKey() } });
+  const start = useStartPractice();
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [courseId, setCourseId] = useState('');
+  const [lang, setLang] = useState<'en' | 'bn'>('en');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [startErr, setStartErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    const c = new URLSearchParams(search).get('course');
+    if (c) setCourseId(c);
+  }, [search]);
+
+  const titles = useMemo(() => Object.fromEntries((courses.data ?? []).map((c) => [c.id, c.title])), [courses.data]);
+  const attempts = useMemo(() => [...(hist.data ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [hist.data]);
+  const scoped = attempts.filter((a) => !courseId || a.courseId === courseId);
+  const finished = scoped.filter((a) => a.score !== null);
+  const avg = finished.length ? finished.reduce((s, a) => s + (a.score ?? 0) / a.questions.length, 0) / finished.length : null;
+  const latest = finished[0];
+  const levelStats = useMemo(() => {
+    const m: Record<string, { c: number; t: number }> = {};
+    finished.forEach((a) => a.feedback.forEach((f) => { const k = f.cognitiveLevel; m[k] ??= { c: 0, t: 0 }; m[k].t++; if (f.correct) m[k].c++; }));
+    return m;
+  }, [finished]);
+  const open = attempts.find((a) => a.id === openId);
+
+  const begin = async () => {
+    if (!courseId) return setStartErr('Choose an internship first.');
+    setStartErr(null);
+    try {
+      const a = await start.mutateAsync({ data: { courseId, language: lang } });
+      qc.setQueryData<PracticeAttempt[]>(getListPracticeQueryKey(), (old) => [a, ...(old ?? []).filter((o) => o.id !== a.id)]);
+      setOpenId(a.id);
+    } catch (e) {
+      setStartErr(errMsg(e));
+      toast({ title: 'Could not create a question set', description: errMsg(e), variant: 'destructive' });
+    }
+  };
+
+  return (
+    <div>
+      <PageHeader kicker="Cognitive & adaptive learning" title={<>Practice that <em className="text-accent">meets you where you are</em></>}
+        sub="Five questions per set, climbing from understanding to application to analysis. Each set adapts its difficulty and focus from your last score on that internship." />
+
+      {isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="practise adaptively" /> : open ? (
+        open.score === null
+          ? <Runner key={open.id} a={open} title={titles[open.courseId] ?? 'Practice set'} onDone={() => setOpenId(null)} />
+          : <Result a={open} title={titles[open.courseId] ?? 'Practice set'} onClose={() => setOpenId(null)} />
+      ) : (
+        <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
+          <div className="space-y-4 self-start lg:sticky lg:top-8">
+            <div className="ink-card space-y-4 p-6">
+              <h2 className="font-display text-xl font-semibold text-primary">New question set</h2>
+              <Select value={courseId} onValueChange={setCourseId}>
+                <SelectTrigger className="h-11" data-testid="select-practice-course"><SelectValue placeholder={courses.isLoading ? 'Loading internships…' : 'Choose an internship'} /></SelectTrigger>
+                <SelectContent>{(courses.data ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+              </Select>
+              {courses.error && <p className="text-sm text-destructive">{errMsg(courses.error)}</p>}
+              <div className="flex rounded-full bg-secondary p-1 text-sm" role="radiogroup" aria-label="Question language">
+                {(['en', 'bn'] as const).map((l) => (
+                  <button key={l} role="radio" aria-checked={lang === l} onClick={() => setLang(l)} data-testid={`button-practice-lang-${l}`}
+                    className={`flex-1 rounded-full py-1.5 transition-colors ${lang === l ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>{l === 'bn' ? 'বাংলা' : 'English'}</button>
+                ))}
+              </div>
+              <Button onClick={begin} disabled={start.isPending || !courseId} className="h-11 w-full bg-accent hover:bg-accent/90" data-testid="button-start-practice">
+                {start.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {start.isPending ? 'Writing your questions…' : 'Generate adaptive set'}
+              </Button>
+              {start.isPending && <p className="text-xs text-muted-foreground" data-testid="status-generating">The AI is building questions around your level and weak concepts. This can take a little while.</p>}
+              {startErr && !start.isPending && <p className="rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive">{startErr}</p>}
+              <p className="text-xs text-muted-foreground">Formative only. AI answer keys can be wrong; verify with your mentor.</p>
+            </div>
+
+            <div className="ink-card p-6" data-testid="panel-metrics">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">{courseId ? 'This internship' : 'All internships'}</p>
+              {finished.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">No scored sets yet. Your first set starts at Foundation level.</p>
+              ) : (
+                <>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div><p className="font-display text-3xl font-semibold text-primary">{finished.length}</p><p className="text-xs text-muted-foreground">scored sets</p></div>
+                    <div><p className="font-display text-3xl font-semibold text-primary">{Math.round((avg ?? 0) * 100)}%</p><p className="text-xs text-muted-foreground">average</p></div>
+                  </div>
+                  {courseId && latest && <div className="mt-3 text-sm">Next set: <DiffDots n={latest.nextDifficulty} /></div>}
+                  <div className="mt-4 space-y-2.5">
+                    {(['understand', 'apply', 'analyze'] as const).filter((k) => levelStats[k]).map((k) => (
+                      <div key={k}><div className="mb-1 flex justify-between text-xs"><span>{LEVEL[k].l}</span><span className="font-mono">{levelStats[k].c}/{levelStats[k].t}</span></div><Meter value={(levelStats[k].c / levelStats[k].t) * 100} tone={k === 'apply' ? 'accent' : 'primary'} /></div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <section>
+            <h2 className="mb-4 font-display text-2xl font-semibold text-primary">History</h2>
+            {hist.isLoading ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-24 rounded-2xl bg-secondary" />)}</div>
+              : hist.error ? <ErrorPanel error={hist.error} onRetry={() => hist.refetch()} />
+              : scoped.length === 0 ? <Empty title="No sets yet" body="Pick an internship and generate your first five questions. Results are saved here so you can revisit the explanations." action={<Button asChild variant="outline" data-testid="link-practice-explore"><Link href="/explore">Browse internships</Link></Button>} />
+              : (
+                <ol className="space-y-3">
+                  {scoped.map((a, i) => (
+                    <li key={a.id}>
+                      <button onClick={() => setOpenId(a.id)} className="ink-card lift rise flex w-full items-center gap-4 p-5 text-left" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} data-testid={`button-attempt-${a.id}`}>
+                        <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl ${a.score === null ? 'bg-secondary text-muted-foreground' : 'bg-primary text-primary-foreground'}`}>
+                          {a.score === null ? <RotateCcw className="h-5 w-5" /> : <><span className="font-display text-xl font-semibold leading-none">{a.score}</span><span className="text-[10px] opacity-70">/ {a.questions.length}</span></>}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">{titles[a.courseId] ?? 'Internship'}</span>
+                          <span className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                            <DiffDots n={a.difficulty} />
+                            <span>{a.language === 'bn' ? 'বাংলা' : 'English'}</span>
+                            <span>{new Date(a.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-sm font-medium text-accent">{a.score === null ? 'Resume' : 'Review'}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}

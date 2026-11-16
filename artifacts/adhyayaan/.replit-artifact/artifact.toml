@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Adhyayaan"
+description = "An AI-supported internship learning platform for college students, with 30 project-based programmes, 60/120-hour pathways, practical portfolios, learning logs and evaluation."
+version = "1.0.0"
+id = "artifacts/adhyayaan"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19871
+
+[services.development]
+run = "pnpm --filter @workspace/adhyayaan run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/adhyayaan", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/adhyayaan/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19871"
+BASE_PATH = "/"
