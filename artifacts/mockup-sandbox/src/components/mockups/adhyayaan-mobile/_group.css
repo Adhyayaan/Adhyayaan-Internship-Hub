@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-card: hsl(var(--card));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+}
+
+:root {
+  --background: 40 45% 95%;
+  --foreground: 232 45% 16%;
+  --border: 38 25% 84%;
+  --card: 42 60% 98%;
+  --primary: 232 55% 28%;
+  --primary-foreground: 40 60% 97%;
+  --secondary: 40 40% 89%;
+  --accent: 12 78% 54%;
+  --accent-foreground: 40 60% 97%;
+  --muted-foreground: 232 14% 42%;
+  --sidebar: 232 52% 18%;
+  --sidebar-foreground: 40 40% 92%;
+  --sidebar-primary: 12 78% 54%;
+  --app-font-sans: 'Bricolage Grotesque', sans-serif;
+  --app-font-serif: 'Fraunces', Georgia, serif;
+  --app-font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.85rem;
+}
+
+.adhyayaan-current {
+  font-family: var(--app-font-sans);
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+.adhyayaan-current .font-display {
+  font-family: var(--app-font-serif);
+}
+.adhyayaan-current .ink-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 1.1rem;
+  box-shadow: 0 1px 0 hsl(232 45% 16%/.04), 0 12px 30px -18px hsl(232 55% 28%/.35);
+}
+.adhyayaan-current .adhya-avatar {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid hsl(var(--accent)/.3);
+  border-radius: 50%;
+  background: linear-gradient(145deg,hsl(40 88% 52%/.32),hsl(var(--secondary)));
+  box-shadow: 0 2px 8px hsl(var(--primary)/.12);
+}
+.adhyayaan-current .adhya-avatar img {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+}
+.adhyayaan-current .adhya-online-dot {
+  position: absolute;
+  right: 0;
+  bottom: .15rem;
+  height: .75rem;
+  width: .75rem;
+  border: 2px solid hsl(var(--card));
+  border-radius: 50%;
+  background: hsl(178 42% 30%);
+}

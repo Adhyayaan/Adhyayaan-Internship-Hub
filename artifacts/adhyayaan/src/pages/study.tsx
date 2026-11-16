@@ -71,7 +71,7 @@ function Cover({ book, signedIn }: { book: StudyBook; signedIn: boolean }) {
         </div>
       </header>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-[1fr_300px]">
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_300px]">
         <EditorialNote note={book.editorialNote} />
         <div className="ink-card p-5" data-testid="card-book-progress">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">Reading record</p>

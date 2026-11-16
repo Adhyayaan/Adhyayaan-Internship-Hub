@@ -1,10 +1,20 @@
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
 import { rateLimit } from "express-rate-limit";
+import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { findStudyModule } from "../lib/study-content";
 import { chapterDiagram, chapterVideo } from "../lib/study-media";
 
 const router: IRouter = Router();
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const mentorAvatarPath = [
+  path.resolve(moduleDir, "../assets/mentor-avatar.png"),
+  path.resolve(moduleDir, "../../assets/mentor-avatar.png"),
+  path.resolve(process.cwd(), "assets/mentor-avatar.png"),
+  path.resolve(process.cwd(), "artifacts/api-server/assets/mentor-avatar.png"),
+].find(existsSync);
+if (!mentorAvatarPath) throw new Error("The Adhya mentor avatar asset is missing.");
 const limit = rateLimit({ windowMs: 60_000, limit: 90, standardHeaders: "draft-7", legacyHeaders: false });
 const videoLimit = rateLimit({
   windowMs: 15 * 60_000, limit: 32, standardHeaders: "draft-7", legacyHeaders: false,
@@ -18,7 +28,7 @@ function protectGeneratedVideo(req: Request, res: Response, next: NextFunction) 
 
 router.get("/study-media/mentor-avatar.png", limit, (_req, res) => {
   res.set("Cache-Control", "public, max-age=86400");
-  res.type("image/png").sendFile(path.resolve(process.cwd(), "assets", "mentor-avatar.png"));
+  res.type("image/png").sendFile(mentorAvatarPath);
 });
 
 router.get("/study-media/01/:file", limit, protectGeneratedVideo, async (req, res): Promise<void> => {

@@ -16,7 +16,7 @@ function routeCourseId(path: string) {
 function Avatar({ small = false }: { small?: boolean }) {
   return (
     <span className={`adhya-avatar ${small ? 'h-10 w-10' : 'h-[4.4rem] w-[4.4rem]'}`} aria-hidden="true">
-      <img src="/api/study-media/mentor-avatar.png" alt="" />
+      <img src={`${import.meta.env.BASE_URL}api/study-media/mentor-avatar.png`} alt="" />
     </span>
   );
 }
