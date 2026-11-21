@@ -25,14 +25,21 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminDirectory,
+  AdminLearnerDetail,
   AiInput,
   AiMessage,
+  AssessmentChoice,
+  AssessmentDraft,
+  AssessmentWorkspace,
   Course,
   Dashboard,
   Enrollment,
   EnrollmentInput,
   EnrollmentUpdate,
   HealthStatus,
+  LearningReport,
+  ListAdminLearnersParams,
   LogInput,
   LoginInput,
   PracticeAnswers,
@@ -75,6 +82,715 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetAssessmentUrl = () => {
+
+
+
+
+  return `/api/assessment`
+}
+
+export const getAssessment = async ( options?: Parameters<typeof customFetch>[1]): Promise<AssessmentWorkspace> => {
+
+  return customFetch<AssessmentWorkspace>(getGetAssessmentUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAssessmentQueryKey = () => {
+    return [
+    `/api/assessment`
+    ] as const;
+    }
+
+
+export const getGetAssessmentQueryOptions = <TData = Awaited<ReturnType<typeof getAssessment>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAssessmentQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAssessment>>> = ({ signal }) => getAssessment({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAssessmentQueryResult = NonNullable<Awaited<ReturnType<typeof getAssessment>>>
+export type GetAssessmentQueryError = ErrorType<void>
+
+
+export function useGetAssessment<TData = Awaited<ReturnType<typeof getAssessment>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAssessment>>,
+          TError,
+          Awaited<ReturnType<typeof getAssessment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAssessment<TData = Awaited<ReturnType<typeof getAssessment>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAssessment>>,
+          TError,
+          Awaited<ReturnType<typeof getAssessment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAssessment<TData = Awaited<ReturnType<typeof getAssessment>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAssessment<TData = Awaited<ReturnType<typeof getAssessment>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAssessmentQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getStartAssessmentUrl = () => {
+
+
+
+
+  return `/api/assessment/attempts`
+}
+
+export const startAssessment = async ( options?: Parameters<typeof customFetch>[1]): Promise<AssessmentDraft> => {
+
+  return customFetch<AssessmentDraft>(getStartAssessmentUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getStartAssessmentMutationKey = () => ['startAssessment'] as const;
+
+export const getStartAssessmentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext> => {
+
+const mutationKey = getStartAssessmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startAssessment>>, void> = () => {
+
+
+          return  startAssessment(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof startAssessment>>>
+
+    export type StartAssessmentMutationError = ErrorType<void>
+
+
+    export const useStartAssessment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof startAssessment>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStartAssessmentMutationOptions(options), queryClient);
+    }
+
+export const getSaveAssessmentAnswerUrl = (id: string,) => {
+
+
+
+
+  return `/api/assessment/attempts/${id}`
+}
+
+export const saveAssessmentAnswer = async (id: string,
+    assessmentChoice: AssessmentChoice, options?: Parameters<typeof customFetch>[1]): Promise<AssessmentDraft> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AssessmentDraft>(getSaveAssessmentAnswerUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(assessmentChoice)
+  }
+);}
+
+
+
+
+
+export const getSaveAssessmentAnswerMutationKey = () => ['saveAssessmentAnswer'] as const;
+
+export const getSaveAssessmentAnswerMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext> => {
+
+const mutationKey = getSaveAssessmentAnswerMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveAssessmentAnswer>>, SaveAssessmentAnswerMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  saveAssessmentAnswer(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveAssessmentAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof saveAssessmentAnswer>>>
+    export type SaveAssessmentAnswerMutationBody = BodyType<AssessmentChoice>
+    export type SaveAssessmentAnswerMutationError = ErrorType<void>
+    export type SaveAssessmentAnswerMutationVariables = {id: string;data: BodyType<AssessmentChoice>}
+
+    export const useSaveAssessmentAnswer = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof saveAssessmentAnswer>>,
+        TError,
+        SaveAssessmentAnswerMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveAssessmentAnswerMutationOptions(options), queryClient);
+    }
+
+export const getSubmitAssessmentUrl = (id: string,) => {
+
+
+
+
+  return `/api/assessment/attempts/${id}/submit`
+}
+
+export const submitAssessment = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<LearningReport> => {
+
+  return customFetch<LearningReport>(getSubmitAssessmentUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSubmitAssessmentMutationKey = () => ['submitAssessment'] as const;
+
+export const getSubmitAssessmentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext> => {
+
+const mutationKey = getSubmitAssessmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitAssessment>>, SubmitAssessmentMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  submitAssessment(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof submitAssessment>>>
+
+    export type SubmitAssessmentMutationError = ErrorType<void>
+    export type SubmitAssessmentMutationVariables = {id: string}
+
+    export const useSubmitAssessment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof submitAssessment>>,
+        TError,
+        SubmitAssessmentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSubmitAssessmentMutationOptions(options), queryClient);
+    }
+
+export const getGetLearningReportUrl = (id: string,) => {
+
+
+
+
+  return `/api/assessment/reports/${id}`
+}
+
+export const getLearningReport = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<LearningReport> => {
+
+  return customFetch<LearningReport>(getGetLearningReportUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLearningReportQueryKey = (id: string,) => {
+    return [
+    `/api/assessment/reports/${id}`
+    ] as const;
+    }
+
+
+export const getGetLearningReportQueryOptions = <TData = Awaited<ReturnType<typeof getLearningReport>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLearningReportQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLearningReport>>> = ({ signal }) => getLearningReport(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetLearningReportQueryResult = NonNullable<Awaited<ReturnType<typeof getLearningReport>>>
+export type GetLearningReportQueryError = ErrorType<void>
+
+
+export function useGetLearningReport<TData = Awaited<ReturnType<typeof getLearningReport>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLearningReport<TData = Awaited<ReturnType<typeof getLearningReport>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLearningReport<TData = Awaited<ReturnType<typeof getLearningReport>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetLearningReport<TData = Awaited<ReturnType<typeof getLearningReport>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetLearningReportQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListAdminLearnersUrl = (params?: ListAdminLearnersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/learners?${stringifiedParams}` : `/api/admin/learners`
+}
+
+export const listAdminLearners = async (params?: ListAdminLearnersParams, options?: Parameters<typeof customFetch>[1]): Promise<AdminDirectory> => {
+
+  return customFetch<AdminDirectory>(getListAdminLearnersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminLearnersQueryKey = (params?: ListAdminLearnersParams,) => {
+    return [
+    `/api/admin/learners`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListAdminLearnersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminLearners>>, TError = ErrorType<void>>(params?: ListAdminLearnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminLearnersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminLearners>>> = ({ signal }) => listAdminLearners(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAdminLearnersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminLearners>>>
+export type ListAdminLearnersQueryError = ErrorType<void>
+
+
+export function useListAdminLearners<TData = Awaited<ReturnType<typeof listAdminLearners>>, TError = ErrorType<void>>(
+ params: undefined |  ListAdminLearnersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminLearners>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminLearners>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminLearners<TData = Awaited<ReturnType<typeof listAdminLearners>>, TError = ErrorType<void>>(
+ params?: ListAdminLearnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminLearners>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminLearners>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminLearners<TData = Awaited<ReturnType<typeof listAdminLearners>>, TError = ErrorType<void>>(
+ params?: ListAdminLearnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListAdminLearners<TData = Awaited<ReturnType<typeof listAdminLearners>>, TError = ErrorType<void>>(
+ params?: ListAdminLearnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminLearners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAdminLearnersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminLearnerUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/learners/${id}`
+}
+
+export const getAdminLearner = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<AdminLearnerDetail> => {
+
+  return customFetch<AdminLearnerDetail>(getGetAdminLearnerUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminLearnerQueryKey = (id: string,) => {
+    return [
+    `/api/admin/learners/${id}`
+    ] as const;
+    }
+
+
+export const getGetAdminLearnerQueryOptions = <TData = Awaited<ReturnType<typeof getAdminLearner>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminLearnerQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminLearner>>> = ({ signal }) => getAdminLearner(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminLearnerQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminLearner>>>
+export type GetAdminLearnerQueryError = ErrorType<void>
+
+
+export function useGetAdminLearner<TData = Awaited<ReturnType<typeof getAdminLearner>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminLearner>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminLearner>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminLearner<TData = Awaited<ReturnType<typeof getAdminLearner>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminLearner>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminLearner>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminLearner<TData = Awaited<ReturnType<typeof getAdminLearner>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAdminLearner<TData = Awaited<ReturnType<typeof getAdminLearner>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminLearnerQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminLearningReportUrl = (id: string,
+    reportId: string,) => {
+
+
+
+
+  return `/api/admin/learners/${id}/reports/${reportId}`
+}
+
+export const getAdminLearningReport = async (id: string,
+    reportId: string, options?: Parameters<typeof customFetch>[1]): Promise<LearningReport> => {
+
+  return customFetch<LearningReport>(getGetAdminLearningReportUrl(id,reportId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminLearningReportQueryKey = (id: string,
+    reportId: string,) => {
+    return [
+    `/api/admin/learners/${id}/reports/${reportId}`
+    ] as const;
+    }
+
+
+export const getGetAdminLearningReportQueryOptions = <TData = Awaited<ReturnType<typeof getAdminLearningReport>>, TError = ErrorType<void>>(id: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminLearningReportQueryKey(id,reportId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminLearningReport>>> = ({ signal }) => getAdminLearningReport(id,reportId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && reportId !== null && reportId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminLearningReportQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminLearningReport>>>
+export type GetAdminLearningReportQueryError = ErrorType<void>
+
+
+export function useGetAdminLearningReport<TData = Awaited<ReturnType<typeof getAdminLearningReport>>, TError = ErrorType<void>>(
+ id: string,
+    reportId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminLearningReport<TData = Awaited<ReturnType<typeof getAdminLearningReport>>, TError = ErrorType<void>>(
+ id: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminLearningReport<TData = Awaited<ReturnType<typeof getAdminLearningReport>>, TError = ErrorType<void>>(
+ id: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAdminLearningReport<TData = Awaited<ReturnType<typeof getAdminLearningReport>>, TError = ErrorType<void>>(
+ id: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminLearningReportQueryOptions(id,reportId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetStudyMediaUrl = (file: string,) => {
 

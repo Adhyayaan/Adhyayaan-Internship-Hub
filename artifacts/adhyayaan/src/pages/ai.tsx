@@ -52,7 +52,7 @@ export default function AiStudio() {
 
   return (
     <div>
-      <PageHeader kicker="AI learning studio" title={<>Ask in <em className="text-accent">Bangla</em> or English</>} sub="Answers can come back in Bangla or English; the interface stays in English. Feedback here is formative only, never an official grade. For scored adaptive practice, use Practice." />
+      <PageHeader kicker="AI learning studio" title={<>Ask in <em className="text-accent">Bangla</em> or English</>} sub="Adhya can use your learning report and recent work to choose examples and hints. Its feedback does not count towards your grade. Go to Practice for scored questions." />
       {isLoading ? <Skeleton className="h-96 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="use the AI studio" /> : (
         <div className="ink-card flex min-h-[60dvh] flex-col overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 border-b bg-secondary/40 p-3">

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { findStudyModule } from "../lib/study-content";
 import { chapterDiagram, chapterVideo } from "../lib/study-media";
 import { getPilotMedia, type PilotFile } from "../lib/pilot-media";
+import { checkAssessment } from "../lib/auth";
 
 const router: IRouter = Router();
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -24,7 +25,7 @@ const videoLimit = rateLimit({
 function protectGeneratedVideo(req: Request, res: Response, next: NextFunction) {
   if (!String(req.params.file).endsWith(".mp4")) { next(); return; }
   if (!req.learner) { res.status(401).json({ error: "Sign in to generate and play narrated lessons." }); return; }
-  videoLimit(req, res, next);
+  checkAssessment(req, res, () => videoLimit(req, res, next));
 }
 
 router.get("/study-media/mentor-avatar.png", limit, (_req, res) => {

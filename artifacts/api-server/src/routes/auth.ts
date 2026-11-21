@@ -20,7 +20,7 @@ router.post("/auth/register", limiter, async (req, res): Promise<void> => {
   const passwordHash = await hashPassword(data.password);
   const [user] = await db.insert(learners).values({
     id: randomUUID(), name: data.name.trim(), email: data.email.toLowerCase().trim(), passwordHash,
-    college: data.college.trim(), discipline: data.discipline.trim(),
+    college: data.college.trim(), discipline: data.discipline.trim(), assessmentRequired: true,
   }).onConflictDoNothing({ target: learners.email }).returning();
   if (!user) { res.status(409).json({ error: "An account with this email already exists. Please sign in." }); return; }
   await createSession(req, res, user.id);

@@ -8,8 +8,8 @@ if (sources.length !== course.modules.length) throw new Error("Study chapters mu
 export const communityBook = GetStudyBookResponse.parse({
   courseId: "01",
   title: "Community Survey & Data Analysis",
-  introduction: "Learn to ask a worthwhile question, listen ethically, work with evidence and explain what your findings can—and cannot—say. This study book follows a fictional library-access survey from first question to an evidence-based recommendation. Read, explore a process, then teach the idea back in your own words. The 60-hour pathway uses chapters 1–10; the 120-hour extension adds chapters 11–16. Most internship hours are practical work, not video viewing.",
-  editorialNote: "Authored instructional draft, not an academically approved textbook. Supervisor review and local institutional ethics, safety and assessment requirements remain essential. Linked resources are further reading, not endorsements or evidence of approval. All worked examples are fictional; never submit them as field evidence. Reading marks and AI feedback do not award internship hours, official grades or certificates. AI-narrated animated mentor videos introduce chapter ideas; they are short learning aids, not full lectures.",
+  introduction: "Learn how to plan a survey, ask for consent, and explain your results. Follow an example about access to a public library. Read each lesson. Try the activity. Then explain the main idea in your own words. For the 60-hour internship, study chapters 1–10. For the 120-hour internship, also study chapters 11–16. Spend most of your internship time on practical work, not on videos.",
+  editorialNote: "This study book is a draft. Your college and supervisor set the rules for ethics, safety and assessment. Use the links for further reading. They do not show college approval. The examples use made-up data. Do not submit them as fieldwork. Reading and AI feedback do not give you internship hours, grades or certificates. Each short video introduces a lesson idea.",
   modules: course.modules.map((m, index) => {
     const s = sources[index]!;
     return {

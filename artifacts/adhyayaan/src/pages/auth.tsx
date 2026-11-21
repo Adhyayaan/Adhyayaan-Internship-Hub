@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CoachMark } from '@/components/app/coach';
-import { authHref, errMsg, safeNext, useAuth, useResetForSession, useTitle } from '@/lib/app';
+import { assessmentHref, authHref, errMsg, safeNext, useAuth, useResetForSession, useTitle } from '@/lib/app';
 
 function useNext() {
   const search = useSearch();
@@ -14,9 +14,9 @@ function useNext() {
 }
 
 const JOURNEY = [
-  { k: 'Understand', bn: 'বোঝা', t: 'Each module opens with a coach that asks before it tells.' },
-  { k: 'Apply', bn: 'প্রয়োগ', t: 'Log real hours. Get reflective prompts on what your hands did.' },
-  { k: 'Analyse', bn: 'বিশ্লেষণ', t: 'Practice adapts to your last score; mistakes become next steps.' },
+  { k: 'Understand', bn: 'বোঝা', t: 'Read the lesson. Ask Adhya when you need an example.' },
+  { k: 'Apply', bn: 'প্রয়োগ', t: 'Use the lesson in your project. Record what you did and learnt.' },
+  { k: 'Analyse', bn: 'বিশ্লেষণ', t: 'Answer practice questions. Your answers help set your next level.' },
 ];
 
 export function AuthSplash() {
@@ -46,7 +46,7 @@ function Frame({ mode, children }: { mode: 'login' | 'register'; children: React
           <div className="max-w-lg">
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[hsl(40_88%_62%)]">Final-year internships · West Bengal</p>
             <h2 className="mt-4 font-display text-5xl font-semibold leading-[1.02] xl:text-6xl">
-              A coach at every <em className="text-[hsl(40_88%_62%)]">step</em>, not in a separate room.
+              Learn, practise and <em className="text-[hsl(40_88%_62%)]">build your project</em>.
             </h2>
             <ol className="mt-10 space-y-3">
               {JOURNEY.map((j, i) => (
@@ -60,7 +60,7 @@ function Frame({ mode, children }: { mode: 'login' | 'register'; children: React
               ))}
             </ol>
           </div>
-          <p className="flex items-center gap-2 text-xs opacity-60"><CoachMark className="h-3.5 w-3.5" /> Coaching answers in Bangla or English. Formative only, never a grade.</p>
+          <p className="flex items-center gap-2 text-xs opacity-60"><CoachMark className="h-3.5 w-3.5" /> Get study help in Bangla or English. It does not count towards your grade.</p>
         </div>
       </div>
 
@@ -138,7 +138,12 @@ function useSignedInRedirect(fallback: string) {
   const { user, isLoading } = useAuth();
   const next = useNext();
   const [, nav] = useLocation();
-  useEffect(() => { if (!isLoading && user) nav(next || fallback, { replace: true }); }, [isLoading, user, next, fallback, nav]);
+  useEffect(() => {
+    if (!isLoading && user) {
+      const destination = next || (user.isAdmin ? '/admin' : fallback);
+      nav(user.assessmentRequired && !user.assessmentCompletedAt && !user.isAdmin ? assessmentHref(destination) : destination, { replace: true });
+    }
+  }, [isLoading, user, next, fallback, nav]);
   return { blocked: isLoading || !!user, next };
 }
 
@@ -152,7 +157,12 @@ export function Login() {
   const [err, setErr] = useState<string | null>(null);
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setErr(null);
-    try { const s = await login.mutateAsync({ data: { email: f.email.trim(), password: f.password } }); reset(s); nav(next || '/', { replace: true }); }
+    try {
+      const s = await login.mutateAsync({ data: { email: f.email.trim(), password: f.password } });
+      reset(s);
+      const destination = next || (s.user?.isAdmin ? '/admin' : '/');
+      nav(s.user?.assessmentRequired && !s.user.assessmentCompletedAt && !s.user.isAdmin ? assessmentHref(destination) : destination, { replace: true });
+    }
     catch (x) { setErr(errMsg(x)); }
   };
   if (blocked && !login.isPending && !login.isSuccess) return <AuthSplash />;
@@ -178,7 +188,7 @@ export function Register() {
   const reg = useRegister();
   const reset = useResetForSession();
   const [, nav] = useLocation();
-  const { blocked, next } = useSignedInRedirect('/explore');
+  const { blocked, next } = useSignedInRedirect('/');
   const [f, setF] = useState({ name: '', email: '', password: '', college: '', discipline: '' });
   const [err, setErr] = useState<string | null>(null);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
@@ -186,15 +196,15 @@ export function Register() {
     e.preventDefault(); setErr(null);
     if (f.name.trim().length < 2) return setErr('Please enter your full name.');
     if (f.password.length < 10) return setErr('Password needs at least 10 characters.');
-    try { const s = await reg.mutateAsync({ data: { ...f, name: f.name.trim(), email: f.email.trim(), college: f.college.trim(), discipline: f.discipline.trim() } }); reset(s); nav(next || '/explore', { replace: true }); }
+    try { const s = await reg.mutateAsync({ data: { ...f, name: f.name.trim(), email: f.email.trim(), college: f.college.trim(), discipline: f.discipline.trim() } }); reset(s); nav(assessmentHref(next), { replace: true }); }
     catch (x) { setErr(errMsg(x)); }
   };
   if (blocked && !reg.isPending && !reg.isSuccess) return <AuthSplash />;
   const pwLen = f.password.length;
   return (
     <Frame mode="register">
-      <h1 className="font-display text-4xl font-semibold leading-tight text-primary">Start your <em className="text-accent">workspace</em>.</h1>
-      <p className="mt-2 text-muted-foreground">Free. Your account starts empty; you build it one honest hour at a time.</p>
+      <h1 className="font-display text-4xl font-semibold leading-tight text-primary">Create your account</h1>
+      <p className="mt-2 text-muted-foreground">It’s free to join. After signup, complete a <Link href="/assessment/guide" className="font-medium text-primary underline underline-offset-2">learning assessment</Link> so we can guide your study.</p>
       <form onSubmit={submit} className="mt-8 space-y-4">
         <Field id="name" label="Full name" minLength={2} maxLength={100} required autoFocus value={f.name} onChange={set('name')} autoComplete="name" />
         <Field id="email" label="Email" type="email" inputMode="email" maxLength={254} required value={f.email} onChange={set('email')} autoComplete="email" placeholder="you@college.ac.in" />

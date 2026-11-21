@@ -6,6 +6,117 @@ info:
 servers:
   - url: /api
 paths:
+  /assessment:
+    get:
+      operationId: getAssessment
+      responses:
+        "200":
+          description: The current questionnaire, own draft, and own saved report history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssessmentWorkspace" }
+        "401": { description: Sign in to view the assessment }
+  /assessment/attempts:
+    post:
+      operationId: startAssessment
+      responses:
+        "200":
+          description: Existing draft or a new draft if there is no open draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssessmentDraft" }
+        "401": { description: Sign in to start }
+  /assessment/attempts/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: saveAssessmentAnswer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssessmentChoice" }
+      responses:
+        "200":
+          description: Saved draft, with answers but no answer key
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssessmentDraft" }
+        "400": { description: Unknown question or answer option }
+        "401": { description: Sign in to save }
+        "404": { description: Attempt not found }
+        "409": { description: Report already submitted }
+  /assessment/attempts/{id}/submit:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: submitAssessment
+      responses:
+        "200":
+          description: Immutable educational report scored from saved answers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearningReport" }
+        "400": { description: Answer every question first }
+        "401": { description: Sign in to submit }
+        "404": { description: Attempt not found }
+  /assessment/reports/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getLearningReport
+      responses:
+        "200":
+          description: Own saved learning report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearningReport" }
+        "401": { description: Sign in to view reports }
+        "404": { description: Report not found }
+  /admin/learners:
+    get:
+      operationId: listAdminLearners
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 120 } }
+        - { name: assessment, in: query, schema: { type: string, enum: [all, completed, pending] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000 } }
+      responses:
+        "200":
+          description: Student directory with platform totals
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminDirectory" }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+  /admin/learners/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getAdminLearner
+      responses:
+        "200":
+          description: Student details and learning activity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminLearnerDetail" }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+        "404": { description: Student not found }
+  /admin/learners/{id}/reports/{reportId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: reportId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getAdminLearningReport
+      responses:
+        "200":
+          description: Audited access to a saved student report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearningReport" }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+        "404": { description: Report not found }
   /study-media/01/{file}:
     parameters:
       - { name: file, in: path, required: true, schema: { type: string, pattern: '^(01-[0-9]{1,2}\.(svg|mp4)|consent-pilot\.(mp4|vtt|jpg))$' } }
@@ -316,6 +427,144 @@ paths:
               schema: { $ref: "#/components/schemas/PracticeAttempt" }
 components:
   schemas:
+    AssessmentQuestion:
+      type: object
+      required: [id, prompt, options]
+      properties:
+        id: { type: string }
+        prompt: { type: string }
+        options: { type: array, items: { type: string } }
+    AssessmentSection:
+      type: object
+      required: [id, title, instructions, questions]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        instructions: { type: string }
+        questions: { type: array, items: { $ref: "#/components/schemas/AssessmentQuestion" } }
+    AssessmentChoice:
+      type: object
+      additionalProperties: false
+      required: [questionId, choice]
+      properties:
+        questionId: { type: string, minLength: 1, maxLength: 30 }
+        choice: { type: integer, minimum: 0, maximum: 4 }
+    AssessmentDraft:
+      type: object
+      required: [id, version, answers, updatedAt]
+      properties:
+        id: { type: string }
+        version: { type: integer }
+        answers: { type: array, items: { $ref: "#/components/schemas/AssessmentChoice" } }
+        updatedAt: { type: string }
+    LearningReportSummary:
+      type: object
+      required: [id, version, completedAt]
+      properties:
+        id: { type: string }
+        version: { type: integer }
+        completedAt: { type: string }
+    AssessmentWorkspace:
+      type: object
+      required: [version, sections, draft, reports]
+      properties:
+        version: { type: integer }
+        sections: { type: array, items: { $ref: "#/components/schemas/AssessmentSection" } }
+        draft:
+          anyOf:
+            - { $ref: "#/components/schemas/AssessmentDraft" }
+            - { type: "null" }
+        reports: { type: array, items: { $ref: "#/components/schemas/LearningReportSummary" } }
+    LearningDimension:
+      type: object
+      required: [id, title, score, maxScore, interpretation, suggestion]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        score: { type: integer }
+        maxScore: { type: integer }
+        interpretation: { type: string }
+        suggestion: { type: string }
+    ReasoningReview:
+      type: object
+      required: [questionId, prompt, selected, correctAnswer, correct, explanation]
+      properties:
+        questionId: { type: string }
+        prompt: { type: string }
+        selected: { type: string }
+        correctAnswer: { type: string }
+        correct: { type: boolean }
+        explanation: { type: string }
+    CareerIdea:
+      type: object
+      required: [title, reason, skills, project, counsellorQuestion]
+      properties:
+        title: { type: string }
+        reason: { type: string }
+        skills: { type: array, items: { type: string } }
+        project: { type: string }
+        counsellorQuestion: { type: string }
+    LearningReport:
+      type: object
+      required: [id, version, completedAt, dimensions, reasoning, strengths, growthAreas, nextSteps, careers, teachingPlan, methodology]
+      properties:
+        id: { type: string }
+        version: { type: integer }
+        completedAt: { type: string }
+        dimensions: { type: array, items: { $ref: "#/components/schemas/LearningDimension" } }
+        reasoning: { type: array, items: { $ref: "#/components/schemas/ReasoningReview" } }
+        strengths: { type: array, items: { type: string } }
+        growthAreas: { type: array, items: { type: string } }
+        nextSteps: { type: array, items: { type: string } }
+        careers: { type: array, items: { $ref: "#/components/schemas/CareerIdea" } }
+        teachingPlan: { type: array, items: { type: string } }
+        methodology: { type: string }
+    AdminLearnerRow:
+      type: object
+      required: [id, name, email, college, discipline, createdAt, assessmentCompletedAt, enrollmentCount]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        college: { type: string }
+        discipline: { type: string }
+        createdAt: { type: string }
+        assessmentCompletedAt: { type: ["string", "null"] }
+        enrollmentCount: { type: integer }
+    AdminDirectory:
+      type: object
+      required: [students, page, pageSize, matchCount, learnerCount, completedCount, enrollmentCount]
+      properties:
+        students: { type: array, items: { $ref: "#/components/schemas/AdminLearnerRow" } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        matchCount: { type: integer }
+        learnerCount: { type: integer }
+        completedCount: { type: integer }
+        enrollmentCount: { type: integer }
+    AdminCourseProgress:
+      type: object
+      required: [courseId, title, completedModules, totalModules, loggedHours, targetHours, projectStatus, practiceCount, practiceAverage, lessonsRead, studyChecks, secureChecks]
+      properties:
+        courseId: { type: string }
+        title: { type: string }
+        completedModules: { type: integer }
+        totalModules: { type: integer }
+        loggedHours: { type: number }
+        targetHours: { type: integer }
+        projectStatus: { type: string }
+        practiceCount: { type: integer }
+        practiceAverage: { type: ["number", "null"] }
+        lessonsRead: { type: integer }
+        studyChecks: { type: integer }
+        secureChecks: { type: integer }
+    AdminLearnerDetail:
+      type: object
+      required: [student, courses, reports]
+      properties:
+        student: { $ref: "#/components/schemas/AdminLearnerRow" }
+        courses: { type: array, items: { $ref: "#/components/schemas/AdminCourseProgress" } }
+        reports: { type: array, items: { $ref: "#/components/schemas/LearningReportSummary" } }
     StudySection:
       type: object
       required: [heading, body]
@@ -454,13 +703,16 @@ components:
         success: { type: boolean }
     User:
       type: object
-      required: [id, name, email, college, discipline]
+      required: [id, name, email, college, discipline, assessmentRequired, assessmentCompletedAt, isAdmin]
       properties:
         id: { type: string }
         name: { type: string }
         email: { type: string }
         college: { type: string }
         discipline: { type: string }
+        assessmentRequired: { type: boolean }
+        assessmentCompletedAt: { type: ["string", "null"] }
+        isAdmin: { type: boolean }
     Session:
       type: object
       required: [user]

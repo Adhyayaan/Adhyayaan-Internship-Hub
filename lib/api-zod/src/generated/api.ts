@@ -8,6 +8,281 @@
 import * as zod from 'zod';
 
 
+export const getAssessmentResponseDraftOneAnswersItemQuestionIdMax = 30;
+
+export const getAssessmentResponseDraftOneAnswersItemChoiceMin = 0;
+export const getAssessmentResponseDraftOneAnswersItemChoiceMax = 4;
+
+
+
+export const GetAssessmentResponse = zod.object({
+  "version": zod.number().int(),
+  "sections": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "questions": zod.array(zod.object({
+  "id": zod.string(),
+  "prompt": zod.string(),
+  "options": zod.array(zod.string())
+}))
+})),
+  "draft": zod.union([zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "answers": zod.array(zod.object({
+  "questionId": zod.string().min(1).max(getAssessmentResponseDraftOneAnswersItemQuestionIdMax),
+  "choice": zod.number().int().min(getAssessmentResponseDraftOneAnswersItemChoiceMin).max(getAssessmentResponseDraftOneAnswersItemChoiceMax)
+})),
+  "updatedAt": zod.string()
+}),zod.null()]),
+  "reports": zod.array(zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string()
+}))
+})
+
+
+export const startAssessmentResponseAnswersItemQuestionIdMax = 30;
+
+export const startAssessmentResponseAnswersItemChoiceMin = 0;
+export const startAssessmentResponseAnswersItemChoiceMax = 4;
+
+
+
+export const StartAssessmentResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "answers": zod.array(zod.object({
+  "questionId": zod.string().min(1).max(startAssessmentResponseAnswersItemQuestionIdMax),
+  "choice": zod.number().int().min(startAssessmentResponseAnswersItemChoiceMin).max(startAssessmentResponseAnswersItemChoiceMax)
+})),
+  "updatedAt": zod.string()
+})
+
+
+export const SaveAssessmentAnswerParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const saveAssessmentAnswerBodyQuestionIdMax = 30;
+
+export const saveAssessmentAnswerBodyChoiceMin = 0;
+export const saveAssessmentAnswerBodyChoiceMax = 4;
+
+
+
+export const SaveAssessmentAnswerBody = zod.object({
+  "questionId": zod.string().min(1).max(saveAssessmentAnswerBodyQuestionIdMax),
+  "choice": zod.number().int().min(saveAssessmentAnswerBodyChoiceMin).max(saveAssessmentAnswerBodyChoiceMax)
+})
+
+export const saveAssessmentAnswerResponseAnswersItemQuestionIdMax = 30;
+
+export const saveAssessmentAnswerResponseAnswersItemChoiceMin = 0;
+export const saveAssessmentAnswerResponseAnswersItemChoiceMax = 4;
+
+
+
+export const SaveAssessmentAnswerResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "answers": zod.array(zod.object({
+  "questionId": zod.string().min(1).max(saveAssessmentAnswerResponseAnswersItemQuestionIdMax),
+  "choice": zod.number().int().min(saveAssessmentAnswerResponseAnswersItemChoiceMin).max(saveAssessmentAnswerResponseAnswersItemChoiceMax)
+})),
+  "updatedAt": zod.string()
+})
+
+
+export const SubmitAssessmentParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const SubmitAssessmentResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string(),
+  "dimensions": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "score": zod.number().int(),
+  "maxScore": zod.number().int(),
+  "interpretation": zod.string(),
+  "suggestion": zod.string()
+})),
+  "reasoning": zod.array(zod.object({
+  "questionId": zod.string(),
+  "prompt": zod.string(),
+  "selected": zod.string(),
+  "correctAnswer": zod.string(),
+  "correct": zod.boolean(),
+  "explanation": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "growthAreas": zod.array(zod.string()),
+  "nextSteps": zod.array(zod.string()),
+  "careers": zod.array(zod.object({
+  "title": zod.string(),
+  "reason": zod.string(),
+  "skills": zod.array(zod.string()),
+  "project": zod.string(),
+  "counsellorQuestion": zod.string()
+})),
+  "teachingPlan": zod.array(zod.string()),
+  "methodology": zod.string()
+})
+
+
+export const GetLearningReportParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const GetLearningReportResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string(),
+  "dimensions": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "score": zod.number().int(),
+  "maxScore": zod.number().int(),
+  "interpretation": zod.string(),
+  "suggestion": zod.string()
+})),
+  "reasoning": zod.array(zod.object({
+  "questionId": zod.string(),
+  "prompt": zod.string(),
+  "selected": zod.string(),
+  "correctAnswer": zod.string(),
+  "correct": zod.boolean(),
+  "explanation": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "growthAreas": zod.array(zod.string()),
+  "nextSteps": zod.array(zod.string()),
+  "careers": zod.array(zod.object({
+  "title": zod.string(),
+  "reason": zod.string(),
+  "skills": zod.array(zod.string()),
+  "project": zod.string(),
+  "counsellorQuestion": zod.string()
+})),
+  "teachingPlan": zod.array(zod.string()),
+  "methodology": zod.string()
+})
+
+
+export const listAdminLearnersQuerySearchMax = 120;
+
+export const listAdminLearnersQueryPageMax = 100000;
+
+
+
+export const ListAdminLearnersQueryParams = zod.object({
+  "search": zod.coerce.string().max(listAdminLearnersQuerySearchMax).optional(),
+  "assessment": zod.enum(['all', 'completed', 'pending']).optional(),
+  "page": zod.coerce.number().int().min(1).max(listAdminLearnersQueryPageMax).optional()
+})
+
+export const ListAdminLearnersResponse = zod.object({
+  "students": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "createdAt": zod.string(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "enrollmentCount": zod.number().int()
+})),
+  "page": zod.number().int(),
+  "pageSize": zod.number().int(),
+  "matchCount": zod.number().int(),
+  "learnerCount": zod.number().int(),
+  "completedCount": zod.number().int(),
+  "enrollmentCount": zod.number().int()
+})
+
+
+export const GetAdminLearnerParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const GetAdminLearnerResponse = zod.object({
+  "student": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "createdAt": zod.string(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "enrollmentCount": zod.number().int()
+}),
+  "courses": zod.array(zod.object({
+  "courseId": zod.string(),
+  "title": zod.string(),
+  "completedModules": zod.number().int(),
+  "totalModules": zod.number().int(),
+  "loggedHours": zod.number(),
+  "targetHours": zod.number().int(),
+  "projectStatus": zod.string(),
+  "practiceCount": zod.number().int(),
+  "practiceAverage": zod.number().nullable(),
+  "lessonsRead": zod.number().int(),
+  "studyChecks": zod.number().int(),
+  "secureChecks": zod.number().int()
+})),
+  "reports": zod.array(zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string()
+}))
+})
+
+
+export const GetAdminLearningReportParams = zod.object({
+  "id": zod.coerce.string().uuid(),
+  "reportId": zod.coerce.string().uuid()
+})
+
+export const GetAdminLearningReportResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string(),
+  "dimensions": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "score": zod.number().int(),
+  "maxScore": zod.number().int(),
+  "interpretation": zod.string(),
+  "suggestion": zod.string()
+})),
+  "reasoning": zod.array(zod.object({
+  "questionId": zod.string(),
+  "prompt": zod.string(),
+  "selected": zod.string(),
+  "correctAnswer": zod.string(),
+  "correct": zod.boolean(),
+  "explanation": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "growthAreas": zod.array(zod.string()),
+  "nextSteps": zod.array(zod.string()),
+  "careers": zod.array(zod.object({
+  "title": zod.string(),
+  "reason": zod.string(),
+  "skills": zod.array(zod.string()),
+  "project": zod.string(),
+  "counsellorQuestion": zod.string()
+})),
+  "teachingPlan": zod.array(zod.string()),
+  "methodology": zod.string()
+})
+
+
 export const getStudyMediaPathFileRegExp = new RegExp('^(01-[0-9]{1,2}\\.(svg|mp4)|consent-pilot\\.(mp4|vtt|jpg))$');
 
 
@@ -180,7 +455,10 @@ export const GetSessionResponse = zod.object({
   "name": zod.string(),
   "email": zod.string(),
   "college": zod.string(),
-  "discipline": zod.string()
+  "discipline": zod.string(),
+  "assessmentRequired": zod.boolean(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "isAdmin": zod.boolean()
 }),zod.null()])
 })
 
@@ -213,7 +491,10 @@ export const RegisterResponse = zod.object({
   "name": zod.string(),
   "email": zod.string(),
   "college": zod.string(),
-  "discipline": zod.string()
+  "discipline": zod.string(),
+  "assessmentRequired": zod.boolean(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "isAdmin": zod.boolean()
 }),zod.null()])
 })
 
@@ -236,7 +517,10 @@ export const LoginResponse = zod.object({
   "name": zod.string(),
   "email": zod.string(),
   "college": zod.string(),
-  "discipline": zod.string()
+  "discipline": zod.string(),
+  "assessmentRequired": zod.boolean(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "isAdmin": zod.boolean()
 }),zod.null()])
 })
 
@@ -304,7 +588,10 @@ export const GetDashboardResponse = zod.object({
   "name": zod.string(),
   "email": zod.string(),
   "college": zod.string(),
-  "discipline": zod.string()
+  "discipline": zod.string(),
+  "assessmentRequired": zod.boolean(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "isAdmin": zod.boolean()
 }),zod.null()]),
   "stats": zod.object({
   "activeInternships": zod.number().int(),

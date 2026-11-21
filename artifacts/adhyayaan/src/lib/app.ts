@@ -48,7 +48,7 @@ export function useInvalidateAll() {
 export function useResetForSession() {
   const qc = useQueryClient();
   return (session: Session) => {
-    qc.removeQueries({ predicate: (q) => typeof q.queryKey[0] === 'string' && q.queryKey[0].startsWith('/api/study/') });
+    qc.removeQueries({ predicate: (q) => typeof q.queryKey[0] === 'string' && /^\/api\/(study\/|assessment(?:\/|$)|admin\/)/.test(q.queryKey[0]) });
     [getGetDashboardQueryKey(), getListEnrollmentsQueryKey(), getListLogsQueryKey(), getListAiMessagesQueryKey(), getListPracticeQueryKey()].forEach(
       (k) => qc.removeQueries({ queryKey: k }),
     );
@@ -95,4 +95,10 @@ export function safeNext(raw: string | null | undefined, fallback = '/'): string
 export function authHref(kind: 'login' | 'register', next?: string | null) {
   const n = safeNext(next, '');
   return n && n !== '/' ? `/${kind}?next=${encodeURIComponent(n)}` : `/${kind}`;
+}
+
+export function assessmentHref(next?: string | null) {
+  const n = safeNext(next, '/');
+  if (/^\/assessment(?:\?|#|$)/.test(n)) return n;
+  return n !== '/' && !/^\/assessment(?:[/?#]|$)/.test(n) ? `/assessment?next=${encodeURIComponent(n)}` : '/assessment';
 }

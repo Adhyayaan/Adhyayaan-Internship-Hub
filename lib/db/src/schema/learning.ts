@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, doublePrecision, jsonb, uniqueIndex, date } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, doublePrecision, jsonb, uniqueIndex, date, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const learners = pgTable("learners", {
@@ -8,6 +8,9 @@ export const learners = pgTable("learners", {
   passwordHash: text("password_hash").notNull(),
   college: text("college").notNull().default(""),
   discipline: text("discipline").notNull().default(""),
+  assessmentRequired: boolean("assessment_required").notNull().default(false),
+  assessmentCompletedAt: timestamp("assessment_completed_at", { withTimezone: true }),
+  role: text("role", { enum: ["student", "admin"] }).notNull().default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 export const learnerSessions = pgTable("learner_sessions", {

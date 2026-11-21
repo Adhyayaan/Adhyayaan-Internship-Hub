@@ -15,7 +15,11 @@ declare global {
 }
 
 export function publicUser(user: Learner) {
-  return { id: user.id, name: user.name, email: user.email, college: user.college, discipline: user.discipline };
+  return {
+    id: user.id, name: user.name, email: user.email, college: user.college, discipline: user.discipline,
+    assessmentRequired: user.assessmentRequired, assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
+    isAdmin: user.role === "admin",
+  };
 }
 
 export async function hashPassword(password: string) {
@@ -66,4 +70,19 @@ export async function loadLearner(req: Request, _res: Response, next: NextFuncti
 export function requireLearner(req: Request, res: Response, next: NextFunction) {
   if (!req.learner) { res.status(401).json({ error: "Please sign in to save your learning progress." }); return; }
   next();
+}
+
+export function checkAssessment(req: Request, res: Response, next: NextFunction) {
+  if (req.learner?.assessmentRequired && !req.learner.assessmentCompletedAt) {
+    res.status(403).json({ error: "Complete your learning assessment first.", code: "ASSESSMENT_REQUIRED" });
+    return;
+  }
+  next();
+}
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  requireLearner(req, res, () => {
+    if (req.learner?.role !== "admin") { res.status(403).json({ error: "Administrator access is required." }); return; }
+    next();
+  });
 }

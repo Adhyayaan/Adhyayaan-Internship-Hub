@@ -13,6 +13,7 @@ An AI-supported, project-based internship learning platform for final-year colle
 - `pnpm run typecheck` checks libraries, apps and scripts.
 - `pnpm --filter @workspace/api-spec run codegen` regenerates hooks and validation schemas.
 - `pnpm --filter @workspace/db run push` updates development schema. Production schema changes use the Publish flow.
+- `node lib/db/scripts/check-learning-assessment.mjs` checks the running development API against synthetic accounts. It removes the accounts and their test records when it finishes. Only run it with the development database and preview.
 - `python3 scripts/import-course-plans.py` imports the supplied workbook archive without extracting archive paths into the project.
 - AI uses Replit AI Integrations for OpenAI; no user API key is needed. Usage consumes Replit credits.
 
@@ -52,4 +53,13 @@ An AI-supported, project-based internship learning platform for final-year colle
 - HTTPS session cookies support the embedded preview. Mutation Origin checks protect against cross-site writes.
 - Runtime SQL is parameterized through Drizzle. Never add startup DDL or production migration scripts.
 - After backend changes restart the existing API workflow; frontend changes use the existing web workflow.
+- New students must submit the learning assessment once. Accounts that were already present when the schema was applied can continue without taking it. Do not infer this distinction from signup dates or browser state.
+- Learning reports are versioned educational snapshots, not IQ scores. Only study guidance goes to the AI personalisation prompt. Report reads through the admin panel are logged; drafts are never sent to the admin panel.
+
+## Admin access
+
+- Public signup creates a student account. No existing account is promoted by default. Use a separate account for administration.
+- Ask the intended administrator to sign into that account and obtain its account `id` from `/api/auth/me`. Verify account ownership outside the app before granting access; the app does not verify email ownership.
+- For development, run `pnpm --filter @workspace/db run admin-access grant ACCOUNT_ID` in the workspace shell after the schema is applied. To remove access, use `revoke` in place of `grant`. Use the account ID, not the email address. Sign in again to open **Admin** at `/admin`. The server checks access on each request.
+- Provision production admin accounts separately after publishing the schema, using your production database's authorised operator access. A development admin grant does not grant access in production. Do not copy keys or database URLs into chat.
 - Study clips are reproducible H.264 summaries rendered serially with `ffmpeg` and DejaVu Sans into a disposable temporary cache; no uploaded footage or persistent media store is required. Render failures are explicit and the transcript remains readable. Retain the renderer's runtime dependencies when publishing. App Storage provisioning failed during this build; do not assume it is configured.

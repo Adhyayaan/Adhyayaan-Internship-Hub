@@ -5,6 +5,136 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+export interface AssessmentQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+}
+
+export interface AssessmentSection {
+  id: string;
+  title: string;
+  instructions: string;
+  questions: AssessmentQuestion[];
+}
+
+export interface AssessmentChoice {
+  /**
+     * @minLength 1
+     * @maxLength 30
+     */
+  questionId: string;
+  /**
+     * @minimum 0
+     * @maximum 4
+     */
+  choice: number;
+}
+
+export interface AssessmentDraft {
+  id: string;
+  version: number;
+  answers: AssessmentChoice[];
+  updatedAt: string;
+}
+
+export interface LearningReportSummary {
+  id: string;
+  version: number;
+  completedAt: string;
+}
+
+export interface AssessmentWorkspace {
+  version: number;
+  sections: AssessmentSection[];
+  draft: AssessmentDraft | null;
+  reports: LearningReportSummary[];
+}
+
+export interface LearningDimension {
+  id: string;
+  title: string;
+  score: number;
+  maxScore: number;
+  interpretation: string;
+  suggestion: string;
+}
+
+export interface ReasoningReview {
+  questionId: string;
+  prompt: string;
+  selected: string;
+  correctAnswer: string;
+  correct: boolean;
+  explanation: string;
+}
+
+export interface CareerIdea {
+  title: string;
+  reason: string;
+  skills: string[];
+  project: string;
+  counsellorQuestion: string;
+}
+
+export interface LearningReport {
+  id: string;
+  version: number;
+  completedAt: string;
+  dimensions: LearningDimension[];
+  reasoning: ReasoningReview[];
+  strengths: string[];
+  growthAreas: string[];
+  nextSteps: string[];
+  careers: CareerIdea[];
+  teachingPlan: string[];
+  methodology: string;
+}
+
+export interface AdminLearnerRow {
+  id: string;
+  name: string;
+  email: string;
+  college: string;
+  discipline: string;
+  createdAt: string;
+  /** @nullable */
+  assessmentCompletedAt: string | null;
+  enrollmentCount: number;
+}
+
+export interface AdminDirectory {
+  students: AdminLearnerRow[];
+  page: number;
+  pageSize: number;
+  matchCount: number;
+  learnerCount: number;
+  completedCount: number;
+  enrollmentCount: number;
+}
+
+export interface AdminCourseProgress {
+  courseId: string;
+  title: string;
+  completedModules: number;
+  totalModules: number;
+  loggedHours: number;
+  targetHours: number;
+  projectStatus: string;
+  practiceCount: number;
+  /** @nullable */
+  practiceAverage: number | null;
+  lessonsRead: number;
+  studyChecks: number;
+  secureChecks: number;
+}
+
+export interface AdminLearnerDetail {
+  student: AdminLearnerRow;
+  courses: AdminCourseProgress[];
+  reports: LearningReportSummary[];
+}
+
 export interface StudySection {
   heading: string;
   body: string;
@@ -187,6 +317,10 @@ export interface User {
   email: string;
   college: string;
   discipline: string;
+  assessmentRequired: boolean;
+  /** @nullable */
+  assessmentCompletedAt: string | null;
+  isAdmin: boolean;
 }
 
 export interface Session {
@@ -441,4 +575,26 @@ export interface PracticeAttempt {
   feedback: PracticeFeedback[];
   createdAt: string;
 }
+
+export type ListAdminLearnersParams = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+assessment?: ListAdminLearnersAssessment;
+/**
+ * @minimum 1
+ * @maximum 100000
+ */
+page?: number;
+};
+
+export type ListAdminLearnersAssessment = typeof ListAdminLearnersAssessment[keyof typeof ListAdminLearnersAssessment];
+
+
+export const ListAdminLearnersAssessment = {
+  all: 'all',
+  completed: 'completed',
+  pending: 'pending',
+} as const;
 

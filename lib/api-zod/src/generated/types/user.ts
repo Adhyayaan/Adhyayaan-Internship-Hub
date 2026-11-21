@@ -12,4 +12,8 @@ export interface User {
   email: string;
   college: string;
   discipline: string;
+  assessmentRequired: boolean;
+  /** @nullable */
+  assessmentCompletedAt: string | null;
+  isAdmin: boolean;
 }

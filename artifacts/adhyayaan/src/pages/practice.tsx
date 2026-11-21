@@ -273,11 +273,11 @@ export default function Practice() {
 
   return (
     <div>
-      <PageHeader kicker="Cognitive & adaptive learning" title={<>Practice that <em className="text-accent">meets you where you are</em></>}
-        sub="Five questions per set, climbing from understanding to application to analysis. Each set adapts its difficulty and focus from your last score on that internship." />
+      <PageHeader kicker="Cognitive & adaptive learning" title="Practice at your level"
+        sub="Each set has five questions. Explain an idea, use it in a new situation, and check the evidence. Your learning report can guide your first set. After that, your practice answers guide the next set." />
 
       {isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : !user ? <SignInWall what="practise adaptively" /> : enrollments.isLoading ? <Skeleton className="h-80 rounded-3xl bg-secondary" /> : enrollments.error ? <ErrorPanel error={enrollments.error} onRetry={() => enrollments.refetch()} /> : enrolledCourses.length === 0 ? (
-        <Empty title="Choose an internship to begin" body="Adaptive practice is available for internships you have enrolled in. Browse the internships, then start a 60- or 120-hour learning pathway to unlock course-specific questions."
+        <Empty title="Choose an internship to begin" body="Enrol in an internship to get practice questions for that course."
           action={<Button asChild variant="outline" data-testid="link-practice-explore"><Link href="/explore">Browse internships</Link></Button>} />
       ) : open ? (
         open.score === null

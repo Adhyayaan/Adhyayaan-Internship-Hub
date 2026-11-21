@@ -1,0 +1,1 @@
+export const plainLanguage = "Use plain language for Indian college students. Keep sentences short. Use familiar words and active voice. Give one action per step. Use the same term for the same idea. Keep needed technical terms and define them the first time. Do not use idioms, ornate phrases or vague praise. Keep safety, consent and academic terms precise.";

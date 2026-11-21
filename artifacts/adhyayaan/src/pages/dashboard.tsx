@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { Coach, CoachMark, CoachToggle } from '@/components/app/coach';
 import type { Dashboard as DashboardData } from '@workspace/api-client-react';
-import { ArrowRight, Eye, Sparkles } from 'lucide-react';
+import { ArrowRight, ClipboardList, Eye, Sparkles } from 'lucide-react';
 import { useGetDashboard } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,7 +35,7 @@ export default function Dashboard() {
             <p className="mt-4 max-w-md text-primary-foreground/75">
               {d?.preview
                 ? 'You are looking at an illustrative sample pathway, not your own account. Sign in to start a real one — new accounts begin empty.'
-                : 'Pick up where you left off: mark modules, log your hours, and open the coach on any module, in Bangla or English.'}
+                : 'Continue your lessons or log your work hours. Ask Adhya for help in Bangla or English.'}
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {d?.preview ? (
@@ -54,6 +54,19 @@ export default function Dashboard() {
           <img src={`${import.meta.env.BASE_URL}hero.png`} alt="Illustration of a student studying beneath a krishnachura tree" className="h-64 w-full object-cover md:h-full md:max-h-[420px]" />
         </div>
       </section>
+
+      {d?.user && (
+        <section aria-labelledby="today-assessment" className="ink-card mb-8 flex flex-wrap items-center gap-4 p-4 sm:p-6">
+          <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent"><ClipboardList className="h-5 w-5" /></span>
+          <div className="min-w-0 grow basis-52">
+            <h2 id="today-assessment" className="text-xl font-semibold text-primary">{d.user.assessmentCompletedAt ? 'Your learning report' : 'Take your learning assessment'}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{d.user.assessmentCompletedAt ? 'See your study suggestions and career ideas. Adhya uses your report to adapt its help.' : 'Find study habits to practise and career paths to explore. You can pause and come back later.'}</p>
+          </div>
+          <Button asChild className="max-w-full" variant={d.user.assessmentCompletedAt ? 'outline' : 'default'}>
+            <Link href={d.user.assessmentCompletedAt ? '/profile#learning-reports' : '/assessment'}>{d.user.assessmentCompletedAt ? 'View learning report' : 'Start or resume'}<ArrowRight aria-hidden className="ml-2 h-4 w-4" /></Link>
+          </Button>
+        </section>
+      )}
 
       {q.isLoading ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-2xl bg-secondary" />)}</div>
@@ -84,7 +97,7 @@ export default function Dashboard() {
                 {!d.preview && <Link href="/my-learning" className="text-sm text-accent hover:underline" data-testid="link-all-learning">See all</Link>}
               </div>
               {d.enrollments.length === 0 ? (
-                <Empty title="Your shelf is empty — for now" body="Choose an internship blueprint and a 60 or 120 hour pathway. Enrollment is a free learning preview, not a fee or institutional approval." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
+                <Empty title="You have not joined an internship yet" body="Choose an internship plan for 60 or 120 hours. It is free to enrol. Your college must still approve your internship." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
               ) : (
                 <div className="space-y-3">
                   {d.enrollments.map((e) => {
