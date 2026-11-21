@@ -164,16 +164,16 @@ export function AdhyaGuide() {
     <aside className={`adhya-dock ${open ? 'adhya-dock-open' : ''}`} aria-label="Adhya learning mentor">
       {open ? (
         <section className="adhya-panel" role="dialog" aria-modal="false" aria-labelledby="adhya-title" data-testid="panel-adhya">
-          <header className="flex items-start gap-3 border-b border-primary/10 px-4 py-3">
+          <header className="flex items-start gap-3 border-b border-primary/10 bg-primary px-4 py-3 text-primary-foreground">
             <Avatar small />
             <div className="min-w-0 flex-1">
-              <p className="font-mono text-[10px] uppercase tracking-[.17em] text-accent">Your learning companion</p>
-              <h2 id="adhya-title" ref={headingRef} tabIndex={-1} className="font-display text-xl font-semibold text-primary focus:outline-none">Adhya</h2>
-              <p className="truncate text-xs text-muted-foreground">Here with you · {contextLabel}</p>
+              <p className="font-mono text-[10px] uppercase tracking-[.17em] text-[hsl(var(--turmeric))]">Your learning companion</p>
+              <h2 id="adhya-title" ref={headingRef} tabIndex={-1} className="font-display text-xl font-semibold text-primary-foreground focus:outline-none">Adhya</h2>
+              <p className="truncate text-xs text-primary-foreground/75">Here with you · {contextLabel}</p>
             </div>
             <div className="flex gap-1">
-              <button type="button" onClick={() => { setOpen(false); setMinimized(true); }} aria-label="Minimize Adhya" className="rounded-lg p-2 text-muted-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="button-minimize-adhya"><Minimize2 className="h-4 w-4" /></button>
-              <button type="button" onClick={() => { setOpen(false); setMinimized(false); }} aria-label="Close Adhya" className="rounded-lg p-2 text-muted-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="button-close-adhya"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => { setOpen(false); setMinimized(true); }} aria-label="Minimize Adhya" className="rounded-lg p-2 text-primary-foreground/85 hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" data-testid="button-minimize-adhya"><Minimize2 className="h-4 w-4" /></button>
+              <button type="button" onClick={() => { setOpen(false); setMinimized(false); }} aria-label="Close Adhya" className="rounded-lg p-2 text-primary-foreground/85 hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" data-testid="button-close-adhya"><X className="h-4 w-4" /></button>
             </div>
           </header>
           <div className="flex items-center justify-between px-4 pt-3">
