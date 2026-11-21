@@ -19,3 +19,9 @@ The user wants the next question to adapt to previous answers, and a retake no m
 **Why:** The user wants assessment paths to reflect student responses rather than give everyone the same test, and wants retakes spaced apart.
 
 **How to apply:** Keep the server as the source of truth for question paths and retake eligibility. Preserve submitted reports and saved drafts when introducing a new question version. Explain that scores on different paths are not directly comparable.
+
+The user supplied a 500-item student assessment draft as a source for clearer test questions and says its current wording and some questions are unclear or improper.
+
+**Why:** They want the test to use this material after its questions are improved, rather than copying unclear items unchanged.
+
+**How to apply:** Select and rewrite items into simple, fair questions. Do not treat the draft as a validated IQ or personality test; its situational-choice section has no validated scoring key.

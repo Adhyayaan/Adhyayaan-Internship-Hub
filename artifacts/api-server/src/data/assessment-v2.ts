@@ -4,7 +4,7 @@ import { assessmentV1 } from "./assessment-v1";
 const [reasoning, habits, confidence, motivation, interests] = assessmentV1.sections;
 const frequency = habits!.questions[0]!.options;
 const interest = interests!.questions[0]!.options;
-export type Item = { id: string; prompt: string; options: readonly string[]; correct?: number; explanation?: string; reverse?: boolean; group?: typeof assessmentV1.interests[number]["group"] };
+export type Item = { id: string; prompt: string; options: readonly string[]; correct?: number; explanation?: string; reverse?: boolean; group?: typeof assessmentV1.interests[number]["group"]; followUpNotes?: string[] };
 export type Slot = Item | readonly [Item, Item];
 const pair = (first: Item, second: Item): Slot => [first, second];
 const reason = (id: string, prompt: string, options: string[], correct: number, explanation: string): Item =>
@@ -100,6 +100,7 @@ export const assessmentV2 = {
 export function selectItem(slot: Slot, previous: Item | undefined, choice: number | undefined): Item {
   if (!("length" in slot)) return slot;
   if (!previous || choice === undefined) throw new Error("Adaptive follow-up has no previous answer.");
+  if (previous.id.startsWith("sj")) return slot[choice % 2];
   const high = previous.correct !== undefined ? choice === previous.correct : choice >= 3;
   return slot[high ? 1 : 0];
 }

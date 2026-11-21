@@ -68,6 +68,14 @@ export function scoreAssessment(id: string, version: number, completedAt: Date, 
   const top = careers.filter(c => c.score >= careers[1]!.score);
   const habitsScore = dimensions[1]!.score;
   const confidenceScore = dimensions[2]!.score;
+  const scenarioNotes = path.sections.some(s => s.id === "choices")
+    ? ["sj1", "sj3", "sj5"].flatMap(questionId => {
+      const question = items("choices").find(q => q.id === questionId);
+      const choice = values.get(questionId);
+      if (!question || choice === undefined) return [];
+      const note = question.followUpNotes?.[choice];
+      return note ? [`${note} This is a reflection, not a score.`] : [];
+    }) : [];
   return {
     id, version, completedAt: completedAt.toISOString(), dimensions, reasoning, strengths,
     growthAreas: priorities.map(d => `${d.title}: ${d.suggestion}`),
@@ -80,8 +88,9 @@ export function scoreAssessment(id: string, version: number, completedAt: Date, 
       correct >= 5 ? "Start with a short example, then ask me to apply it in a new situation." : "Show me one example with clear steps. Check my understanding before adding a harder task.",
       habitsScore < 75 ? "Ask me to recall the main idea without notes. Suggest a short review the next day." : "Ask me to explain my reasoning and compare it with a different method.",
       confidenceScore < 75 ? "Offer one hint at a time. Let me try the next step before giving the full explanation." : "Give me time to try a new question on my own, then offer a hint if I need one.",
+      ...scenarioNotes,
     ],
-    methodology: "Reasoning: one point for each correct answer. Study habits, confidence and motivation: average of three answers, scaled from 0 to 100. The last-day review item has a reverse score. Interests suggest activities to try, not careers you must choose. This is not an IQ test or a health assessment. "
+    methodology: "Reasoning: one point for each correct answer. Study habits, confidence and motivation: average of three answers, scaled from 0 to 100. The last-day review item has a reverse score. Scenario choices are not scored as right or wrong; they help guide questions and study suggestions. Interests suggest activities to try, not careers you must choose. This is not an IQ test or a health assessment. "
       + (version === 1 ? "Scores depend on your answers today. If you retake the same version, you may remember the questions."
         : "Your answers guide which follow-up questions you see. Scores describe your answers on this path. Do not use them to compare students or attempts with different questions."),
   };

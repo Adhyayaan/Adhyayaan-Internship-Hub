@@ -1,6 +1,7 @@
 import type { AssessmentChoice } from "@workspace/api-zod";
 import { assessmentV1 } from "../data/assessment-v1";
 import { assessmentV2, selectItem, type Item, type Slot } from "../data/assessment-v2";
+import { assessmentV3 } from "../data/assessment-v3";
 
 const legacyItems = [
   assessmentV1.reasoning, assessmentV1.habits, assessmentV1.confidence,
@@ -12,11 +13,12 @@ const legacySections = assessmentV1.sections.map(({ questions, ...section }) => 
 }));
 
 type Section = { id: string; title: string; instructions: string; slots: Slot[] };
-export const currentVersion = assessmentV2.version;
+export const currentVersion = assessmentV3.version;
 
 function sectionsFor(version: number): Section[] {
   if (version === assessmentV1.version) return legacySections;
   if (version === assessmentV2.version) return assessmentV2.sections;
+  if (version === assessmentV3.version) return assessmentV3.sections;
   throw new Error("Unknown assessment version.");
 }
 

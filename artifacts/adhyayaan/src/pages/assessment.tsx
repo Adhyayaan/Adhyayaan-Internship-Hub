@@ -158,7 +158,7 @@ function Intro({ userId, workspace, required, next, onRun }: { userId: string; w
 
       <ol className="rise space-y-2 text-[0.95rem]" style={{ animationDelay: '100ms' }}>
         <li className="flex gap-3"><Step n={1} />{workspace.version === 1 ? 'Finish the original version of your saved assessment.' : 'Read each question. Your answers help choose the questions that follow.'}</li>
-        <li className="flex gap-3"><Step n={2} />Choose the best answer for reasoning questions. For the other questions, choose what fits you.</li>
+        <li className="flex gap-3"><Step n={2} />Choose the best answer for reasoning questions. For study and career questions, choose what fits you. Scenario answers have no right or wrong score.</li>
         <li className="flex gap-3"><Step n={3} />Review your answers. Then submit.</li>
       </ol>
 
@@ -436,6 +436,7 @@ export function AssessmentGuide() {
     ['Last-day review', 'Reviewing only at the last minute reduces the study habits score. It does not increase it.'],
     ['Interests', 'Interest groups suggest careers to explore. They do not decide what you can study or do.'],
     ['Follow-up questions', 'Your answers guide which follow-up questions you see. A score describes your answers on that path. Do not use it to compare students or attempts with different questions.'],
+    ['Scenarios', 'Choose what you would try first. These answers are not scored as right or wrong. They guide follow-up questions and study tips.'],
     ['Retakes', 'You can start another assessment seven days after you submit. Your profile shows when you can start.'],
   ];
   return (
