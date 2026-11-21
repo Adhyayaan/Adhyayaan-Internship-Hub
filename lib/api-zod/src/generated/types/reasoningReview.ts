@@ -13,4 +13,5 @@ export interface ReasoningReview {
   correctAnswer: string;
   correct: boolean;
   explanation: string;
+  skill?: string;
 }

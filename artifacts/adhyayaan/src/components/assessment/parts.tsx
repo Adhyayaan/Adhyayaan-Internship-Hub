@@ -125,10 +125,46 @@ function Bullets({ items, tone }: { items: string[]; tone: 'ledger' | 'accent' |
 
 export function ReportView({ report, audience = 'self' }: { report: LearningReport; audience?: 'self' | 'admin' }) {
   const you = audience === 'self';
+  const reasoning = report.dimensions.find(d => d.id === 'reasoning');
+  const selfRatings = report.dimensions.filter(d => d.id !== 'reasoning');
+  const highest = selfRatings.length ? Math.max(...selfRatings.map(d => d.score / d.maxScore)) : null;
+  const lowest = selfRatings.length ? Math.min(...selfRatings.map(d => d.score / d.maxScore)) : null;
+  const highNames = highest === null ? [] : selfRatings.filter(d => d.score / d.maxScore === highest).map(d => d.title);
+  const lowNames = lowest === null ? [] : selfRatings.filter(d => d.score / d.maxScore === lowest).map(d => d.title);
+  const interestScores = report.careers.filter(c => typeof c.interestScore === 'number');
+  const highestInterest = interestScores.length ? Math.max(...interestScores.map(c => c.interestScore!)) : 0;
+  const interestNames = interestScores.filter(c => c.interestScore === highestInterest).map(c => c.title);
   return (
     <div className="space-y-5">
-      <Section title={you ? 'Your learning habits' : 'Learning habits'} icon={<Sprout className="h-5 w-5" />}>
-        <p className="mb-4 text-sm text-muted-foreground">Each habit is the average of 3 answers, shown from 0 to 100. A higher number shows a stronger habit now. Habits can grow.</p>
+      <section className="ink-card border-primary/15 bg-[hsl(var(--secondary))] p-5 sm:p-6" data-testid="card-report-summary">
+        <h2 className="text-lg font-black text-primary">Quick summary</h2>
+        <p className="mt-1 text-sm text-muted-foreground">This is a snapshot of your answers today. It does not give one total score.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {reasoning && <div className="rounded-xl border border-border bg-card p-4" data-testid="text-summary-reasoning">
+            <p className="text-xs font-bold uppercase tracking-wide text-accent">Reasoning practice</p>
+            <p className="mt-1 text-xl font-black text-primary">{reasoning.score} of {reasoning.maxScore} correct</p>
+            <p className="mt-1 text-sm text-muted-foreground">See the question notes below to find what to practise.</p>
+          </div>}
+          {selfRatings.length > 0 && <div className="rounded-xl border border-border bg-card p-4" data-testid="text-summary-self-ratings">
+            <p className="text-xs font-bold uppercase tracking-wide text-accent">Your self-ratings</p>
+            {highest === lowest
+              ? <p className="mt-1 text-sm">Your ratings were similar across these areas.</p>
+              : <>
+                <p className="mt-1 text-sm"><span className="font-bold">Highest today:</span> {highNames.join(', ')}</p>
+                <p className="mt-1 text-sm"><span className="font-bold">May need practice:</span> {lowNames.join(', ')}</p>
+              </>}
+            <p className="mt-1 text-xs text-muted-foreground">Each area uses 3 answers. These are your reports, not observed results.</p>
+          </div>}
+          {interestScores.length > 0 && <div className="rounded-xl border border-border bg-card p-4 sm:col-span-2" data-testid="text-summary-interests">
+            <p className="text-xs font-bold uppercase tracking-wide text-accent">Activities you rated most highly</p>
+            <p className="mt-1 text-sm">{highestInterest > 0 ? interestNames.join(', ') : 'No activity group stood out yet. You can explore any group that interests you.'}</p>
+            <p className="mt-1 text-xs text-muted-foreground">These ratings suggest activities to explore. They do not decide your career.</p>
+          </div>}
+        </div>
+      </section>
+
+      <Section title={you ? 'Your answers by area' : 'Answers by area'} icon={<Sprout className="h-5 w-5" />}>
+        <p className="mb-4 text-sm text-muted-foreground">Each score has its own meaning. Do not add them together. Study scores use 3 answers and show what you reported, not a test of your behavior.</p>
         <div className="grid gap-4 md:grid-cols-2">
           {report.dimensions.map((d) => {
             const pct = d.maxScore > 0 ? Math.max(0, Math.min(100, (d.score / d.maxScore) * 100)) : 0;
@@ -142,6 +178,15 @@ export function ReportView({ report, audience = 'self' }: { report: LearningRepo
                   <div className="h-full origin-left rounded-full bg-gradient-to-r from-[hsl(var(--ledger))] to-[hsl(var(--turmeric))] motion-safe:transition-transform motion-safe:duration-700" style={{ transform: `scaleX(${pct / 100})` }} />
                 </div>
                 <p className="mt-3 text-sm">{d.interpretation}</p>
+                {d.evidence && d.evidence.length > 0 && <div className="mt-3 border-t border-border pt-3">
+                  <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Your answers</h4>
+                  <ul className="space-y-2">
+                    {d.evidence.map((e, index) => <li key={index} className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-sm" data-testid={`text-evidence-${d.id}-${index}`}>
+                      <span className="min-w-0 flex-1">{e.prompt}</span>
+                      <span className="font-bold text-primary">{e.response}</span>
+                    </li>)}
+                  </ul>
+                </div>}
                 <p className="mt-2 flex gap-2 text-sm text-[hsl(var(--ledger))]"><Lightbulb className="mt-0.5 h-4 w-4 flex-none" />{d.suggestion}</p>
               </div>
             );
@@ -164,6 +209,7 @@ export function ReportView({ report, audience = 'self' }: { report: LearningRepo
                   <div className="min-w-0 space-y-1 text-sm">
                     <p className="font-semibold">{i + 1}. {r.prompt}</p>
                     <p>{you ? 'You chose' : 'Chosen'}: <span className="font-semibold">{r.selected || 'No answer'}</span></p>
+                    {r.skill && <p className="text-xs font-semibold text-accent">Skill checked: {r.skill}</p>}
                     {!r.correct && <p>Correct answer: <span className="font-semibold text-[hsl(var(--ledger))]">{r.correctAnswer}</span></p>}
                     <p className="text-muted-foreground">{r.explanation}</p>
                   </div>
@@ -194,6 +240,7 @@ export function ReportView({ report, audience = 'self' }: { report: LearningRepo
             {report.careers.map((c) => (
               <article key={c.title} className="lift rounded-xl border border-border bg-background/60 p-4" data-testid={`card-career-${c.title}`}>
                 <h3 className="font-black text-primary">{c.title}</h3>
+                {typeof c.interestScore === 'number' && typeof c.interestMax === 'number' && <p className="mt-1 text-xs font-semibold text-[hsl(var(--ledger))]" data-testid={`text-interest-score-${c.title}`}>Interest rating: {c.interestScore} of {c.interestMax} across 2 activities</p>}
                 <p className="mt-1 text-sm">{c.reason}</p>
                 {c.skills.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{c.skills.map((s) => <span key={s} className="ledger-chip rounded-full px-2.5 py-0.5 text-xs font-semibold">{s}</span>)}</div>}
                 <p className="mt-3 text-sm"><span className="font-bold">Try a project: </span>{c.project}</p>
@@ -204,8 +251,15 @@ export function ReportView({ report, audience = 'self' }: { report: LearningRepo
         </Section>
       )}
 
+      {report.scenarioInsights && report.scenarioInsights.length > 0 && (
+        <Section title="Your choices in real-life situations" icon={<Compass className="h-5 w-5" />} delay={240}>
+          <p className="mb-3 text-sm text-muted-foreground">These answers have no right or wrong score. They show which first steps you chose today.</p>
+          <Bullets items={report.scenarioInsights} tone="primary" />
+        </Section>
+      )}
+
       {report.teachingPlan.length > 0 && (
-        <Section title={you ? 'How Adhya will teach you' : 'Teaching guidance'} icon={<Lightbulb className="h-5 w-5" />} delay={260}>
+        <Section title={you ? 'How Adhya will teach you' : 'Teaching guidance'} icon={<Lightbulb className="h-5 w-5" />} delay={280}>
           <Bullets items={report.teachingPlan} tone="primary" />
           <p className="mt-3 text-xs text-muted-foreground">Only this teaching guidance goes to the AI tutor.</p>
         </Section>

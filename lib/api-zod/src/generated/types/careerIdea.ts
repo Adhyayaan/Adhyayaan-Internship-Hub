@@ -12,4 +12,8 @@ export interface CareerIdea {
   skills: string[];
   project: string;
   counsellorQuestion: string;
+  /** @minimum 0 */
+  interestScore?: number;
+  /** @minimum 1 */
+  interestMax?: number;
 }

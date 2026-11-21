@@ -526,6 +526,15 @@ components:
         maxScore: { type: integer }
         interpretation: { type: string }
         suggestion: { type: string }
+        evidence:
+          type: array
+          items: { $ref: "#/components/schemas/AnswerEvidence" }
+    AnswerEvidence:
+      type: object
+      required: [prompt, response]
+      properties:
+        prompt: { type: string }
+        response: { type: string }
     ReasoningReview:
       type: object
       required: [questionId, prompt, selected, correctAnswer, correct, explanation]
@@ -536,6 +545,7 @@ components:
         correctAnswer: { type: string }
         correct: { type: boolean }
         explanation: { type: string }
+        skill: { type: string }
     CareerIdea:
       type: object
       required: [title, reason, skills, project, counsellorQuestion]
@@ -545,6 +555,8 @@ components:
         skills: { type: array, items: { type: string } }
         project: { type: string }
         counsellorQuestion: { type: string }
+        interestScore: { type: integer, minimum: 0 }
+        interestMax: { type: integer, minimum: 1 }
     LearningReport:
       type: object
       required: [id, version, completedAt, dimensions, reasoning, strengths, growthAreas, nextSteps, careers, teachingPlan, methodology]
@@ -560,6 +572,7 @@ components:
         careers: { type: array, items: { $ref: "#/components/schemas/CareerIdea" } }
         teachingPlan: { type: array, items: { type: string } }
         methodology: { type: string }
+        scenarioInsights: { type: array, items: { type: string } }
     AdminLearnerRow:
       type: object
       required: [id, name, email, college, discipline, createdAt, assessmentCompletedAt, enrollmentCount]

@@ -124,6 +124,11 @@ export const SubmitAssessmentParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const submitAssessmentResponseCareersItemInterestScoreMin = 0;
+
+
+
+
 export const SubmitAssessmentResponse = zod.object({
   "id": zod.string(),
   "version": zod.number().int(),
@@ -134,7 +139,11 @@ export const SubmitAssessmentResponse = zod.object({
   "score": zod.number().int(),
   "maxScore": zod.number().int(),
   "interpretation": zod.string(),
-  "suggestion": zod.string()
+  "suggestion": zod.string(),
+  "evidence": zod.array(zod.object({
+  "prompt": zod.string(),
+  "response": zod.string()
+})).optional()
 })),
   "reasoning": zod.array(zod.object({
   "questionId": zod.string(),
@@ -142,7 +151,8 @@ export const SubmitAssessmentResponse = zod.object({
   "selected": zod.string(),
   "correctAnswer": zod.string(),
   "correct": zod.boolean(),
-  "explanation": zod.string()
+  "explanation": zod.string(),
+  "skill": zod.string().optional()
 })),
   "strengths": zod.array(zod.string()),
   "growthAreas": zod.array(zod.string()),
@@ -152,16 +162,24 @@ export const SubmitAssessmentResponse = zod.object({
   "reason": zod.string(),
   "skills": zod.array(zod.string()),
   "project": zod.string(),
-  "counsellorQuestion": zod.string()
+  "counsellorQuestion": zod.string(),
+  "interestScore": zod.number().int().min(submitAssessmentResponseCareersItemInterestScoreMin).optional(),
+  "interestMax": zod.number().int().min(1).optional()
 })),
   "teachingPlan": zod.array(zod.string()),
-  "methodology": zod.string()
+  "methodology": zod.string(),
+  "scenarioInsights": zod.array(zod.string()).optional()
 })
 
 
 export const GetLearningReportParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
+
+export const getLearningReportResponseCareersItemInterestScoreMin = 0;
+
+
+
 
 export const GetLearningReportResponse = zod.object({
   "id": zod.string(),
@@ -173,7 +191,11 @@ export const GetLearningReportResponse = zod.object({
   "score": zod.number().int(),
   "maxScore": zod.number().int(),
   "interpretation": zod.string(),
-  "suggestion": zod.string()
+  "suggestion": zod.string(),
+  "evidence": zod.array(zod.object({
+  "prompt": zod.string(),
+  "response": zod.string()
+})).optional()
 })),
   "reasoning": zod.array(zod.object({
   "questionId": zod.string(),
@@ -181,7 +203,8 @@ export const GetLearningReportResponse = zod.object({
   "selected": zod.string(),
   "correctAnswer": zod.string(),
   "correct": zod.boolean(),
-  "explanation": zod.string()
+  "explanation": zod.string(),
+  "skill": zod.string().optional()
 })),
   "strengths": zod.array(zod.string()),
   "growthAreas": zod.array(zod.string()),
@@ -191,10 +214,13 @@ export const GetLearningReportResponse = zod.object({
   "reason": zod.string(),
   "skills": zod.array(zod.string()),
   "project": zod.string(),
-  "counsellorQuestion": zod.string()
+  "counsellorQuestion": zod.string(),
+  "interestScore": zod.number().int().min(getLearningReportResponseCareersItemInterestScoreMin).optional(),
+  "interestMax": zod.number().int().min(1).optional()
 })),
   "teachingPlan": zod.array(zod.string()),
-  "methodology": zod.string()
+  "methodology": zod.string(),
+  "scenarioInsights": zod.array(zod.string()).optional()
 })
 
 
@@ -272,6 +298,11 @@ export const GetAdminLearningReportParams = zod.object({
   "reportId": zod.coerce.string().uuid()
 })
 
+export const getAdminLearningReportResponseCareersItemInterestScoreMin = 0;
+
+
+
+
 export const GetAdminLearningReportResponse = zod.object({
   "id": zod.string(),
   "version": zod.number().int(),
@@ -282,7 +313,11 @@ export const GetAdminLearningReportResponse = zod.object({
   "score": zod.number().int(),
   "maxScore": zod.number().int(),
   "interpretation": zod.string(),
-  "suggestion": zod.string()
+  "suggestion": zod.string(),
+  "evidence": zod.array(zod.object({
+  "prompt": zod.string(),
+  "response": zod.string()
+})).optional()
 })),
   "reasoning": zod.array(zod.object({
   "questionId": zod.string(),
@@ -290,7 +325,8 @@ export const GetAdminLearningReportResponse = zod.object({
   "selected": zod.string(),
   "correctAnswer": zod.string(),
   "correct": zod.boolean(),
-  "explanation": zod.string()
+  "explanation": zod.string(),
+  "skill": zod.string().optional()
 })),
   "strengths": zod.array(zod.string()),
   "growthAreas": zod.array(zod.string()),
@@ -300,10 +336,13 @@ export const GetAdminLearningReportResponse = zod.object({
   "reason": zod.string(),
   "skills": zod.array(zod.string()),
   "project": zod.string(),
-  "counsellorQuestion": zod.string()
+  "counsellorQuestion": zod.string(),
+  "interestScore": zod.number().int().min(getAdminLearningReportResponseCareersItemInterestScoreMin).optional(),
+  "interestMax": zod.number().int().min(1).optional()
 })),
   "teachingPlan": zod.array(zod.string()),
-  "methodology": zod.string()
+  "methodology": zod.string(),
+  "scenarioInsights": zod.array(zod.string()).optional()
 })
 
 

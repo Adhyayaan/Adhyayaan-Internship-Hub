@@ -15,6 +15,7 @@ export * from './aiInput';
 export * from './aiInputLanguage';
 export * from './aiInputTool';
 export * from './aiMessage';
+export * from './answerEvidence';
 export * from './assessmentAnswerConflict';
 export * from './assessmentAnswerConflictCode';
 export * from './assessmentChoice';

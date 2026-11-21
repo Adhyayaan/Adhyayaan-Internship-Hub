@@ -2,6 +2,7 @@ import { GetLearningReportResponse } from "@workspace/api-zod";
 import { assessmentAttempts, db, type AssessmentAttempt } from "@workspace/db";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { assessmentPath } from "./assessment-path";
+import { scoreAssessment } from "./assessment-score";
 
 const retakeIntervalMs = 7 * 24 * 60 * 60 * 1000;
 
@@ -42,11 +43,24 @@ export async function reportSummaries(userId: string) {
 }
 
 export async function savedReport(userId: string, id?: string) {
-  const [row] = await db.select({ report: assessmentAttempts.report }).from(assessmentAttempts)
+  const [row] = await db.select({
+    id: assessmentAttempts.id,
+    version: assessmentAttempts.version,
+    answers: assessmentAttempts.answers,
+    completedAt: assessmentAttempts.completedAt,
+    report: assessmentAttempts.report,
+  }).from(assessmentAttempts)
     .where(and(eq(assessmentAttempts.userId, userId), isNotNull(assessmentAttempts.completedAt),
       id ? eq(assessmentAttempts.id, id) : undefined))
     .orderBy(desc(assessmentAttempts.completedAt)).limit(1);
-  return row ? GetLearningReportResponse.parse(row.report) : null;
+  if (!row) return null;
+  // Add the clearer analysis when a report is opened, including older saved reports.
+  // Keep the stored report and original answers unchanged.
+  const saved = GetLearningReportResponse.parse(row.report);
+  const refreshedAnalysis = row.completedAt
+    ? scoreAssessment(row.id, row.version, new Date(saved.completedAt), row.answers)
+    : null;
+  return GetLearningReportResponse.parse(refreshedAnalysis ?? saved);
 }
 
 export async function teachingSignals(userId: string) {

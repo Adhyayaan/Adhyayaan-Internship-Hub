@@ -21,4 +21,5 @@ export interface LearningReport {
   careers: CareerIdea[];
   teachingPlan: string[];
   methodology: string;
+  scenarioInsights?: string[];
 }

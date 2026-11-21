@@ -5,6 +5,7 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+import type { AnswerEvidence } from './answerEvidence';
 
 export interface LearningDimension {
   id: string;
@@ -13,4 +14,5 @@ export interface LearningDimension {
   maxScore: number;
   interpretation: string;
   suggestion: string;
+  evidence?: AnswerEvidence[];
 }

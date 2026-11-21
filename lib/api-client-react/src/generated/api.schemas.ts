@@ -97,6 +97,11 @@ export interface AssessmentWorkspace {
   reports: LearningReportSummary[];
 }
 
+export interface AnswerEvidence {
+  prompt: string;
+  response: string;
+}
+
 export interface LearningDimension {
   id: string;
   title: string;
@@ -104,6 +109,7 @@ export interface LearningDimension {
   maxScore: number;
   interpretation: string;
   suggestion: string;
+  evidence?: AnswerEvidence[];
 }
 
 export interface ReasoningReview {
@@ -113,6 +119,7 @@ export interface ReasoningReview {
   correctAnswer: string;
   correct: boolean;
   explanation: string;
+  skill?: string;
 }
 
 export interface CareerIdea {
@@ -121,6 +128,10 @@ export interface CareerIdea {
   skills: string[];
   project: string;
   counsellorQuestion: string;
+  /** @minimum 0 */
+  interestScore?: number;
+  /** @minimum 1 */
+  interestMax?: number;
 }
 
 export interface LearningReport {
@@ -135,6 +146,7 @@ export interface LearningReport {
   careers: CareerIdea[];
   teachingPlan: string[];
   methodology: string;
+  scenarioInsights?: string[];
 }
 
 export interface AdminLearnerRow {
