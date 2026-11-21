@@ -1,17 +1,19 @@
 import { Link, useLocation } from 'wouter';
 import { ArrowRight, FileText, Loader2, LogOut } from 'lucide-react';
-import { useGetAssessment, useLogout } from '@workspace/api-client-react';
+import { getGetAssessmentQueryKey, useGetAssessment, useLogout } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel, PageHeader, Ring, SignInWall } from '@/components/app/bits';
+import { fmtRetakeTime } from '@/components/assessment/parts';
 import { errMsg, useAuth, useResetForSession, useTitle } from '@/lib/app';
 
 export default function Profile() {
   useTitle('Profile');
   const { user, isLoading } = useAuth();
   const logout = useLogout();
-  const assessment = useGetAssessment({ query: { enabled: !!user } });
+  const assessment = useGetAssessment({ query: { enabled: !!user, queryKey: getGetAssessmentQueryKey() } });
+  const wait = assessment.data?.nextRetakeAt;
   const reset = useResetForSession();
   const [, nav] = useLocation();
   const { toast } = useToast();
@@ -41,8 +43,9 @@ export default function Profile() {
             <h2 id="profile-learning-reports" className="text-2xl font-semibold text-primary">Learning reports</h2>
             <p className="mt-1 text-sm text-muted-foreground">Review your reasoning results, study suggestions and career ideas.</p>
           </div>
-          <Button variant="outline" asChild><Link href="/assessment">{assessment.data?.draft ? 'Resume assessment' : assessment.data?.reports.length ? 'Retake assessment' : 'Take assessment'}</Link></Button>
+          <Button variant="outline" asChild><Link href="/assessment" data-testid="link-profile-assessment">{wait ? 'View assessment' : assessment.data?.draft ? 'Resume assessment' : assessment.data?.reports.length ? 'Retake assessment' : 'Take assessment'}</Link></Button>
         </div>
+        {wait && <p className="mt-3 text-sm text-muted-foreground" data-testid="text-profile-retake-wait">Next retake: <time dateTime={wait}>{fmtRetakeTime(wait)}</time>.</p>}
         {assessment.isLoading ? <Skeleton className="mt-5 h-16" /> : assessment.error ?
           <ErrorPanel error={assessment.error} onRetry={() => assessment.refetch()} /> : assessment.data?.reports.length ? (
             <ul className="mt-5 divide-y border-y">

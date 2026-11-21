@@ -6,10 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AssessmentChoice } from './assessmentChoice';
+import type { AssessmentSection } from './assessmentSection';
 
 export interface AssessmentDraft {
   id: string;
   version: number;
   answers: AssessmentChoice[];
   updatedAt: string;
+  sections: AssessmentSection[];
 }

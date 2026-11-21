@@ -11,7 +11,7 @@ paths:
       operationId: getAssessment
       responses:
         "200":
-          description: The current questionnaire, own draft, and own saved report history
+          description: Assessment size, retake availability, own draft, and own saved report history
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AssessmentWorkspace" }
@@ -26,6 +26,8 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/AssessmentDraft" }
         "401": { description: Sign in to start }
+        "429":
+          $ref: "#/components/responses/AssessmentRetakeWait"
   /assessment/attempts/{id}:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -35,17 +37,23 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/AssessmentChoice" }
+            schema: { $ref: "#/components/schemas/AssessmentChoiceInput" }
       responses:
         "200":
-          description: Saved draft, with answers but no answer key
+          description: Saved draft with the current path and newly available question, but no answer key
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AssessmentDraft" }
         "400": { description: Unknown question or answer option }
         "401": { description: Sign in to save }
         "404": { description: Attempt not found }
-        "409": { description: Report already submitted }
+        "409":
+          description: Report submitted, question no longer on the current path, or confirmation needed to replace follow-up answers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AssessmentAnswerConflict" }
+        "429":
+          $ref: "#/components/responses/AssessmentRetakeWait"
   /assessment/attempts/{id}/submit:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -60,6 +68,8 @@ paths:
         "400": { description: Answer every question first }
         "401": { description: Sign in to submit }
         "404": { description: Attempt not found }
+        "429":
+          $ref: "#/components/responses/AssessmentRetakeWait"
   /assessment/reports/{id}:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -426,6 +436,12 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/PracticeAttempt" }
 components:
+  responses:
+    AssessmentRetakeWait:
+      description: The last assessment was submitted less than seven days ago
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/AssessmentRetakeWait" }
   schemas:
     AssessmentQuestion:
       type: object
@@ -449,14 +465,37 @@ components:
       properties:
         questionId: { type: string, minLength: 1, maxLength: 30 }
         choice: { type: integer, minimum: 0, maximum: 4 }
+    AssessmentChoiceInput:
+      type: object
+      additionalProperties: false
+      required: [questionId, choice]
+      properties:
+        questionId: { type: string, minLength: 1, maxLength: 30 }
+        choice: { type: integer, minimum: 0, maximum: 4 }
+        replaceFollowUps: { type: boolean }
+    AssessmentAnswerConflict:
+      type: object
+      required: [error, code]
+      properties:
+        error: { type: string }
+        code: { type: string, enum: [ASSESSMENT_SUBMITTED, QUESTION_CHANGED, FOLLOW_UPS_CHANGED] }
+        affectedAnswers: { type: integer }
+    AssessmentRetakeWait:
+      type: object
+      required: [error, code, nextRetakeAt]
+      properties:
+        error: { type: string }
+        code: { type: string, enum: [ASSESSMENT_RETAKE_WAIT] }
+        nextRetakeAt: { type: string }
     AssessmentDraft:
       type: object
-      required: [id, version, answers, updatedAt]
+      required: [id, version, answers, updatedAt, sections]
       properties:
         id: { type: string }
         version: { type: integer }
         answers: { type: array, items: { $ref: "#/components/schemas/AssessmentChoice" } }
         updatedAt: { type: string }
+        sections: { type: array, items: { $ref: "#/components/schemas/AssessmentSection" } }
     LearningReportSummary:
       type: object
       required: [id, version, completedAt]
@@ -466,10 +505,12 @@ components:
         completedAt: { type: string }
     AssessmentWorkspace:
       type: object
-      required: [version, sections, draft, reports]
+      required: [version, partCount, questionCount, nextRetakeAt, draft, reports]
       properties:
         version: { type: integer }
-        sections: { type: array, items: { $ref: "#/components/schemas/AssessmentSection" } }
+        partCount: { type: integer }
+        questionCount: { type: integer }
+        nextRetakeAt: { type: ["string", "null"] }
         draft:
           anyOf:
             - { $ref: "#/components/schemas/AssessmentDraft" }

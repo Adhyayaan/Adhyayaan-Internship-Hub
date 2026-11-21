@@ -29,8 +29,10 @@ import type {
   AdminLearnerDetail,
   AiInput,
   AiMessage,
-  AssessmentChoice,
+  AssessmentAnswerConflict,
+  AssessmentChoiceInput,
   AssessmentDraft,
+  AssessmentRetakeWaitResponse,
   AssessmentWorkspace,
   Course,
   Dashboard,
@@ -203,7 +205,7 @@ export const startAssessment = async ( options?: Parameters<typeof customFetch>[
 
 export const getStartAssessmentMutationKey = () => ['startAssessment'] as const;
 
-export const getStartAssessmentMutationOptions = <TError = ErrorType<void>,
+export const getStartAssessmentMutationOptions = <TError = ErrorType<void | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext> => {
 
@@ -232,10 +234,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type StartAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof startAssessment>>>
 
-    export type StartAssessmentMutationError = ErrorType<void>
+    export type StartAssessmentMutationError = ErrorType<void | AssessmentRetakeWaitResponse>
 
 
-    export const useStartAssessment = <TError = ErrorType<void>,
+    export const useStartAssessment = <TError = ErrorType<void | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startAssessment>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof startAssessment>>,
@@ -255,7 +257,7 @@ export const getSaveAssessmentAnswerUrl = (id: string,) => {
 }
 
 export const saveAssessmentAnswer = async (id: string,
-    assessmentChoice: AssessmentChoice, options?: Parameters<typeof customFetch>[1]): Promise<AssessmentDraft> => {
+    assessmentChoiceInput: AssessmentChoiceInput, options?: Parameters<typeof customFetch>[1]): Promise<AssessmentDraft> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -276,7 +278,7 @@ return customFetch<AssessmentDraft>(getSaveAssessmentAnswerUrl(id),
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(assessmentChoice)
+    body: JSON.stringify(assessmentChoiceInput)
   }
 );}
 
@@ -286,7 +288,7 @@ return customFetch<AssessmentDraft>(getSaveAssessmentAnswerUrl(id),
 
 export const getSaveAssessmentAnswerMutationKey = () => ['saveAssessmentAnswer'] as const;
 
-export const getSaveAssessmentAnswerMutationOptions = <TError = ErrorType<void>,
+export const getSaveAssessmentAnswerMutationOptions = <TError = ErrorType<void | AssessmentAnswerConflict | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext> => {
 
@@ -314,11 +316,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type SaveAssessmentAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof saveAssessmentAnswer>>>
-    export type SaveAssessmentAnswerMutationBody = BodyType<AssessmentChoice>
-    export type SaveAssessmentAnswerMutationError = ErrorType<void>
-    export type SaveAssessmentAnswerMutationVariables = {id: string;data: BodyType<AssessmentChoice>}
+    export type SaveAssessmentAnswerMutationBody = BodyType<AssessmentChoiceInput>
+    export type SaveAssessmentAnswerMutationError = ErrorType<void | AssessmentAnswerConflict | AssessmentRetakeWaitResponse>
+    export type SaveAssessmentAnswerMutationVariables = {id: string;data: BodyType<AssessmentChoiceInput>}
 
-    export const useSaveAssessmentAnswer = <TError = ErrorType<void>,
+    export const useSaveAssessmentAnswer = <TError = ErrorType<void | AssessmentAnswerConflict | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAssessmentAnswer>>, TError,SaveAssessmentAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof saveAssessmentAnswer>>,
@@ -354,7 +356,7 @@ export const submitAssessment = async (id: string, options?: Parameters<typeof c
 
 export const getSubmitAssessmentMutationKey = () => ['submitAssessment'] as const;
 
-export const getSubmitAssessmentMutationOptions = <TError = ErrorType<void>,
+export const getSubmitAssessmentMutationOptions = <TError = ErrorType<void | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext> => {
 
@@ -383,10 +385,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type SubmitAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof submitAssessment>>>
 
-    export type SubmitAssessmentMutationError = ErrorType<void>
+    export type SubmitAssessmentMutationError = ErrorType<void | AssessmentRetakeWaitResponse>
     export type SubmitAssessmentMutationVariables = {id: string}
 
-    export const useSubmitAssessment = <TError = ErrorType<void>,
+    export const useSubmitAssessment = <TError = ErrorType<void | AssessmentRetakeWaitResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssessment>>, TError,SubmitAssessmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof submitAssessment>>,

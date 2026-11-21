@@ -13,3 +13,9 @@ The assessment is mandatory after new signup. For existing signed-in users, add 
 **Why:** These are the user's explicit onboarding requirements; existing users were not asked to be locked out.
 
 **How to apply:** Preserve the distinction between new-account onboarding and the existing-user homepage entry point.
+
+The user wants the next question to adapt to previous answers, and a retake no more than once a week. Use a rolling seven-day wait from the last submission, not a calendar-week reset.
+
+**Why:** The user wants assessment paths to reflect student responses rather than give everyone the same test, and wants retakes spaced apart.
+
+**How to apply:** Keep the server as the source of truth for question paths and retake eligibility. Preserve submitted reports and saved drafts when introducing a new question version. Explain that scores on different paths are not directly comparable.

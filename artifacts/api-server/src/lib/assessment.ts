@@ -1,9 +1,35 @@
 import { GetLearningReportResponse } from "@workspace/api-zod";
 import { assessmentAttempts, db, type AssessmentAttempt } from "@workspace/db";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { assessmentPath } from "./assessment-path";
+
+const retakeIntervalMs = 7 * 24 * 60 * 60 * 1000;
+
+export function retakeWait(completedAt: Date | string | null | undefined, now = Date.now()) {
+  if (!completedAt) return null;
+  const eligibleAt = new Date(completedAt).getTime() + retakeIntervalMs;
+  if (eligibleAt <= now) return null;
+  return {
+    error: "Wait seven days after you submit before you start another assessment.",
+    code: "ASSESSMENT_RETAKE_WAIT" as const,
+    nextRetakeAt: new Date(eligibleAt).toISOString(),
+  };
+}
+
+export async function latestCompletion(query: Pick<typeof db, "select">, userId: string) {
+  const [row] = await query.select({ completedAt: assessmentAttempts.completedAt }).from(assessmentAttempts)
+    .where(and(eq(assessmentAttempts.userId, userId), isNotNull(assessmentAttempts.completedAt)))
+    .orderBy(desc(assessmentAttempts.completedAt)).limit(1);
+  return row?.completedAt;
+}
 
 export function draftView(row: AssessmentAttempt) {
-  return { id: row.id, version: row.version, answers: row.answers, updatedAt: row.updatedAt.toISOString() };
+  const path = assessmentPath(row.version, row.answers);
+  // Do not send the remaining bank, answer keys, or internal scoring metadata.
+  const sections = path.sections.map(({ questions, ...section }) => ({
+    ...section, questions: questions.map(({ id, prompt, options }) => ({ id, prompt, options })),
+  }));
+  return { id: row.id, version: row.version, answers: path.answers, sections, updatedAt: row.updatedAt.toISOString() };
 }
 
 export async function reportSummaries(userId: string) {

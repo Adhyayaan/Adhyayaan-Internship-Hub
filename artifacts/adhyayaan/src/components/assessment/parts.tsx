@@ -13,6 +13,10 @@ export function fmtDate(s: string | null | undefined) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+export function fmtRetakeTime(value: string) {
+  return new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 export function FocusHeader({ right }: { right?: ReactNode }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur">

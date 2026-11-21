@@ -17,6 +17,17 @@ export const getAssessmentResponseDraftOneAnswersItemChoiceMax = 4;
 
 export const GetAssessmentResponse = zod.object({
   "version": zod.number().int(),
+  "partCount": zod.number().int(),
+  "questionCount": zod.number().int(),
+  "nextRetakeAt": zod.string().nullable(),
+  "draft": zod.union([zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "answers": zod.array(zod.object({
+  "questionId": zod.string().min(1).max(getAssessmentResponseDraftOneAnswersItemQuestionIdMax),
+  "choice": zod.number().int().min(getAssessmentResponseDraftOneAnswersItemChoiceMin).max(getAssessmentResponseDraftOneAnswersItemChoiceMax)
+})),
+  "updatedAt": zod.string(),
   "sections": zod.array(zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -26,15 +37,7 @@ export const GetAssessmentResponse = zod.object({
   "prompt": zod.string(),
   "options": zod.array(zod.string())
 }))
-})),
-  "draft": zod.union([zod.object({
-  "id": zod.string(),
-  "version": zod.number().int(),
-  "answers": zod.array(zod.object({
-  "questionId": zod.string().min(1).max(getAssessmentResponseDraftOneAnswersItemQuestionIdMax),
-  "choice": zod.number().int().min(getAssessmentResponseDraftOneAnswersItemChoiceMin).max(getAssessmentResponseDraftOneAnswersItemChoiceMax)
-})),
-  "updatedAt": zod.string()
+}))
 }),zod.null()]),
   "reports": zod.array(zod.object({
   "id": zod.string(),
@@ -58,7 +61,17 @@ export const StartAssessmentResponse = zod.object({
   "questionId": zod.string().min(1).max(startAssessmentResponseAnswersItemQuestionIdMax),
   "choice": zod.number().int().min(startAssessmentResponseAnswersItemChoiceMin).max(startAssessmentResponseAnswersItemChoiceMax)
 })),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "sections": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "questions": zod.array(zod.object({
+  "id": zod.string(),
+  "prompt": zod.string(),
+  "options": zod.array(zod.string())
+}))
+}))
 })
 
 
@@ -75,7 +88,8 @@ export const saveAssessmentAnswerBodyChoiceMax = 4;
 
 export const SaveAssessmentAnswerBody = zod.object({
   "questionId": zod.string().min(1).max(saveAssessmentAnswerBodyQuestionIdMax),
-  "choice": zod.number().int().min(saveAssessmentAnswerBodyChoiceMin).max(saveAssessmentAnswerBodyChoiceMax)
+  "choice": zod.number().int().min(saveAssessmentAnswerBodyChoiceMin).max(saveAssessmentAnswerBodyChoiceMax),
+  "replaceFollowUps": zod.boolean().optional()
 })
 
 export const saveAssessmentAnswerResponseAnswersItemQuestionIdMax = 30;
@@ -92,7 +106,17 @@ export const SaveAssessmentAnswerResponse = zod.object({
   "questionId": zod.string().min(1).max(saveAssessmentAnswerResponseAnswersItemQuestionIdMax),
   "choice": zod.number().int().min(saveAssessmentAnswerResponseAnswersItemChoiceMin).max(saveAssessmentAnswerResponseAnswersItemChoiceMax)
 })),
-  "updatedAt": zod.string()
+  "updatedAt": zod.string(),
+  "sections": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "questions": zod.array(zod.object({
+  "id": zod.string(),
+  "prompt": zod.string(),
+  "options": zod.array(zod.string())
+}))
+}))
 })
 
 

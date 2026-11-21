@@ -6,12 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AssessmentDraft } from './assessmentDraft';
-import type { AssessmentSection } from './assessmentSection';
 import type { LearningReportSummary } from './learningReportSummary';
 
 export interface AssessmentWorkspace {
   version: number;
-  sections: AssessmentSection[];
+  partCount: number;
+  questionCount: number;
+  /** @nullable */
+  nextRetakeAt: string | null;
   draft: AssessmentDraft | null;
   reports: LearningReportSummary[];
 }

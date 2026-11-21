@@ -31,11 +31,54 @@ export interface AssessmentChoice {
   choice: number;
 }
 
+export interface AssessmentChoiceInput {
+  /**
+     * @minLength 1
+     * @maxLength 30
+     */
+  questionId: string;
+  /**
+     * @minimum 0
+     * @maximum 4
+     */
+  choice: number;
+  replaceFollowUps?: boolean;
+}
+
+export type AssessmentAnswerConflictCode = typeof AssessmentAnswerConflictCode[keyof typeof AssessmentAnswerConflictCode];
+
+
+export const AssessmentAnswerConflictCode = {
+  ASSESSMENT_SUBMITTED: 'ASSESSMENT_SUBMITTED',
+  QUESTION_CHANGED: 'QUESTION_CHANGED',
+  FOLLOW_UPS_CHANGED: 'FOLLOW_UPS_CHANGED',
+} as const;
+
+export interface AssessmentAnswerConflict {
+  error: string;
+  code: AssessmentAnswerConflictCode;
+  affectedAnswers?: number;
+}
+
+export type AssessmentRetakeWaitCode = typeof AssessmentRetakeWaitCode[keyof typeof AssessmentRetakeWaitCode];
+
+
+export const AssessmentRetakeWaitCode = {
+  ASSESSMENT_RETAKE_WAIT: 'ASSESSMENT_RETAKE_WAIT',
+} as const;
+
+export interface AssessmentRetakeWait {
+  error: string;
+  code: AssessmentRetakeWaitCode;
+  nextRetakeAt: string;
+}
+
 export interface AssessmentDraft {
   id: string;
   version: number;
   answers: AssessmentChoice[];
   updatedAt: string;
+  sections: AssessmentSection[];
 }
 
 export interface LearningReportSummary {
@@ -46,7 +89,10 @@ export interface LearningReportSummary {
 
 export interface AssessmentWorkspace {
   version: number;
-  sections: AssessmentSection[];
+  partCount: number;
+  questionCount: number;
+  /** @nullable */
+  nextRetakeAt: string | null;
   draft: AssessmentDraft | null;
   reports: LearningReportSummary[];
 }
@@ -575,6 +621,11 @@ export interface PracticeAttempt {
   feedback: PracticeFeedback[];
   createdAt: string;
 }
+
+/**
+ * The last assessment was submitted less than seven days ago
+ */
+export type AssessmentRetakeWaitResponse = AssessmentRetakeWait;
 
 export type ListAdminLearnersParams = {
 /**

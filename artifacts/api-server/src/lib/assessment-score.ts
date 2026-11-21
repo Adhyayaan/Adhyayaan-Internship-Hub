@@ -1,11 +1,6 @@
 import type { AssessmentChoice, CareerIdea, LearningDimension, LearningReport } from "@workspace/api-zod";
 import { assessmentV1 } from "../data/assessment-v1";
-
-export const currentAssessment = assessmentV1;
-export function questionnaire(version: number) {
-  if (version !== assessmentV1.version) throw new Error("Unknown assessment version.");
-  return assessmentV1;
-}
+import { assessmentPath, assessmentSize } from "./assessment-path";
 
 const ideas: Record<typeof assessmentV1.interests[number]["group"], Omit<CareerIdea, "reason"> & { interest: string }> = {
   data: { title: "Data and research", interest: "checking evidence and finding patterns", skills: ["Spreadsheets", "Charts and tables", "Source checking"], project: "Compare travel times from a public dataset. Explain one pattern and one limit of the data.", counsellorQuestion: "Which entry-level roles use research or spreadsheets in my field?" },
@@ -21,28 +16,24 @@ const actions = {
   motivation: "Choose one small goal for this week. Use feedback to decide your next practice task.",
 };
 
-export function validChoice(version: number, answer: AssessmentChoice) {
-  const item = questionnaire(version).sections.flatMap(s => s.questions).find(q => q.id === answer.questionId);
-  return !!item && Number.isInteger(answer.choice) && answer.choice >= 0 && answer.choice < item.options.length;
-}
-
 export function scoreAssessment(id: string, version: number, completedAt: Date, answers: AssessmentChoice[]): LearningReport | null {
-  const bank = questionnaire(version);
-  const values = new Map(answers.map(a => [a.questionId, a.choice]));
-  const total = bank.sections.reduce((sum, s) => sum + s.questions.length, 0);
-  if (answers.length !== total || values.size !== total || !answers.every(a => validChoice(version, a))) return null;
-  const reasoning = bank.reasoning.map(q => ({
+  const path = assessmentPath(version, answers);
+  const { questionCount } = assessmentSize(version);
+  if (answers.length !== questionCount || path.answers.length !== questionCount) return null;
+  const values = new Map(path.answers.map(a => [a.questionId, a.choice]));
+  const items = (key: string) => path.sections.find(s => s.id === key)!.questions;
+  const reasoning = items("reasoning").map(q => ({
     questionId: q.id, prompt: q.prompt, selected: q.options[values.get(q.id)!]!,
-    correctAnswer: q.options[q.correct]!, correct: values.get(q.id) === q.correct, explanation: q.explanation,
+    correctAnswer: q.options[q.correct!]!, correct: values.get(q.id) === q.correct, explanation: q.explanation!,
   }));
   const correct = reasoning.filter(q => q.correct).length;
   function selfRating(key: "habits" | "confidence" | "motivation", title: string): LearningDimension {
-    const items = bank[key];
-    const points = items.reduce((sum, item) => {
+    const questions = items(key);
+    const points = questions.reduce((sum, item) => {
       const value = values.get(item.id)!;
       return sum + (item.reverse ? 4 - value : value);
     }, 0);
-    const score = Math.round(points * 100 / (items.length * 4));
+    const score = Math.round(points * 100 / (questions.length * 4));
     return {
       id: key, title, score, maxScore: 100, suggestion: actions[key],
       interpretation: score >= 75 ? "Your answers suggest you use these study actions often."
@@ -71,7 +62,7 @@ export function scoreAssessment(id: string, version: number, completedAt: Date, 
   }
   const priorities = developing.length ? developing.slice(0, 3) : ordered.slice(0, 2);
   const careers = (Object.keys(ideas) as Array<keyof typeof ideas>).map(group => ({
-    group, score: bank.interests.filter(i => i.group === group).reduce((sum, i) => sum + values.get(i.id)!, 0),
+    group, score: items("interests").filter(i => i.group === group).reduce((sum, i) => sum + values.get(i.id)!, 0),
   })).sort((a, b) => b.score - a.score);
   // Include ties at the cutoff so equal ratings never imply an invented ranking.
   const top = careers.filter(c => c.score >= careers[1]!.score);
@@ -90,6 +81,8 @@ export function scoreAssessment(id: string, version: number, completedAt: Date, 
       habitsScore < 75 ? "Ask me to recall the main idea without notes. Suggest a short review the next day." : "Ask me to explain my reasoning and compare it with a different method.",
       confidenceScore < 75 ? "Offer one hint at a time. Let me try the next step before giving the full explanation." : "Give me time to try a new question on my own, then offer a hint if I need one.",
     ],
-    methodology: "Reasoning: one point for each correct answer. Study habits, confidence and motivation: average of three answers, scaled from 0 to 100. The last-day review item has a reverse score. Interests suggest activities to try, not careers you must choose. This is not an IQ test or a health assessment. Scores depend on your answers today. If you retake the same version, you may remember the questions.",
+    methodology: "Reasoning: one point for each correct answer. Study habits, confidence and motivation: average of three answers, scaled from 0 to 100. The last-day review item has a reverse score. Interests suggest activities to try, not careers you must choose. This is not an IQ test or a health assessment. "
+      + (version === 1 ? "Scores depend on your answers today. If you retake the same version, you may remember the questions."
+        : "Your answers guide which follow-up questions you see. Scores describe your answers on this path. Do not use them to compare students or attempts with different questions."),
   };
 }
