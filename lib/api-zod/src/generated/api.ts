@@ -453,6 +453,100 @@ export const GetStudyBookResponse = zod.object({
 })
 
 
+export const GetStudyBookBengaliParams = zod.object({
+  "courseId": zod.coerce.string()
+})
+
+export const getStudyBookBengaliResponseModulesItemPilotVideoChaptersItemStartMin = 0;
+
+export const getStudyBookBengaliResponseModulesItemPilotVideoChaptersItemEndMin = 0;
+
+
+
+export const GetStudyBookBengaliResponse = zod.object({
+  "courseId": zod.string(),
+  "title": zod.string(),
+  "introduction": zod.string(),
+  "editorialNote": zod.string(),
+  "modules": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "extended": zod.boolean(),
+  "objectives": zod.array(zod.string()),
+  "lessons": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "minutes": zod.number().int(),
+  "sections": zod.array(zod.object({
+  "heading": zod.string(),
+  "body": zod.string()
+})),
+  "example": zod.string(),
+  "activity": zod.string()
+})),
+  "imageUrl": zod.string(),
+  "imageAlt": zod.string(),
+  "steps": zod.array(zod.object({
+  "heading": zod.string(),
+  "body": zod.string()
+})),
+  "videoUrl": zod.string(),
+  "transcript": zod.string(),
+  "pilotVideo": zod.object({
+  "lessonId": zod.string(),
+  "title": zod.string(),
+  "duration": zod.number(),
+  "videoUrl": zod.string(),
+  "posterUrl": zod.string(),
+  "captionsUrl": zod.string(),
+  "transcript": zod.string(),
+  "chapters": zod.array(zod.object({
+  "title": zod.string(),
+  "start": zod.number().min(getStudyBookBengaliResponseModulesItemPilotVideoChaptersItemStartMin),
+  "end": zod.number().min(getStudyBookBengaliResponseModulesItemPilotVideoChaptersItemEndMin)
+})),
+  "checkpoints": zod.array(zod.object({
+  "id": zod.string(),
+  "at": zod.number(),
+  "question": zod.string(),
+  "hint": zod.string(),
+  "explanation": zod.string(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "text": zod.string(),
+  "correct": zod.boolean(),
+  "feedback": zod.string()
+}))
+}))
+}).optional(),
+  "questions": zod.object({
+  "understand": zod.string(),
+  "apply": zod.string(),
+  "analyze": zod.string()
+}),
+  "sourceUrls": zod.array(zod.string())
+})),
+  "progress": zod.array(zod.object({
+  "lessonId": zod.string(),
+  "read": zod.boolean(),
+  "bookmarked": zod.boolean(),
+  "updatedAt": zod.string()
+})),
+  "teaching": zod.array(zod.object({
+  "id": zod.string(),
+  "moduleId": zod.string(),
+  "level": zod.enum(['understand', 'apply', 'analyze']),
+  "answer": zod.string(),
+  "feedback": zod.string(),
+  "verdict": zod.enum(['revisit', 'developing', 'secure']),
+  "nextLevel": zod.enum(['understand', 'apply', 'analyze']),
+  "nextPrompt": zod.string(),
+  "revisit": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
 export const SaveStudyProgressParams = zod.object({
   "courseId": zod.coerce.string()
 })

@@ -1079,6 +1079,101 @@ export function useGetStudyBook<TData = Awaited<ReturnType<typeof getStudyBook>>
 
 
 
+export const getGetStudyBookBengaliUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/study/${courseId}/bn`
+}
+
+export const getStudyBookBengali = async (courseId: string, options?: Parameters<typeof customFetch>[1]): Promise<StudyBook> => {
+
+  return customFetch<StudyBook>(getGetStudyBookBengaliUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStudyBookBengaliQueryKey = (courseId: string,) => {
+    return [
+    `/api/study/${courseId}/bn`
+    ] as const;
+    }
+
+
+export const getGetStudyBookBengaliQueryOptions = <TData = Awaited<ReturnType<typeof getStudyBookBengali>>, TError = ErrorType<void>>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudyBookBengaliQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudyBookBengali>>> = ({ signal }) => getStudyBookBengali(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStudyBookBengaliQueryResult = NonNullable<Awaited<ReturnType<typeof getStudyBookBengali>>>
+export type GetStudyBookBengaliQueryError = ErrorType<void>
+
+
+export function useGetStudyBookBengali<TData = Awaited<ReturnType<typeof getStudyBookBengali>>, TError = ErrorType<void>>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyBookBengali>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyBookBengali>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyBookBengali<TData = Awaited<ReturnType<typeof getStudyBookBengali>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStudyBookBengali>>,
+          TError,
+          Awaited<ReturnType<typeof getStudyBookBengali>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStudyBookBengali<TData = Awaited<ReturnType<typeof getStudyBookBengali>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetStudyBookBengali<TData = Awaited<ReturnType<typeof getStudyBookBengali>>, TError = ErrorType<void>>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStudyBookBengali>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStudyBookBengaliQueryOptions(courseId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getSaveStudyProgressUrl = (courseId: string,) => {
 
 

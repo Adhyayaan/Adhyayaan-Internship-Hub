@@ -176,6 +176,19 @@ paths:
               schema: { $ref: "#/components/schemas/StudyBook" }
         "404":
           description: Course study book not yet authored
+  /study/{courseId}/bn:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: getStudyBookBengali
+      responses:
+        "200":
+          description: Indian Bengali study book and the signed-in learner's reading state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudyBook" }
+        "404":
+          description: Bengali course material not available
   /study/{courseId}/progress:
     parameters:
       - { name: courseId, in: path, required: true, schema: { type: string } }
