@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, BookOpen, CheckCircle2, Circle, Clock, ExternalLink, Info, ListTree, Loader2, Play, ShieldAlert } from 'lucide-react';
-import { useGetStudyBook, getGetStudyBookQueryKey, useSaveStudyProgress, type StudyBook, type StudyLesson, type StudyModule, type StudyProgress } from '@workspace/api-client-react';
+import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, BookOpen, CheckCircle2, Circle, Clock, ExternalLink, Info, Languages, ListTree, Loader2, Play, ShieldAlert } from 'lucide-react';
+import { useGetStudyBook, getGetStudyBookQueryKey, useGetStudyBookBengali, getGetStudyBookBengaliQueryKey, useSaveStudyProgress, type StudyBook, type StudyLesson, type StudyModule, type StudyProgress } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -26,7 +26,16 @@ function flatten(book: StudyBook): Flat[] {
 export default function StudyPage() {
   const { courseId = '', lessonId } = useParams<{ courseId: string; lessonId?: string }>();
   const { user } = useAuth();
-  const q = useGetStudyBook(courseId, { query: { enabled: !!courseId, queryKey: getGetStudyBookQueryKey(courseId), retry: (n, e) => (e as { status?: number })?.status !== 404 && n < 1 } });
+  const [language, setLanguage] = useState<'en' | 'bn'>(() => {
+    try { return localStorage.getItem('adhyayaan-study-language-01') === 'bn' ? 'bn' : 'en'; } catch { return 'en'; }
+  });
+  useEffect(() => {
+    if (courseId !== '01') { setLanguage('en'); return; }
+    try { localStorage.setItem('adhyayaan-study-language-01', language); } catch { /* language can still be changed for this visit */ }
+  }, [courseId, language]);
+  const qEn = useGetStudyBook(courseId, { query: { enabled: !!courseId && (courseId !== '01' || language === 'en'), queryKey: getGetStudyBookQueryKey(courseId), retry: (n, e) => (e as { status?: number })?.status !== 404 && n < 1 } });
+  const qBn = useGetStudyBookBengali(courseId, { query: { enabled: courseId === '01' && language === 'bn', queryKey: getGetStudyBookBengaliQueryKey(courseId), retry: (n, e) => (e as { status?: number })?.status !== 404 && n < 1 } });
+  const q = courseId === '01' && language === 'bn' ? qBn : qEn;
   useTitle(q.data?.title ?? 'Study book');
 
   if (q.isLoading) return <ReaderSkeleton />;
@@ -35,7 +44,10 @@ export default function StudyPage() {
     return <ErrorPanel error={q.error} onRetry={() => q.refetch()} />;
   }
   if (!q.data) return <NotAuthored courseId={courseId} />;
-  return lessonId ? <Reader book={q.data} lessonId={lessonId} userId={user?.id ?? null} /> : <Cover book={q.data} signedIn={!!user} />;
+  const setBookLanguage = (next: 'en' | 'bn') => setLanguage(next);
+  return lessonId
+    ? <Reader book={q.data} lessonId={lessonId} userId={user?.id ?? null} language={language} onLanguageChange={setBookLanguage} />
+    : <Cover book={q.data} signedIn={!!user} language={language} onLanguageChange={setBookLanguage} />;
 }
 
 function useProgressMap(book: StudyBook) {
@@ -43,7 +55,7 @@ function useProgressMap(book: StudyBook) {
 }
 
 /* ------------------------------------------------------------------ cover */
-function Cover({ book, signedIn }: { book: StudyBook; signedIn: boolean }) {
+function Cover({ book, signedIn, language, onLanguageChange }: { book: StudyBook; signedIn: boolean; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void }) {
   const flat = useMemo(() => flatten(book), [book]);
   const pm = useProgressMap(book);
   const here = useHere();
@@ -52,44 +64,48 @@ function Cover({ book, signedIn }: { book: StudyBook; signedIn: boolean }) {
   const read = book.progress.filter((p) => p.read).length;
   const start = resume ?? flat[0];
   const core = book.modules.filter((m) => !m.extended), ext = book.modules.filter((m) => m.extended);
+  const bn = language === 'bn';
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href={`/courses/${book.courseId}`} className="mb-5 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary" data-testid="link-back-course"><ArrowLeft className="h-4 w-4" /> Internship overview</Link>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <Link href={`/courses/${book.courseId}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary" data-testid="link-back-course"><ArrowLeft className="h-4 w-4" />{bn ? 'ইন্টার্নশিপের পরিচিতি' : 'Internship overview'}</Link>
+        {book.courseId === '01' && <LanguageSwitch language={language} onChange={onLanguageChange} />}
+      </div>
       <header className="rise relative overflow-hidden rounded-[1.6rem] bg-primary px-7 py-10 text-primary-foreground md:px-12 md:py-14">
         <div className="alpona-dots absolute inset-0 opacity-30" aria-hidden />
         <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full border-[18px] border-[hsl(var(--ledger))]/60" aria-hidden />
         <div className="absolute -right-4 bottom-[-5rem] h-48 w-48 rounded-full bg-accent/80" aria-hidden />
         <div className="relative max-w-2xl">
-          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--turmeric))]">অধ্যয়ন · Study book {book.courseId}</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--turmeric))]">{bn ? 'অধ্যয়ন · বাংলা পাঠ্যবই' : `অধ্যয়ন · Study book ${book.courseId}`}</p>
           <h1 className="mt-3 font-display text-4xl font-semibold leading-[1.05] md:text-6xl" data-testid="text-book-title">{book.title}</h1>
           <p className="mt-5 text-base leading-relaxed text-primary-foreground/80 md:text-lg">{book.introduction}</p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            {start && <Button asChild size="lg" className="bg-accent hover:bg-accent/90" data-testid="button-start-reading"><Link href={`/study/${book.courseId}/${start.lesson.id}`}>{resume ? 'Resume reading' : 'Open chapter one'} <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
-            <span className="font-mono text-xs text-primary-foreground/70">{book.modules.length} modules · {flat.length} lessons · {flat.reduce((s, f) => s + f.lesson.minutes, 0)} min reading</span>
+            {start && <Button asChild size="lg" className="bg-accent hover:bg-accent/90" data-testid="button-start-reading"><Link href={`/study/${book.courseId}/${start.lesson.id}`}>{resume ? (bn ? 'পড়া চালিয়ে যাও' : 'Resume reading') : (bn ? 'প্রথম অধ্যায় খোলো' : 'Open chapter one')} <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
+            <span className="font-mono text-xs text-primary-foreground/70">{book.modules.length} {bn ? 'টি মডিউল' : 'modules'} · {flat.length} {bn ? 'টি পাঠ' : 'lessons'} · {flat.reduce((s, f) => s + f.lesson.minutes, 0)} {bn ? 'মিনিট পড়া' : 'min reading'}</span>
           </div>
-          {resume && <p className="mt-3 text-sm text-primary-foreground/70" data-testid="text-resume">Last saved: {resume.lesson.title}</p>}
+          {resume && <p className="mt-3 text-sm text-primary-foreground/70" data-testid="text-resume">{bn ? 'শেষবার পড়েছিলে:' : 'Last saved:'} {resume.lesson.title}</p>}
         </div>
       </header>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_300px]">
-        <EditorialNote note={book.editorialNote} />
+        <EditorialNote note={book.editorialNote} language={language} />
         <div className="ink-card p-5" data-testid="card-book-progress">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">Reading record</p>
+           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">{bn ? 'পড়ার হিসাব' : 'Reading record'}</p>
           {signedIn ? (
             <>
               <p className="mt-2 font-display text-3xl font-semibold text-primary">{read}<span className="text-lg text-muted-foreground">/{flat.length}</span></p>
-              <p className="mb-2 text-xs text-muted-foreground">lessons marked read</p>
+              <p className="mb-2 text-xs text-muted-foreground">{bn ? 'টি পাঠ পড়া হয়েছে' : 'lessons marked read'}</p>
               <Meter value={flat.length ? (read / flat.length) * 100 : 0} />
             </>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground"><Link href={authHref('login', here)} className="font-semibold text-accent hover:underline" data-testid="link-cover-login">Sign in</Link> to keep read marks and bookmarks. You can read everything without an account.</p>
+             <p className="mt-2 text-sm text-muted-foreground"><Link href={authHref('login', here)} className="font-semibold text-accent hover:underline" data-testid="link-cover-login">{bn ? 'সাইন ইন করো' : 'Sign in'}</Link> {bn ? 'পড়ার হিসাব ও বুকমার্ক রাখতে। অ্যাকাউন্ট ছাড়াও সব পড়তে পারো।' : 'to keep read marks and bookmarks. You can read everything without an account.'}</p>
           )}
         </div>
       </div>
-      <SeparationNote />
+      <SeparationNote language={language} />
 
-      {[{ label: 'Core track', sub: 'Modules for the 60-hour pathway', list: core }, { label: 'Extended track', sub: 'Added for the 120-hour pathway', list: ext }].filter((g) => g.list.length).map((g) => (
+       {[{ label: bn ? 'মূল পথ' : 'Core track', sub: bn ? '৬০ ঘণ্টার পথের মডিউল' : 'Modules for the 60-hour pathway', list: core }, { label: bn ? 'বিস্তৃত পথ' : 'Extended track', sub: bn ? '১২০ ঘণ্টার পথে বাড়তি মডিউল' : 'Added for the 120-hour pathway', list: ext }].filter((g) => g.list.length).map((g) => (
         <section key={g.label} className="mt-10">
           <div className="mb-4 flex items-baseline gap-3"><h2 className="font-display text-2xl font-semibold text-primary">{g.label}</h2><span className="text-sm text-muted-foreground">{g.sub}</span></div>
           <ol className="grid gap-3 sm:grid-cols-2">
@@ -101,9 +117,9 @@ function Cover({ book, signedIn }: { book: StudyBook; signedIn: boolean }) {
                   <Link href={`/study/${book.courseId}/${m.lessons[0]?.id}`} className="flex gap-4 p-4" data-testid={`link-module-${m.id}`}>
                     <img src={m.imageUrl} alt="" loading="lazy" className="h-20 w-20 shrink-0 rounded-xl border bg-muted object-cover" />
                     <div className="min-w-0">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">Chapter {String(mi + 1).padStart(2, '0')}</p>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">{bn ? `অধ্যায় ${String(mi + 1).padStart(2, '0')}` : `Chapter ${String(mi + 1).padStart(2, '0')}`}</p>
                       <p className="font-display text-lg font-semibold leading-tight text-primary">{m.title}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{m.lessons.length} lessons{signedIn ? ` · ${done} read` : ''}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{m.lessons.length} {bn ? 'টি পাঠ' : 'lessons'}{signedIn ? ` · ${done} ${bn ? 'পড়া' : 'read'}` : ''}</p>
                     </div>
                   </Link>
                 </li>
@@ -117,7 +133,8 @@ function Cover({ book, signedIn }: { book: StudyBook; signedIn: boolean }) {
 }
 
 /* ------------------------------------------------------------------ reader */
-function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string; userId: string | null }) {
+function Reader({ book, lessonId, userId, language, onLanguageChange }: { book: StudyBook; lessonId: string; userId: string | null; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void }) {
+  const bn = language === 'bn';
   const flat = useMemo(() => flatten(book), [book]);
   const pm = useProgressMap(book);
   const cur = flat.find((f) => f.lesson.id === lessonId);
@@ -137,7 +154,10 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
     if (!userId || !cur) return;
     // Touch position only: the server preserves both read and bookmark flags.
     save.mutate({ courseId: book.courseId, data: { lessonId } }, {
-      onSuccess: () => qc.invalidateQueries({ queryKey: getGetStudyBookQueryKey(book.courseId) }),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: getGetStudyBookQueryKey(book.courseId) });
+        if (book.courseId === '01') qc.invalidateQueries({ queryKey: getGetStudyBookBengaliQueryKey(book.courseId) });
+      },
       onError: (e) => toast({ title: 'Could not save your reading position', description: errMsg(e), variant: 'destructive' }),
     });
     // Deliberately visit once per lesson/user, never on the resulting query refresh.
@@ -169,15 +189,18 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
   const toggle = (field: 'read' | 'bookmarked') => {
     if (!userId || save.isPending) return;
     save.mutate({ courseId: book.courseId, data: { lessonId: lesson.id, [field]: !p?.[field] } }, {
-      onSuccess: () => qc.invalidateQueries({ queryKey: getGetStudyBookQueryKey(book.courseId) }),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: getGetStudyBookQueryKey(book.courseId) });
+        if (book.courseId === '01') qc.invalidateQueries({ queryKey: getGetStudyBookBengaliQueryKey(book.courseId) });
+      },
       onError: (e) => toast({ title: field === 'read' ? 'Could not update read mark' : 'Could not update bookmark', description: errMsg(e), variant: 'destructive' }),
     });
   };
   const isLastLesson = li === module.lessons.length - 1;
   const pilot = module.pilotVideo && module.pilotVideo.lessonId === lesson.id ? module.pilotVideo : undefined;
-  const pilotPlayer = pilot ? <PilotVideo key={`${lesson.id}-${userId ?? 'guest'}`} pilot={pilot} transcript={pilot.transcript} userId={userId} /> : null;
+  const pilotPlayer = pilot ? <PilotVideo key={`${lesson.id}-${userId ?? 'guest'}`} pilot={pilot} transcript={pilot.transcript} userId={userId} language={language} /> : null;
 
-  const toc = <Contents book={book} flat={flat} pm={pm} current={lesson.id} onPick={() => setTocOpen(false)} />;
+  const toc = <Contents book={book} flat={flat} pm={pm} current={lesson.id} onPick={() => setTocOpen(false)} language={language} />;
 
   return (
     <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
@@ -192,9 +215,10 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
             <span aria-hidden>/</span><span className="truncate text-primary">Ch. {mi + 1}</span>
           </nav>
           <Sheet open={tocOpen} onOpenChange={setTocOpen}>
-            <SheetTrigger asChild><Button variant="outline" size="sm" className="lg:hidden" data-testid="button-open-toc"><ListTree className="mr-1.5 h-4 w-4" />Contents</Button></SheetTrigger>
+          {book.courseId === '01' && <LanguageSwitch language={language} onChange={onLanguageChange} />}
+          <SheetTrigger asChild><Button variant="outline" size="sm" className="lg:hidden" data-testid="button-open-toc"><ListTree className="mr-1.5 h-4 w-4" />{bn ? 'সূচিপত্র' : 'Contents'}</Button></SheetTrigger>
             <SheetContent side="left" className="w-[88vw] max-w-sm overflow-y-auto bg-background">
-              <SheetHeader><SheetTitle className="font-display">Contents</SheetTitle></SheetHeader>
+              <SheetHeader><SheetTitle className="font-display">{bn ? 'সূচিপত্র' : 'Contents'}</SheetTitle></SheetHeader>
               <div className="mt-4">{toc}</div>
             </SheetContent>
           </Sheet>
@@ -203,35 +227,35 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
         <article key={lesson.id} className="page-in mx-auto max-w-[46rem]" aria-labelledby="lesson-title">
           <header className="reader-paper reader-margin overflow-hidden px-6 pb-7 pt-8 md:pl-16 md:pr-10">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Chapter {String(mi + 1).padStart(2, '0')} · Lesson {li + 1} of {module.lessons.length}</span>
-              {module.extended && <span className="rounded-full bg-[hsl(var(--turmeric)/.2)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(32_70%_32%)]">Extended · 120h</span>}
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">{bn ? `অধ্যায় ${String(mi + 1).padStart(2, '0')} · পাঠ ${li + 1}/${module.lessons.length}` : `Chapter ${String(mi + 1).padStart(2, '0')} · Lesson ${li + 1} of ${module.lessons.length}`}</span>
+              {module.extended && <span className="rounded-full bg-[hsl(var(--turmeric)/.2)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(32_70%_32%)]">{bn ? 'বিস্তৃত · ১২০ ঘণ্টা' : 'Extended · 120h'}</span>}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">{module.title}</p>
             <h1 id="lesson-title" className="mt-1 font-display text-3xl font-semibold leading-tight text-primary md:text-[2.6rem]" data-testid="text-lesson-title">{lesson.title}</h1>
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" />{lesson.minutes} min read</span>
-              {pilot && <a href="#pilot-lesson" className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="link-watch-pilot"><Play className="h-3.5 w-3.5" />Watch 2-minute lesson</a>}
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" />{lesson.minutes} {bn ? 'মিনিট পড়া' : 'min read'}</span>
+              {pilot && <a href="#pilot-lesson" className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-xs font-semibold text-accent hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="link-watch-pilot"><Play className="h-3.5 w-3.5" />{bn ? '২ মিনিটের পাঠ দেখো' : 'Watch 2-minute lesson'}</a>}
               <span className="flex-1" />
               {userId ? (
                 <>
                   <Button type="button" size="sm" variant={p?.read ? 'default' : 'outline'} onClick={() => toggle('read')} disabled={save.isPending} aria-pressed={!!p?.read}
                     className={p?.read ? 'bg-[hsl(var(--ledger))] hover:bg-[hsl(var(--ledger))]/90' : ''} data-testid="button-toggle-read">
                     {pending && 'read' in pending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : p?.read ? <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> : <Circle className="mr-1.5 h-3.5 w-3.5" />}
-                    {p?.read ? 'Read' : 'Mark as read'}
+                    {p?.read ? (bn ? 'পড়েছি' : 'Read') : (bn ? 'পড়া হয়েছে চিহ্নিত করো' : 'Mark as read')}
                   </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => toggle('bookmarked')} disabled={save.isPending} aria-pressed={!!p?.bookmarked} aria-label={p?.bookmarked ? 'Remove bookmark' : 'Bookmark lesson'} data-testid="button-toggle-bookmark">
+                  <Button type="button" size="sm" variant="outline" onClick={() => toggle('bookmarked')} disabled={save.isPending} aria-pressed={!!p?.bookmarked} aria-label={p?.bookmarked ? (bn ? 'বুকমার্ক সরাও' : 'Remove bookmark') : (bn ? 'পাঠ বুকমার্ক করো' : 'Bookmark lesson')} data-testid="button-toggle-bookmark">
                     {pending && 'bookmarked' in pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : p?.bookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-accent" /> : <Bookmark className="h-3.5 w-3.5" />}
                   </Button>
                 </>
               ) : (
-                <Link href={authHref('login', here)} className="text-xs font-medium text-accent hover:underline" data-testid="link-reader-login">Sign in to save read marks and bookmarks</Link>
+                <Link href={authHref('login', here)} className="text-xs font-medium text-accent hover:underline" data-testid="link-reader-login">{bn ? 'পড়ার হিসাব ও বুকমার্ক রাখতে সাইন ইন করো' : 'Sign in to save read marks and bookmarks'}</Link>
               )}
             </div>
           </header>
 
           {li === 0 && (
             <section className="mt-6 rounded-2xl border-l-4 border-[hsl(var(--ledger))] bg-[hsl(var(--ledger-soft)/.6)] px-6 py-5" aria-label="Learning objectives">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">By the end of this chapter you can</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">{bn ? 'এই অধ্যায় শেষে তুমি পারবে' : 'By the end of this chapter you can'}</p>
               <ul className="mt-3 space-y-2 text-sm">{module.objectives.map((o, k) => <li key={k} className="flex gap-2.5"><span className="mt-0.5 font-mono text-xs text-[hsl(var(--ledger))]">{k + 1}.</span>{o}</li>)}</ul>
             </section>
           )}
@@ -255,24 +279,24 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
           </div>
 
           <aside className="mt-10 rounded-2xl bg-primary p-6 text-primary-foreground" aria-label="Worked example">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--turmeric))]">Worked example · fictional practice case</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--turmeric))]">{bn ? 'উদাহরণ · কাল্পনিক অনুশীলন' : 'Worked example · fictional practice case'}</p>
             <p className="mt-3 whitespace-pre-line font-serif leading-relaxed text-primary-foreground/90">{lesson.example}</p>
           </aside>
           <aside className="mt-4 rounded-2xl border-2 border-dashed border-accent/50 p-6" aria-label="Activity">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">Try it · activity</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">{bn ? 'নিজে করো · অনুশীলন' : 'Try it · activity'}</p>
             <p className="mt-3 whitespace-pre-line leading-relaxed">{lesson.activity}</p>
           </aside>
 
           {isLastLesson && (
             <div className="mt-12 space-y-6">
-              <div className="flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Chapter review</span><span className="h-px flex-1 bg-border" /></div>
-              <MotionSteps steps={module.steps} title={module.id} />
-              {pilotPlayer ?? <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} userId={userId} />}
-              <TeachPanel courseId={book.courseId} module={module} lessonTitles={module.lessons.map((l) => l.title)} teaching={book.teaching} userId={userId} />
+              <div className="flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{bn ? 'অধ্যায়ের পুনরালোচনা' : 'Chapter review'}</span><span className="h-px flex-1 bg-border" /></div>
+              <MotionSteps steps={module.steps} title={module.id} language={language} />
+              {pilotPlayer ?? <ModuleVideo src={module.videoUrl} transcript={module.transcript} title={module.title} userId={userId} language={language} />}
+              <TeachPanel courseId={book.courseId} module={module} lessonTitles={module.lessons.map((l) => l.title)} teaching={book.teaching} userId={userId} language={language} />
               {module.sourceUrls.length > 0 && (
                 <section className="rounded-2xl border p-5 text-sm" aria-label="Further reading">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Further reading</p>
-                  <p className="mt-1 text-xs text-muted-foreground">External sources for deeper study. Listing them is not an endorsement or approval by any institution.</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{bn ? 'আরও পড়ো' : 'Further reading'}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{bn ? 'আরও জানার জন্য বাইরের উৎস। তালিকায় থাকা মানে কোনও প্রতিষ্ঠানের সমর্থন বা অনুমোদন নয়।' : 'External sources for deeper study. Listing them is not an endorsement or approval by any institution.'}</p>
                   <ul className="mt-3 space-y-1.5">{module.sourceUrls.map((u) => <li key={u}><a href={u} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 break-all text-primary hover:text-accent" data-testid="link-source">{u.replace(/^https?:\/\//, '')}<ExternalLink className="h-3 w-3 shrink-0" /></a></li>)}</ul>
                 </section>
               )}
@@ -280,45 +304,46 @@ function Reader({ book, lessonId, userId }: { book: StudyBook; lessonId: string;
           )}
           {!isLastLesson && pilotPlayer && <div className="mt-10">{pilotPlayer}</div>}
           {!isLastLesson && (
-            <p className="mt-10 flex items-center gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground"><Info className="h-4 w-4 shrink-0" />{pilot ? 'The chapter step-through and teach-back follow the final lesson.' : 'The step-through, micro-video and teach-back for this chapter follow the final lesson.'}</p>
+            <p className="mt-10 flex items-center gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground"><Info className="h-4 w-4 shrink-0" />{bn ? (pilot ? 'অধ্যায়ের ধাপ ও শেখা বোঝানোর অনুশীলন শেষ পাঠের পরে আছে।' : 'অধ্যায়ের ধাপ, ছোট ভিডিও ও শেখা বোঝানোর অনুশীলন শেষ পাঠের পরে আছে।') : (pilot ? 'The chapter step-through and teach-back follow the final lesson.' : 'The step-through, micro-video and teach-back for this chapter follow the final lesson.')}</p>
           )}
 
-          <nav className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2" aria-label="Lesson navigation">
+          <nav className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2" aria-label={bn ? 'পাঠের পাতা বদলাও' : 'Lesson navigation'}>
             {prev ? (
               <Link href={`${base}/${prev.lesson.id}`} className="ink-card lift group p-4" data-testid="link-prev-lesson">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="h-3.5 w-3.5" />Previous</span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="h-3.5 w-3.5" />{bn ? 'আগের পাঠ' : 'Previous'}</span>
                 <span className="mt-1 block font-display font-semibold text-primary">{prev.lesson.title}</span>
               </Link>
             ) : <span />}
             {next ? (
               <Link href={`${base}/${next.lesson.id}`} className="ink-card lift p-4 text-right" data-testid="link-next-lesson">
-                <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">Next<ArrowRight className="h-3.5 w-3.5" /></span>
+                <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">{bn ? 'পরের পাঠ' : 'Next'}<ArrowRight className="h-3.5 w-3.5" /></span>
                 <span className="mt-1 block font-display font-semibold text-primary">{next.lesson.title}</span>
               </Link>
             ) : (
-              <Link href={base} className="ink-card lift p-4 text-right" data-testid="link-finish-book"><span className="text-xs text-muted-foreground">End of book</span><span className="mt-1 block font-display font-semibold text-primary">Back to contents</span></Link>
+              <Link href={base} className="ink-card lift p-4 text-right" data-testid="link-finish-book"><span className="text-xs text-muted-foreground">{bn ? 'বইয়ের শেষ' : 'End of book'}</span><span className="mt-1 block font-display font-semibold text-primary">{bn ? 'সূচিপত্রে ফেরো' : 'Back to contents'}</span></Link>
             )}
           </nav>
-          <p className="mt-4 text-center font-mono text-[10px] text-muted-foreground">Tip: use the left and right arrow keys to turn pages</p>
-          <div className="mt-6"><SeparationNote compact /></div>
+          <p className="mt-4 text-center font-mono text-[10px] text-muted-foreground">{bn ? 'পরামর্শ: আগের ও পরের পাতায় যেতে কিবোর্ডের বাম ও ডান তীরচিহ্ন ব্যবহার করো।' : 'Tip: use the left and right arrow keys to turn pages'}</p>
+          <div className="mt-6"><SeparationNote compact language={language} /></div>
         </article>
       </div>
     </div>
   );
 }
 
-function Contents({ book, flat, pm, current, onPick }: { book: StudyBook; flat: Flat[]; pm: Map<string, StudyProgress>; current: string; onPick: () => void }) {
+function Contents({ book, flat, pm, current, onPick, language }: { book: StudyBook; flat: Flat[]; pm: Map<string, StudyProgress>; current: string; onPick: () => void; language: 'en' | 'bn' }) {
+  const bn = language === 'bn';
   const read = flat.filter((f) => pm.get(f.lesson.id)?.read).length;
   return (
-    <nav aria-label="Book contents" data-testid="nav-contents">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">Contents</p>
+      <nav aria-label={bn ? 'বইয়ের সূচিপত্র' : 'Book contents'} data-testid="nav-contents">
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">{bn ? 'সূচিপত্র' : 'Contents'}</p>
       <p className="mt-1 font-display text-lg font-semibold leading-tight text-primary">{book.title}</p>
       <div className="mt-3"><Meter value={flat.length ? (read / flat.length) * 100 : 0} /></div>
-      <p className="mt-1 text-[11px] text-muted-foreground">{read} of {flat.length} lessons read</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{bn ? `${flat.length}টির মধ্যে ${read}টি পাঠ পড়া হয়েছে` : `${read} of ${flat.length} lessons read`}</p>
       <ol className="mt-5 space-y-4">
         {book.modules.map((m, mi) => (
           <li key={m.id}>
-            {mi > 0 && m.extended && !book.modules[mi - 1].extended && <p className="mb-3 border-t pt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(32_70%_32%)]">Extended · 120h</p>}
+            {mi > 0 && m.extended && !book.modules[mi - 1].extended && <p className="mb-3 border-t pt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(32_70%_32%)]">{bn ? 'বিস্তৃত · ১২০ ঘণ্টা' : 'Extended · 120h'}</p>}
             <p className="text-xs font-semibold text-foreground/80"><span className="font-mono text-accent">{String(mi + 1).padStart(2, '0')}</span> {m.title}</p>
             <ul className="mt-1.5 space-y-0.5 border-l pl-3">
               {m.lessons.map((l) => {
@@ -342,23 +367,41 @@ function Contents({ book, flat, pm, current, onPick }: { book: StudyBook; flat: 
   );
 }
 
-function EditorialNote({ note }: { note: string }) {
+function LanguageSwitch({ language, onChange }: { language: 'en' | 'bn'; onChange: (language: 'en' | 'bn') => void }) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full border bg-card p-1" role="group" aria-label={language === 'bn' ? 'পাঠের ভাষা' : 'Course language'}>
+      <Languages className="ml-2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+      {(['en', 'bn'] as const).map((code) => (
+        <button key={code} type="button" aria-pressed={language === code} onClick={() => onChange(code)}
+          className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${language === code ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-primary'}`}>
+          {code === 'en' ? 'English' : 'বাংলা'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function EditorialNote({ note, language }: { note: string; language: 'en' | 'bn' }) {
+  const bn = language === 'bn';
   return (
     <div className="flex gap-3 rounded-2xl border border-[hsl(var(--turmeric))]/50 bg-[hsl(var(--turmeric)/.1)] p-5 text-sm" data-testid="text-editorial-note">
       <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[hsl(32_70%_38%)]" />
       <div>
-        <p className="font-semibold text-primary">Editorial note</p>
+        <p className="font-semibold text-primary">{bn ? 'সম্পাদকের কথা' : 'Editorial note'}</p>
         <p className="mt-1 leading-relaxed text-foreground/80">{note}</p>
       </div>
     </div>
   );
 }
 
-function SeparationNote({ compact }: { compact?: boolean }) {
+function SeparationNote({ compact, language = 'en' }: { compact?: boolean; language?: 'en' | 'bn' }) {
+  const note = language === 'bn'
+    ? 'এখানে পড়া চিহ্নিত করা তোমার ব্যক্তিগত পড়ার হিসাব। এতে ইন্টার্নশিপ মডিউল সম্পূর্ণ হয় না, তত্ত্বাবধানে করা ঘণ্টা নথিবদ্ধ হয় না, বা অফিসিয়াল সমাপ্তি ধরা হয় না। সেগুলি My learning ও Logbook-এ রাখো।'
+    : 'Read marks here are your personal study record. They never complete internship modules, log supervised hours, or count as official completion. Track those in My learning and the Logbook.';
   return (
     <p className={`flex gap-2 text-muted-foreground ${compact ? 'text-xs' : 'mt-4 rounded-xl border bg-card px-4 py-3 text-sm'}`} data-testid="text-separation-note">
       <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--ledger))]" />
-      Read marks here are your personal study record. They never complete internship modules, log supervised hours, or count as official completion. Track those in My learning and the Logbook.
+      {note}
     </p>
   );
 }

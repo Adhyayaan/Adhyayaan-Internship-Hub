@@ -4,7 +4,7 @@ import type { StudySection } from '@workspace/api-client-react';
 import { useReducedMotion } from './use-reduced-motion';
 
 /** Controlled SVG step animation: a survey "route" with stations that light up in order. */
-export function MotionSteps({ steps, title }: { steps: StudySection[]; title: string }) {
+export function MotionSteps({ steps, title, language = 'en' }: { steps: StudySection[]; title: string; language?: 'en' | 'bn' }) {
   const reduced = useReducedMotion();
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -25,17 +25,20 @@ export function MotionSteps({ steps, title }: { steps: StudySection[]; title: st
   const y = (k: number) => 78 + (k % 2 === 0 ? -16 : 16);
   const path = steps.map((_, k) => `${k ? 'L' : 'M'}${x(k)},${y(k)}`).join(' ');
   const step = steps[i];
+  const text = language === 'bn'
+    ? { stage: 'ধাপে ধাপে', of: 'এর', previous: 'আগের ধাপ', pause: 'অ্যানিমেশন থামাও', play: 'অ্যানিমেশন চালাও', next: 'পরের ধাপ', choose: 'ধাপ বেছে নাও' }
+    : { stage: 'Step-through', of: 'of', previous: 'Previous step', pause: 'Pause animation', play: 'Play animation', next: 'Next step', choose: 'Choose step' };
 
   return (
     <figure className="ink-card overflow-hidden" aria-label={`Step animation: ${title}`} data-testid="motion-steps">
       <div className="flex items-center justify-between border-b px-5 py-3">
-        <figcaption className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">Step-through · {i + 1} of {n}</figcaption>
+        <figcaption className="font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--ledger))]">{text.stage} · {i + 1} {text.of} {n}</figcaption>
         <div className="flex items-center gap-1">
-          <IconBtn label="Previous step" onClick={() => { setPlaying(false); setI(Math.max(0, i - 1)); }} disabled={i === 0} testid="button-step-prev"><ChevronLeft className="h-4 w-4" /></IconBtn>
-          <IconBtn label={playing ? 'Pause animation' : 'Play animation'} onClick={() => { if (!playing && i >= n - 1) setI(0); setPlaying(!playing); }} testid="button-step-play">
+          <IconBtn label={text.previous} onClick={() => { setPlaying(false); setI(Math.max(0, i - 1)); }} disabled={i === 0} testid="button-step-prev"><ChevronLeft className="h-4 w-4" /></IconBtn>
+          <IconBtn label={playing ? text.pause : text.play} onClick={() => { if (!playing && i >= n - 1) setI(0); setPlaying(!playing); }} testid="button-step-play">
             {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </IconBtn>
-          <IconBtn label="Next step" onClick={() => { setPlaying(false); setI(Math.min(n - 1, i + 1)); }} disabled={i === n - 1} testid="button-step-next"><ChevronRight className="h-4 w-4" /></IconBtn>
+          <IconBtn label={text.next} onClick={() => { setPlaying(false); setI(Math.min(n - 1, i + 1)); }} disabled={i === n - 1} testid="button-step-next"><ChevronRight className="h-4 w-4" /></IconBtn>
         </div>
       </div>
       <div className="alpona-dots bg-[hsl(var(--ledger-soft)/.5)] px-2">
@@ -58,7 +61,7 @@ export function MotionSteps({ steps, title }: { steps: StudySection[]; title: st
       <div className="px-5 pb-5 pt-4" aria-live="polite">
         <p className="font-display text-lg font-semibold text-primary">{step.heading}</p>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-        <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Choose step">
+        <div className="mt-4 flex gap-1.5" role="tablist" aria-label={text.choose}>
           {steps.map((s, k) => (
             <button key={k} role="tab" aria-selected={k === i} aria-label={`Step ${k + 1}: ${s.heading}`} onClick={() => { setPlaying(false); setI(k); }} data-testid={`button-step-${k}`}
               className={`h-1.5 flex-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${k <= i ? 'bg-[hsl(var(--ledger))]' : 'bg-muted'}`} />

@@ -33,14 +33,9 @@ export function chapterDiagram(chapter: Chapter) {
 const videos = new Map<string, Promise<string>>();
 let renderQueue = Promise.resolve();
 const mentorAvatar = path.resolve(process.cwd(), "assets", "mentor-avatar.png");
-async function renderVideo(chapter: Chapter): Promise<string> {
-  const script = [
-    `Hi, I’m Adhya. Let’s work through ${chapter.title}.`,
-    ...chapter.steps.map((step, index) => `${["First", "Next", "Then", "Finally"][index] ?? "Now"}, ${step.heading}. ${step.body}`),
-    `Before you move on, pause and think: ${chapter.questions.understand}`,
-    "Try to explain your reasoning in your own words. You can pause here and use the study coach whenever you are ready.",
-  ].join(" ");
-  const version = createHash("sha256").update(JSON.stringify(chapter.steps) + chapter.title + script + ":mentor-video-v3").digest("hex").slice(0, 16);
+async function renderVideo(chapter: Chapter, visualChapter: Chapter): Promise<string> {
+  const script = chapter.transcript;
+  const version = createHash("sha256").update(JSON.stringify(chapter.steps) + chapter.title + script + visualChapter.title + ":mentor-video-v4").digest("hex").slice(0, 16);
   const dir = path.join(tmpdir(), "adhyayaan-study-videos");
   await mkdir(dir, { recursive: true });
   const out = path.join(dir, `${chapter.id}-${version}.mp4`);
@@ -62,8 +57,8 @@ async function renderVideo(chapter: Chapter): Promise<string> {
       files.push(`drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile='${file}':expansion=none:fontcolor=${color}:fontsize=${size}:line_spacing=10:x=50:y=${y}${enable ? `:enable='${enable}'` : ""}`);
     };
     await addText("ADHYAAYAAN   /   ADHYA, YOUR LEARNING MENTOR", 14, 30, "0xe7bd55");
-    await addText(wrap(chapter.title, 43).join("\n"), 26, 72, "0xfff8eb");
-    for (const [i, step] of chapter.steps.entries()) {
+    await addText(wrap(visualChapter.title, 43).join("\n"), 26, 72, "0xfff8eb");
+    for (const [i, step] of visualChapter.steps.entries()) {
       const start = (i * sceneDuration).toFixed(3);
       const end = ((i + 1) * sceneDuration).toFixed(3);
       const enable = `gte(t,${start})*lt(t,${end})`;
@@ -76,7 +71,7 @@ async function renderVideo(chapter: Chapter): Promise<string> {
     const reflectEnable = `gte(t,${reflectAt})`;
     files.push(`drawbox=x=38:y=144:w=496:h=254:color=0x111831@0.82:t=fill:enable='${reflectEnable}'`);
     await addText("PAUSE & THINK", 25, 181, "0xe7bd55", reflectEnable);
-    await addText(wrap(chapter.questions.understand, 39).join("\n"), 18, 232, "0xfff8eb", reflectEnable);
+    await addText(wrap(visualChapter.questions.understand, 39).join("\n"), 18, 232, "0xfff8eb", reflectEnable);
     await addText("Explain your reasoning in your own words.", 13, 371, "0xbce2d8", reflectEnable);
     const filter = `[0:v]${files.join(",")}[scene];[1:v]scale=-2:310,format=rgba[mentor];[scene][mentor]overlay=x='548+7*sin(t*1.4)':y='148+5*sin(t*3)':format=auto[v]`;
     await exec("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y",
@@ -93,13 +88,14 @@ async function renderVideo(chapter: Chapter): Promise<string> {
     await rm(work, { recursive: true, force: true });
   }
 }
-export async function chapterVideo(chapter: Chapter) {
-  let job = videos.get(chapter.id);
+export async function chapterVideo(chapter: Chapter, visualChapter: Chapter = chapter) {
+  const cacheKey = `${chapter.id}:${chapter.title}:${visualChapter.title}`;
+  let job = videos.get(cacheKey);
   if (!job) {
-    job = renderQueue.then(() => renderVideo(chapter));
+    job = renderQueue.then(() => renderVideo(chapter, visualChapter));
     renderQueue = job.then(() => undefined, () => undefined);
-    videos.set(chapter.id, job);
-    job.catch(() => videos.delete(chapter.id));
+    videos.set(cacheKey, job);
+    job.catch(() => videos.delete(cacheKey));
   }
   return job;
 }

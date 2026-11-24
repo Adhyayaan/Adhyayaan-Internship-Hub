@@ -2,6 +2,7 @@ import { GetStudyBookResponse } from "@workspace/api-zod";
 import { findCourse } from "./catalog";
 import { communityChapters as sources } from "../data/study";
 import { consentPilot } from "../data/consent-pilot";
+import { bengaliConsentPilot, communityBengali } from "../data/study/community-bengali";
 
 const course = findCourse("01")!;
 if (sources.length !== course.modules.length) throw new Error("Study chapters must match the source course plan.");
@@ -36,5 +37,72 @@ export const communityBook = GetStudyBookResponse.parse({
   }),
   progress: [], teaching: [],
 });
-export function getStudyContent(courseId: string) { return courseId === "01" ? communityBook : undefined; }
-export function findStudyModule(moduleId: string) { return communityBook.modules.find(m => m.id === moduleId); }
+
+if (communityBengali.modules.length !== communityBook.modules.length) {
+  throw new Error("Every Community Survey chapter must have a Bengali version.");
+}
+
+const communityBookBn = GetStudyBookResponse.parse({
+  ...communityBook,
+  title: communityBengali.title,
+  introduction: communityBengali.introduction,
+  editorialNote: communityBengali.editorialNote,
+  modules: communityBook.modules.map((module, index) => {
+    const translation = communityBengali.modules[index]!;
+    return {
+      ...module,
+      title: translation.title,
+      objectives: translation.objectives,
+      lessons: module.lessons.map((lesson, lessonIndex) => ({
+        ...lesson,
+        title: translation.lessonTitles[lessonIndex]!,
+        sections: translation.sections.slice(lessonIndex * 2, lessonIndex * 2 + 2),
+        example: translation.example,
+        activity: translation.activity,
+      })),
+      imageAlt: `${translation.title}: ${translation.steps.map(step => `${step.heading}—${step.body}`).join(" তারপর ")}`,
+      steps: translation.steps,
+      videoUrl: `/api/study-media/01/${module.id}.mp4?language=bn`,
+      transcript: [
+        `নমস্কার, আমি আধ্যা। চলো, আজ ${translation.title} নিয়ে কাজ করি।`,
+        ...translation.steps.map((step, i) => `${["প্রথমে", "এরপর", "তারপর", "শেষে"][i] ?? "এবার"}, ${step.heading}। ${step.body}`),
+        `এগোনোর আগে একটু ভেবে দেখো: ${translation.questions.understand}`,
+        "নিজের ভাষায় যুক্তি বোঝাও। প্রস্তুত হলে ভিডিও থামিয়ে শেখার সঙ্গীর সঙ্গে অনুশীলন করতে পারো।",
+      ].join(" "),
+      questions: translation.questions,
+      ...(module.pilotVideo ? {
+        pilotVideo: {
+          ...module.pilotVideo,
+          title: bengaliConsentPilot.title,
+          captionsUrl: "/api/study-media/01/consent-pilot-bn.vtt",
+          transcript: bengaliConsentPilot.transcript,
+          chapters: module.pilotVideo.chapters.map((chapter, i) => ({ ...chapter, title: bengaliConsentPilot.chapters[i]! })),
+          checkpoints: module.pilotVideo.checkpoints.map((checkpoint, i) => {
+            const translated = bengaliConsentPilot.checkpoints[i]!;
+            return {
+              ...checkpoint,
+              question: translated.question,
+              hint: translated.hint,
+              explanation: translated.explanation,
+              options: checkpoint.options.map((option, optionIndex) => ({
+                ...option,
+                text: translated.options[optionIndex]!.text,
+                feedback: translated.options[optionIndex]!.feedback,
+              })),
+            };
+          }),
+        },
+      } : {}),
+    };
+  }),
+  progress: [],
+  teaching: [],
+});
+
+export type StudyLanguage = "en" | "bn";
+export function getStudyContent(courseId: string, language: StudyLanguage = "en") {
+  return courseId === "01" ? language === "bn" ? communityBookBn : communityBook : undefined;
+}
+export function findStudyModule(moduleId: string, language: StudyLanguage = "en") {
+  return getStudyContent("01", language)?.modules.find(m => m.id === moduleId);
+}

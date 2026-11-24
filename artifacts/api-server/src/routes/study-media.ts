@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { findStudyModule } from "../lib/study-content";
+import { bengaliConsentPilotCaptions } from "../data/study/community-bengali";
 import { chapterDiagram, chapterVideo } from "../lib/study-media";
 import { getPilotMedia, type PilotFile } from "../lib/pilot-media";
 import { checkAssessment } from "../lib/auth";
@@ -35,6 +36,11 @@ router.get("/study-media/mentor-avatar.png", limit, (_req, res) => {
 
 router.get("/study-media/01/:file", limit, protectGeneratedVideo, async (req, res): Promise<void> => {
   const file = String(req.params.file);
+  if (file === "consent-pilot-bn.vtt") {
+    res.set("Cache-Control", "public, max-age=3600").set("X-Content-Type-Options", "nosniff");
+    res.type("text/vtt").send(bengaliConsentPilotCaptions);
+    return;
+  }
   if (file === "consent-pilot.mp4" || file === "consent-pilot.vtt" || file === "consent-pilot.jpg") {
     try {
       const local = await getPilotMedia(file as PilotFile);
@@ -48,13 +54,15 @@ router.get("/study-media/01/:file", limit, protectGeneratedVideo, async (req, re
     return;
   }
   const match = /^(01-\d{1,2})\.(svg|mp4)$/.exec(file);
-  const chapter = match ? findStudyModule(match[1]!) : undefined;
+  const language = req.query.language === "bn" ? "bn" : "en";
+  const chapter = match ? findStudyModule(match[1]!, language) : undefined;
   if (!chapter || !match) { res.status(404).json({ error: "Instructional media not found." }); return; }
   res.set("Cache-Control", match[2] === "mp4" ? "private, max-age=3600" : "public, max-age=3600");
   res.set("X-Content-Type-Options", "nosniff");
   if (match[2] === "svg") { res.type("image/svg+xml").send(chapterDiagram(chapter)); return; }
   try {
-    const video = await chapterVideo(chapter);
+    const visualChapter = language === "bn" ? findStudyModule(match[1]!, "en") : chapter;
+    const video = await chapterVideo(chapter, visualChapter);
     res.type("video/mp4");
     res.sendFile(video);
   } catch (error) {

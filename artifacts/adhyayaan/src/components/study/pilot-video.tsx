@@ -12,12 +12,40 @@ function media(url: string) {
   return `${import.meta.env.BASE_URL}${url.replace(/^\//, '')}`;
 }
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const PILOT_LABELS = {
+  en: {
+    heading: 'Pilot lesson with Adhya · reasoning checkpoints', captions: 'English captions', play: 'Play lesson', signIn: 'Sign in to watch',
+    loadError: 'The lesson video could not load. The transcript below still has the full lesson.', retry: 'Try again', loading: 'Loading lesson',
+    blocked: 'Your browser held playback. Press play on the video to start.', ai: 'AI-generated video.',
+    disclosure: 'Visuals and English narration were produced with AI. People, places and data shown are fictional illustrations, not real survey records.',
+    chapters: 'Chapters', jumps: 'Chapter jumps unlock once the video starts loading.', signInPlay: 'Sign in and play to jump between chapters',
+    thinking: 'Thinking pauses', autoPause: 'Pause video at questions', question: 'Question', replay: 'Replay', open: 'Open',
+    practice: 'Practice only for this session. Answers are not saved and never count toward hours, completion or grades.',
+    hide: 'Hide transcript', read: 'Read transcript', pause: 'Pause and reason', choices: 'Choices',
+    later: 'Answer later', continue: 'Continue video', retryAnswer: 'Try again', explain: 'Show explanation', why: 'Why:',
+    narrowed: 'One unlikely choice has been set aside to narrow it down.',
+  },
+  bn: {
+    heading: 'আধ্যার সঙ্গে পাইলট পাঠ · যুক্তির বিরতি', captions: 'বাংলা সাবটাইটেল', play: 'পাঠ চালাও', signIn: 'দেখতে সাইন ইন করো',
+    loadError: 'ভিডিওটি চালু করা যায়নি। নিচে পুরো পাঠের বাংলা প্রতিলিপি আছে।', retry: 'আবার চেষ্টা করো', loading: 'পাঠ লোড হচ্ছে',
+    blocked: 'ব্রাউজার ভিডিও থামিয়েছে। চালাতে প্লেয়ারের Play চাপো।', ai: 'AI-তৈরি ভিডিও।',
+    disclosure: 'ভিডিওর কণ্ঠ ইংরেজিতে। মানুষ, স্থান ও তথ্য কাল্পনিক; এগুলি বাস্তব সমীক্ষার উত্তর নয়। নিচের প্রতিলিপি ও সাবটাইটেল বাংলায়।',
+    chapters: 'অধ্যায়', jumps: 'ভিডিও লোড হলে অধ্যায় বেছে নেওয়া যাবে।', signInPlay: 'সাইন ইন করে ভিডিও চালাও',
+    thinking: 'ভাবার বিরতি', autoPause: 'প্রশ্নে ভিডিও থামাও', question: 'প্রশ্ন', replay: 'আবার দেখো', open: 'খোলো',
+    practice: 'এটি শুধু এই সেশনের অনুশীলন। উত্তর সংরক্ষিত হয় না; ঘণ্টা, সমাপ্তি বা নম্বরে যোগ হয় না।',
+    hide: 'প্রতিলিপি লুকাও', read: 'প্রতিলিপি পড়ো', pause: 'থামো ও যুক্তি দাও', choices: 'বিকল্প',
+    later: 'পরে উত্তর দাও', continue: 'ভিডিও চালাও', retryAnswer: 'আবার চেষ্টা করো', explain: 'ব্যাখ্যা দেখো', why: 'কেন:',
+    narrowed: 'একটি কম সম্ভাব্য বিকল্প সরানো হয়েছে, তাই এখন বেছে নেওয়া সহজ হবে।',
+  },
+} as const;
+type PilotLabels = typeof PILOT_LABELS[keyof typeof PILOT_LABELS];
 
 type CpState = { wrong: string[]; picked: string | null; solved: boolean; revealed: boolean };
 const fresh = (): CpState => ({ wrong: [], picked: null, solved: false, revealed: false });
 
-export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transcript: string; userId: string | null }) {
+export function PilotVideo({ pilot, transcript, userId, language = 'en' }: { pilot: Pilot; transcript: string; userId: string | null; language?: 'en' | 'bn' }) {
   const here = useHere();
+  const text = PILOT_LABELS[language];
   const ref = useRef<HTMLVideoElement>(null);
   const last = useRef(0);
   const [requested, setRequested] = useState(false);
@@ -93,10 +121,10 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
   return (
     <figure id="pilot-lesson" className="ink-card scroll-mt-20 overflow-hidden" data-testid="pilot-video">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-5">
-        <figcaption className="min-w-0 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Pilot lesson with Adhya · reasoning checkpoints</figcaption>
+        <figcaption className="min-w-0 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">{text.heading}</figcaption>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold tracking-wider text-primary-foreground" data-testid="badge-pilot-1080p">1080p PILOT</span>
-          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><Captions className="h-3.5 w-3.5" />Captions</span>
+          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><Captions className="h-3.5 w-3.5" />{text.captions}</span>
         </div>
       </div>
 
@@ -109,17 +137,17 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
               <h3 className="line-clamp-2 max-w-full font-display text-base font-semibold leading-tight sm:text-2xl" data-testid="text-pilot-title">{pilot.title}</h3>
               <p className="hidden text-xs text-primary-foreground/75 sm:block">{clock(pilot.duration)} · {checkpoints.length} thinking pauses · {pilot.chapters.length} chapters</p>
               {userId ? (
-                <Button type="button" size="sm" onClick={begin} className="bg-accent hover:bg-accent/90" data-testid="button-play-pilot"><Play className="mr-1.5 h-4 w-4" />Play lesson</Button>
+                <Button type="button" size="sm" onClick={begin} className="bg-accent hover:bg-accent/90" data-testid="button-play-pilot"><Play className="mr-1.5 h-4 w-4" />{text.play}</Button>
               ) : (
-                <Button asChild size="sm" className="bg-[hsl(var(--ledger))] hover:bg-[hsl(var(--ledger))]/90" data-testid="button-sign-in-pilot"><Link href={authHref('login', here)}><LockKeyhole className="mr-1.5 h-4 w-4" />Sign in to watch</Link></Button>
+                <Button asChild size="sm" className="bg-[hsl(var(--ledger))] hover:bg-[hsl(var(--ledger))]/90" data-testid="button-sign-in-pilot"><Link href={authHref('login', here)}><LockKeyhole className="mr-1.5 h-4 w-4" />{text.signIn}</Link></Button>
               )}
             </div>
           </>
         ) : failed ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center text-primary-foreground" role="alert" data-testid="status-pilot-error">
             <AlertTriangle className="h-6 w-6 text-[hsl(var(--turmeric))]" />
-            <p className="max-w-sm text-sm text-primary-foreground/85">The lesson video could not load. The transcript below still has the full lesson.</p>
-            <Button type="button" size="sm" variant="outline" onClick={retry} className="bg-transparent text-primary-foreground" data-testid="button-retry-pilot"><RotateCcw className="mr-1.5 h-4 w-4" />Try again</Button>
+            <p className="max-w-sm text-sm text-primary-foreground/85">{text.loadError}</p>
+            <Button type="button" size="sm" variant="outline" onClick={retry} className="bg-transparent text-primary-foreground" data-testid="button-retry-pilot"><RotateCcw className="mr-1.5 h-4 w-4" />{text.retry}</Button>
           </div>
         ) : (
           <>
@@ -133,19 +161,19 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
               onEnded={() => { last.current = 0; }}
               onError={() => { setLoading(false); setFailed(true); }} data-testid="video-pilot">
               <source src={media(pilot.videoUrl)} type="video/mp4" />
-              <track kind="captions" srcLang="en" label="English captions" src={media(pilot.captionsUrl)} default />
+              <track kind="captions" srcLang={language === 'bn' ? 'bn' : 'en'} label={text.captions} src={media(pilot.captionsUrl)} default />
             </video>
             {loading && <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[hsl(232_52%_14%/.7)] text-primary-foreground" role="status" aria-live="polite">
-              <span className="inline-flex items-center gap-2 text-sm"><Loader2 className="h-5 w-5 animate-spin text-[hsl(var(--turmeric))]" />Loading lesson</span>
+              <span className="inline-flex items-center gap-2 text-sm"><Loader2 className="h-5 w-5 animate-spin text-[hsl(var(--turmeric))]" />{text.loading}</span>
             </div>}
           </>
         )}
       </div>
 
-      {blocked && !failed && <p className="border-b bg-[hsl(var(--turmeric)/.12)] px-4 py-2 text-xs text-primary" role="status" data-testid="status-play-blocked">Your browser held playback. Press play on the video to start.</p>}
+      {blocked && !failed && <p className="border-b bg-[hsl(var(--turmeric)/.12)] px-4 py-2 text-xs text-primary" role="status" data-testid="status-play-blocked">{text.blocked}</p>}
 
       {/* Checkpoint panel sits below the video, never on top of it. */}
-      {current && <Checkpoint key={current.id} cp={current} state={cps[current.id] ?? fresh()}
+      {current && <Checkpoint key={current.id} cp={current} state={cps[current.id] ?? fresh()} text={text}
         onPick={(optId) => {
           const opt = current.options.find((o) => o.id === optId);
           if (!opt) return;
@@ -158,12 +186,12 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
       <div className="space-y-4 px-4 py-4 sm:px-5">
         <div className="flex gap-2.5 rounded-xl border border-[hsl(var(--turmeric))]/50 bg-[hsl(var(--turmeric)/.1)] p-3 text-xs leading-relaxed text-foreground/80" data-testid="text-ai-disclosure">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(32_70%_38%)]" aria-hidden="true" />
-          <p><span className="font-semibold text-primary">AI-generated video.</span> Visuals and narration were produced with AI. People, places and data shown are fictional illustrations, not real survey records.</p>
+          <p><span className="font-semibold text-primary">{text.ai}</span> {text.disclosure}</p>
         </div>
 
         {pilot.chapters.length > 0 && (
           <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">Chapters</p>
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">{text.chapters}</p>
             <ol className="grid gap-1.5 sm:grid-cols-2">
               {pilot.chapters.map((c, k) => (
                 <li key={k}>
@@ -174,16 +202,16 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
                 </li>
               ))}
             </ol>
-            {!ready && <p className="mt-1.5 text-[11px] text-muted-foreground">{userId ? 'Chapter jumps unlock once the video starts loading.' : 'Sign in and play to jump between chapters.'}</p>}
+            {!ready && <p className="mt-1.5 text-[11px] text-muted-foreground">{userId ? text.jumps : text.signInPlay}</p>}
           </div>
         )}
 
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">Thinking pauses</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">{text.thinking}</p>
             <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
               <input type="checkbox" checked={autoPause} onChange={(e) => setAutoPause(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--accent))]" data-testid="toggle-auto-pause" />
-              Pause video at questions
+              {text.autoPause}
             </label>
           </div>
           <ul className="mt-2 space-y-1.5">
@@ -193,19 +221,19 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
               return (
                 <li key={c.id} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm" data-testid={`row-checkpoint-${c.id}`}>
                   {done ? <CheckCircle2 className="h-4 w-4 shrink-0 text-[hsl(var(--ledger))]" aria-label="Answered" /> : <BrainCircuit className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />}
-                  <span className="min-w-0 flex-1 truncate"><span className="font-mono text-[11px] text-muted-foreground">{clock(c.at)}</span> Question {k + 1}</span>
-                  <button type="button" onClick={() => openQuestion(c.id)} className="shrink-0 text-xs font-semibold text-accent hover:underline" data-testid={`button-open-checkpoint-${c.id}`}>{done ? 'Replay' : 'Open'}</button>
+                  <span className="min-w-0 flex-1 truncate"><span className="font-mono text-[11px] text-muted-foreground">{clock(c.at)}</span> {text.question} {k + 1}</span>
+                  <button type="button" onClick={() => openQuestion(c.id)} className="shrink-0 text-xs font-semibold text-accent hover:underline" data-testid={`button-open-checkpoint-${c.id}`}>{done ? text.replay : text.open}</button>
                 </li>
               );
             })}
           </ul>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">Practice only for this session. Answers are not saved and never count toward hours, completion or grades.</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{text.practice}</p>
         </div>
 
         <div>
           <button type="button" onClick={() => setShowTx(!showTx)} aria-expanded={showTx} data-testid="button-transcript"
             className="inline-flex items-center gap-1.5 rounded text-sm font-medium text-primary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <FileText className="h-4 w-4" />{showTx ? 'Hide transcript' : 'Read transcript'}
+            <FileText className="h-4 w-4" />{showTx ? text.hide : text.read}
           </button>
           {showTx && <p className="mt-3 whitespace-pre-line border-l-2 border-accent/40 pl-4 text-sm leading-relaxed text-muted-foreground" data-testid="text-transcript">{transcript}</p>}
         </div>
@@ -214,8 +242,8 @@ export function PilotVideo({ pilot, transcript, userId }: { pilot: Pilot; transc
   );
 }
 
-function Checkpoint({ cp, state, onPick, onReveal, onRetry, onContinue }: {
-  cp: VideoCheckpoint; state: CpState; onPick: (id: string) => void; onReveal: () => void; onRetry: () => void; onContinue: () => void;
+function Checkpoint({ cp, state, onPick, onReveal, onRetry, onContinue, text }: {
+  cp: VideoCheckpoint; state: CpState; onPick: (id: string) => void; onReveal: () => void; onRetry: () => void; onContinue: () => void; text: PilotLabels;
 }) {
   const picked = cp.options.find((o) => o.id === state.picked);
   const done = state.solved || state.revealed;
@@ -224,9 +252,9 @@ function Checkpoint({ cp, state, onPick, onReveal, onRetry, onContinue }: {
   const struck = tries >= 2 ? cp.options.find((o) => !o.correct && !state.wrong.includes(o.id))?.id : undefined;
   return (
     <section className="border-b bg-[hsl(var(--ledger-soft))] px-4 py-4 sm:px-5" aria-live="polite" aria-labelledby={`cp-${cp.id}`} data-testid={`panel-checkpoint-${cp.id}`}>
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">Pause and reason · {clock(cp.at)}</p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--ledger))]">{text.pause} · {clock(cp.at)}</p>
       <h4 id={`cp-${cp.id}`} className="mt-1 font-display text-lg font-semibold leading-snug text-primary">{cp.question}</h4>
-      <div className="mt-3 grid gap-2" role="group" aria-label="Choices">
+      <div className="mt-3 grid gap-2" role="group" aria-label={text.choices}>
         {cp.options.map((o) => {
           const wrong = state.wrong.includes(o.id);
           const right = done && o.correct;
@@ -243,20 +271,20 @@ function Checkpoint({ cp, state, onPick, onReveal, onRetry, onContinue }: {
       {!done && tries >= 1 && (
         <div className="mt-3 flex gap-2 rounded-lg bg-card p-3 text-sm" data-testid="text-checkpoint-hint">
           <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(32_70%_38%)]" aria-hidden="true" />
-          <p>{cp.hint}{tries >= 2 && ' One unlikely choice has been set aside to narrow it down.'}</p>
+          <p>{cp.hint}{tries >= 2 && ` ${text.narrowed}`}</p>
         </div>
       )}
-      {done && <p className="mt-3 rounded-lg bg-card p-3 text-sm leading-relaxed" data-testid="text-checkpoint-explanation"><span className="font-semibold text-primary">Why: </span>{cp.explanation}</p>}
+      {done && <p className="mt-3 rounded-lg bg-card p-3 text-sm leading-relaxed" data-testid="text-checkpoint-explanation"><span className="font-semibold text-primary">{text.why} </span>{cp.explanation}</p>}
       <div className="mt-3 flex flex-wrap gap-2">
         {done ? (
           <>
-            <Button type="button" size="sm" onClick={onContinue} className="bg-accent hover:bg-accent/90" data-testid="button-checkpoint-continue"><Play className="mr-1.5 h-4 w-4" />Continue video</Button>
-            <Button type="button" size="sm" variant="outline" onClick={onRetry} data-testid="button-checkpoint-retry"><RotateCcw className="mr-1.5 h-4 w-4" />Try again</Button>
+            <Button type="button" size="sm" onClick={onContinue} className="bg-accent hover:bg-accent/90" data-testid="button-checkpoint-continue"><Play className="mr-1.5 h-4 w-4" />{text.continue}</Button>
+            <Button type="button" size="sm" variant="outline" onClick={onRetry} data-testid="button-checkpoint-retry"><RotateCcw className="mr-1.5 h-4 w-4" />{text.retryAnswer}</Button>
           </>
         ) : (
           <>
-            {tries >= 1 && <Button type="button" size="sm" variant="outline" onClick={onReveal} data-testid="button-checkpoint-reveal">Show explanation</Button>}
-            <Button type="button" size="sm" variant="ghost" onClick={onContinue} className="text-muted-foreground" data-testid="button-checkpoint-later">Answer later</Button>
+            {tries >= 1 && <Button type="button" size="sm" variant="outline" onClick={onReveal} data-testid="button-checkpoint-reveal">{text.explain}</Button>}
+            <Button type="button" size="sm" variant="ghost" onClick={onContinue} className="text-muted-foreground" data-testid="button-checkpoint-later">{text.later}</Button>
           </>
         )}
       </div>

@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, studyProgress, studyTeaching } from "@workspace/db";
-import { GetStudyBookParams, GetStudyBookResponse, SaveStudyProgressParams, SaveStudyProgressBody, SaveStudyProgressResponse, TeachStudyParams, TeachStudyBody, TeachStudyResponse } from "@workspace/api-zod";
+import { GetStudyBookParams, GetStudyBookResponse, GetStudyBookBengaliParams, GetStudyBookBengaliResponse, SaveStudyProgressParams, SaveStudyProgressBody, SaveStudyProgressResponse, TeachStudyParams, TeachStudyBody, TeachStudyResponse } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { requireLearner } from "../lib/auth";
 import { aiLimit, oneAtATime } from "../lib/ai-guard";
@@ -14,7 +14,7 @@ import { plainLanguage } from "../lib/plain-language";
 const router: IRouter = Router();
 router.get("/study/:courseId", async (req, res): Promise<void> => {
   const params = GetStudyBookParams.safeParse(req.params);
-  const book = params.success ? getStudyContent(params.data.courseId) : undefined;
+  const book = params.success ? getStudyContent(params.data.courseId, "en") : undefined;
   if (!book) { res.status(404).json({ error: "The study book for this course has not been authored yet. Its course plan remains available." }); return; }
   const userId = req.learner?.id;
   const [progress, teaching] = userId ? await Promise.all([
@@ -25,10 +25,23 @@ router.get("/study/:courseId", async (req, res): Promise<void> => {
   res.json(GetStudyBookResponse.parse({ ...book, progress: progress.map(x => ({ ...x, updatedAt: x.updatedAt.toISOString() })), teaching: teaching.map(x => ({ ...x, createdAt: x.createdAt.toISOString() })) }));
 });
 
+router.get("/study/:courseId/bn", async (req, res): Promise<void> => {
+  const params = GetStudyBookBengaliParams.safeParse(req.params);
+  const book = params.success ? getStudyContent(params.data.courseId, "bn") : undefined;
+  if (!book) { res.status(404).json({ error: "এই কোর্সের বাংলা পাঠ এখনও তৈরি হয়নি।" }); return; }
+  const userId = req.learner?.id;
+  const [progress, teaching] = userId ? await Promise.all([
+    db.select().from(studyProgress).where(and(eq(studyProgress.userId, userId), eq(studyProgress.courseId, book.courseId))),
+    db.select().from(studyTeaching).where(and(eq(studyTeaching.userId, userId), eq(studyTeaching.courseId, book.courseId))).orderBy(desc(studyTeaching.createdAt)).limit(100),
+  ]) : [[], []];
+  res.set("Cache-Control", "private, no-store");
+  res.json(GetStudyBookBengaliResponse.parse({ ...book, progress: progress.map(x => ({ ...x, updatedAt: x.updatedAt.toISOString() })), teaching: teaching.map(x => ({ ...x, createdAt: x.createdAt.toISOString() })) }));
+});
+
 router.patch("/study/:courseId/progress", requireLearner, async (req, res): Promise<void> => {
   const params = SaveStudyProgressParams.safeParse(req.params);
   const input = SaveStudyProgressBody.safeParse(req.body);
-  const book = params.success ? getStudyContent(params.data.courseId) : undefined;
+  const book = params.success ? getStudyContent(params.data.courseId, "en") : undefined;
   if (!book || !input.success || !book.modules.some(m => m.lessons.some(l => l.id === input.data.lessonId))) { res.status(400).json({ error: "Choose an authored lesson." }); return; }
   const changes = { ...(input.data.read !== undefined ? { read: input.data.read } : {}), ...(input.data.bookmarked !== undefined ? { bookmarked: input.data.bookmarked } : {}), updatedAt: new Date() };
   const [row] = await db.insert(studyProgress).values({ userId: req.learner!.id, courseId: book.courseId, lessonId: input.data.lessonId, ...changes })
@@ -46,7 +59,7 @@ const levels = ["understand", "apply", "analyze"] as const;
 router.post("/study/:courseId/teach", requireLearner, aiLimit, oneAtATime, async (req, res): Promise<void> => {
   const params = TeachStudyParams.safeParse(req.params);
   const input = TeachStudyBody.safeParse(req.body);
-  const book = params.success ? getStudyContent(params.data.courseId) : undefined;
+  const book = params.success ? getStudyContent(params.data.courseId, input.success ? input.data.language : "en") : undefined;
   const chapter = book && input.success ? book.modules.find(m => m.id === input.data.moduleId) : undefined;
   if (!input.success || !book || !chapter || input.data.answer.trim().length < 15) { res.status(400).json({ error: "Choose a chapter and explain your reasoning in 15–4000 characters." }); return; }
   const { level, answer, language } = input.data;
