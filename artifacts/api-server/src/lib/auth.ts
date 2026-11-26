@@ -18,6 +18,7 @@ export function publicUser(user: Learner) {
   return {
     id: user.id, name: user.name, email: user.email, college: user.college, discipline: user.discipline,
     assessmentRequired: user.assessmentRequired, assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
+    isGuide: user.role === "guide",
     isAdmin: user.role === "admin",
   };
 }

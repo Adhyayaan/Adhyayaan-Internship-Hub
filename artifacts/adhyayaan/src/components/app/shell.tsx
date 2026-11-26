@@ -40,7 +40,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [mobileFormFocused, setMobileFormFocused] = useState(false);
   const lastScrollY = useRef(0);
   const { user } = useAuth();
-  const navigation = user?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: ShieldCheck }] : NAV;
+  const navigation = user?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: ShieldCheck }, { href: '/admin/guide-pool', label: 'Guide pool', icon: UserRound }] : user?.isGuide ? [...NAV, { href: '/guide', label: 'Guide dashboard', icon: UserRound }] : NAV;
   const active = (h: string) => (h === '/' ? loc === '/' : loc.startsWith(h) || (h === '/explore' && loc.startsWith('/courses')));
   const here = useHere();
   const initials = user?.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();

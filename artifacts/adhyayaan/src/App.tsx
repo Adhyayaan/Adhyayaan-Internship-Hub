@@ -1,3 +1,4 @@
+import { GuidePool, GuideWorkspace } from '@/pages/guide';
 import { type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -49,7 +50,8 @@ function Router() {
     );
   }
   if (isLoading) return <AuthSplash />;
-  if (user?.assessmentRequired && !user.assessmentCompletedAt && !(user.isAdmin && /^\/admin(?:\/|$)/.test(loc))) {
+  if (user?.isGuide && loc === '/') return <Redirect to="/guide" replace />;
+  if (!(user?.isGuide && loc === '/guide') && user?.assessmentRequired && !user.assessmentCompletedAt && !(user.isAdmin && /^\/admin(?:\/|$)/.test(loc))) {
     return <Redirect to={assessmentHref(here)} replace />;
   }
   if (loc === '/') {
@@ -71,6 +73,8 @@ function Router() {
           <Route path="/ai" component={AiStudio} />
           <Route path="/profile/reports/:id" component={LearningReportPage} />
           <Route path="/profile" component={Profile} />
+          <Route path="/guide" component={GuideWorkspace} />
+          <Route path="/admin/guide-pool" component={GuidePool} />
           <Route path="/admin/learners/:id/reports/:reportId" component={AdminLearningReportPage} />
           <Route path="/admin/learners/:id" component={AdminLearnerPage} />
           <Route path="/admin" component={AdminDirectoryPage} />

@@ -6,6 +6,50 @@ info:
 servers:
   - url: /api
 paths:
+  /guide/workspace:
+    get:
+      operationId: getGuideWorkspace
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GuideStudent'
+  /admin/guide-pool:
+    get:
+      operationId: getGuidePool
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GuidePoolEntry'
+    put:
+      operationId: configureGuide
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - saved
+                properties:
+                  saved:
+                    type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuidePoolInput'
   /assessment:
     get:
       operationId: getAssessment
@@ -456,6 +500,170 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/AssessmentRetakeWait" }
   schemas:
+    ChapterTarget:
+      type: object
+      required:
+      - title
+      - hours
+      - due
+      - done
+      properties:
+        title:
+          type: string
+        hours:
+          type: number
+        due:
+          type: string
+        done:
+          type: boolean
+    PathwayPace:
+      type: object
+      required:
+      - enrollmentId
+      - title
+      - guideName
+      - chapters
+      - percent
+      - expected
+      - deltaHours
+      - cohortSize
+      - percentile
+      - start
+      - end
+      properties:
+        enrollmentId:
+          type: string
+        title:
+          type: string
+        guideName:
+          type: string
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChapterTarget'
+        percent:
+          type: number
+        expected:
+          type: number
+        deltaHours:
+          type: number
+        cohortSize:
+          type: number
+        percentile:
+          type: number
+        start:
+          type: string
+        end:
+          type: string
+    GuideStudent:
+      type: object
+      required:
+      - id
+      - name
+      - college
+      - email
+      - discipline
+      - courseId
+      - title
+      - logged
+      - target
+      - completed
+      - chapters
+      - percent
+      - deltaHours
+      - status
+      - projectUrl
+      - reflection
+      - logs
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        college:
+          type: string
+        email:
+          type: string
+        discipline:
+          type: string
+        courseId:
+          type: string
+        title:
+          type: string
+        logged:
+          type: number
+        target:
+          type: number
+        completed:
+          type: number
+        chapters:
+          type: number
+        percent:
+          type: number
+        deltaHours:
+          type: number
+        status:
+          type: string
+        projectUrl:
+          type: string
+        reflection:
+          type: string
+        logs:
+          type: array
+          items:
+            type: object
+            required:
+            - date
+            - hours
+            - activity
+            - learning
+            properties:
+              date:
+                type: string
+              hours:
+                type: number
+              activity:
+                type: string
+              learning:
+                type: string
+    GuidePoolInput:
+      type: object
+      required:
+      - accountId
+      - capacity
+      - courseIds
+      properties:
+        accountId:
+          type: string
+        capacity:
+          type: integer
+          minimum: 0
+          maximum: 500
+        courseIds:
+          type: array
+          items:
+            type: string
+    GuidePoolEntry:
+      type: object
+      required:
+      - accountId
+      - name
+      - capacity
+      - courseIds
+      - assigned
+      properties:
+        accountId:
+          type: string
+        name:
+          type: string
+        capacity:
+          type: number
+        courseIds:
+          type: array
+          items:
+            type: string
+        assigned:
+          type: number
     AssessmentQuestion:
       type: object
       required: [id, prompt, options]
@@ -780,6 +988,7 @@ components:
         assessmentRequired: { type: boolean }
         assessmentCompletedAt: { type: ["string", "null"] }
         isAdmin: { type: boolean }
+        isGuide: { type: boolean }
     Session:
       type: object
       required: [user]
@@ -907,6 +1116,7 @@ components:
           anyOf:
             - { $ref: "#/components/schemas/User" }
             - { type: "null" }
+        pacing: { type: array, items: { $ref: "#/components/schemas/PathwayPace" } }
         stats: { $ref: "#/components/schemas/Stats" }
         enrollments:
           type: array

@@ -1,3 +1,4 @@
+import { Timeline } from './guide';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Coach, CoachMark, CoachToggle } from '@/components/app/coach';
@@ -88,6 +89,7 @@ export default function Dashboard() {
             ))}
           </div>
           {d.preview && <p className="mt-2 text-xs text-muted-foreground">Sample figures from an illustrative pathway.</p>}
+          {d.pacing && <Timeline plans={d.pacing} />}
           {!d.preview && d.user && <NextStep d={d} />}
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
