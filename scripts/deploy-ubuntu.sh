@@ -48,7 +48,7 @@ echo "Restarting $SERVICE_NAME..."
 
 echo "Checking API health..."
 for attempt in {1..15}; do
-  if curl --fail --silent --show-error "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then
+  if curl --fail --silent "http://127.0.0.1:${API_PORT}/api/healthz" >/dev/null; then
     echo "Deployment completed successfully."
     exit 0
   fi
