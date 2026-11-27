@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'wouter';
-import { ArrowLeft, BookOpen, Clock3, GraduationCap, LockKeyhole, ShieldCheck, Target, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock3, GraduationCap, LockKeyhole, ShieldCheck, Target, Users, MessagesSquare } from 'lucide-react';
 import {
   getGetGuideDashboardQueryKey,
   getGetGuideLearningReportQueryKey,
@@ -55,6 +55,9 @@ function PaceCard({ course }: { course: GuideCourseProgress }) {
       <ActivityMetric icon={<GraduationCap className="h-4 w-4" />} label="Study checks" value={`${course.studyChecks} · ${course.secureChecks} secure`} />
       <ActivityMetric icon={<Target className="h-4 w-4" />} label="Practice sets" value={course.practiceCount} />
       <ActivityMetric icon={<Clock3 className="h-4 w-4" />} label="Practice average" value={course.practiceAverage === null ? 'Not yet' : course.practiceAverage.toFixed(1)} />
+    </div>
+    <div className="mt-4 border-t border-border pt-4">
+      <Button asChild size="sm" variant="outline" data-testid={`button-guide-mentorship-${course.enrollmentId}`}><Link href={`/mentorship/${course.enrollmentId}`}><MessagesSquare className="mr-2 h-4 w-4" />Open learner conversation</Link></Button>
     </div>
     <section className="mt-4 border-t border-border pt-4" aria-label={`Practical-hour log for ${course.courseTitle}`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">

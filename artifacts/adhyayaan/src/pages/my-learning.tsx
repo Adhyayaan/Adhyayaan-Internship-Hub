@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, BookOpenText, Check, Loader2, UserRound } from 'lucide-react';
+import { ArrowRight, BookOpenText, Check, Loader2, UserRound, MessagesSquare } from 'lucide-react';
 import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
 import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,10 @@ function Pathway({ e }: { e: Enrollment }) {
           <div><div className="mb-1 flex justify-between text-xs"><span>Module progress</span><span className="font-mono">{p.modulePct}% · {p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
           <div><div className="mb-1 flex justify-between text-xs"><span>Logged hours</span><span className="font-mono">{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
         </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-[hsl(var(--ledger-soft))]/45 px-4 py-3 sm:px-6">
+        <p className="text-sm text-muted-foreground">{e.assignedGuide ? `Talk with ${e.assignedGuide.name} about your project work.` : 'Your conversation will be ready when a guide is assigned.'}</p>
+        <Button asChild size="sm" variant="outline" data-testid={`button-mentorship-${e.id}`}><Link href={`/mentorship/${e.id}`}><MessagesSquare className="mr-2 h-4 w-4" />Open guide conversation</Link></Button>
       </div>
       <div className="mx-4 mb-5 rounded-2xl border bg-secondary/30 p-4 sm:mx-6 sm:p-5" data-testid={`pace-detail-${e.id}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">

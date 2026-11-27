@@ -737,6 +737,155 @@ export const GetGuideLearningReportResponse = zod.object({
 })
 
 
+export const ListMentorshipThreadsResponseItem = zod.object({
+  "enrollmentId": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "hours": zod.union([zod.literal(60),zod.literal(120)]),
+  "status": zod.string(),
+  "studentId": zod.string().uuid(),
+  "studentName": zod.string(),
+  "guideId": zod.string().uuid().nullable(),
+  "guideName": zod.string().nullable(),
+  "canSend": zod.boolean(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "messageCount": zod.number().int()
+})
+export const ListMentorshipThreadsResponse = zod.array(ListMentorshipThreadsResponseItem)
+
+
+export const ListMentorshipMessagesParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid()
+})
+
+export const ListMentorshipMessagesResponse = zod.object({
+  "thread": zod.object({
+  "enrollmentId": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "hours": zod.union([zod.literal(60),zod.literal(120)]),
+  "status": zod.string(),
+  "studentId": zod.string().uuid(),
+  "studentName": zod.string(),
+  "guideId": zod.string().uuid().nullable(),
+  "guideName": zod.string().nullable(),
+  "canSend": zod.boolean(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "messageCount": zod.number().int()
+}),
+  "messages": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+export const SendMentorshipMessageParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid()
+})
+
+export const sendMentorshipMessageBodyBodyMax = 5000;
+
+export const sendMentorshipMessageBodyMeetingUrlMax = 500;
+
+export const sendMentorshipMessageBodyMeetingAgendaMax = 1000;
+
+export const sendMentorshipMessageBodyUploadTokensItemMax = 4096;
+
+export const sendMentorshipMessageBodyUploadTokensMax = 5;
+
+
+
+export const SendMentorshipMessageBody = zod.object({
+  "kind": zod.enum(['text', 'meeting']),
+  "body": zod.string().max(sendMentorshipMessageBodyBodyMax).optional(),
+  "meetingUrl": zod.string().url().max(sendMentorshipMessageBodyMeetingUrlMax).optional(),
+  "meetingStartsAt": zod.coerce.date().optional(),
+  "meetingAgenda": zod.string().max(sendMentorshipMessageBodyMeetingAgendaMax).optional(),
+  "uploadTokens": zod.array(zod.string().max(sendMentorshipMessageBodyUploadTokensItemMax)).max(sendMentorshipMessageBodyUploadTokensMax).optional()
+})
+
+export const SendMentorshipMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const RequestMentorshipUploadParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid()
+})
+
+export const requestMentorshipUploadBodyFileNameMax = 160;
+
+export const requestMentorshipUploadBodyContentTypeMax = 120;
+
+export const requestMentorshipUploadBodySizeMax = 10485760;
+
+
+
+export const RequestMentorshipUploadBody = zod.object({
+  "fileName": zod.string().min(1).max(requestMentorshipUploadBodyFileNameMax),
+  "contentType": zod.string().max(requestMentorshipUploadBodyContentTypeMax),
+  "size": zod.number().int().min(1).max(requestMentorshipUploadBodySizeMax)
+})
+
+export const RequestMentorshipUploadResponse = zod.object({
+  "uploadUrl": zod.string().url(),
+  "uploadToken": zod.string(),
+  "expiresAt": zod.coerce.date()
+})
+
+
+export const StreamMentorshipEventsParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid()
+})
+
+export const StreamMentorshipEventsResponse = zod.unknown()
+
+
+export const DownloadMentorshipAttachmentParams = zod.object({
+  "attachmentId": zod.coerce.string().uuid()
+})
+
+export const DownloadMentorshipAttachmentResponse = zod.unknown()
+
+
 export const getStudyMediaPathFileRegExp = new RegExp('^(01-[0-9]{1,2}\\.(svg|mp4)|consent-pilot\\.(mp4|vtt|jpg))$');
 
 

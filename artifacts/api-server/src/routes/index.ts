@@ -9,6 +9,7 @@ import assessmentRouter from "./assessment";
 import adminRouter from "./admin";
 import superadminRouter from "./superadmin";
 import guideRouter from "./guide";
+import mentorshipRouter from "./mentorship";
 import { checkAssessment, requireTemporaryPasswordChangeComplete } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -20,6 +21,7 @@ router.use(assessmentRouter);
 router.use(adminRouter);
 router.use(superadminRouter);
 router.use(guideRouter);
+router.use(mentorshipRouter);
 router.use(["/dashboard", "/enrollments", "/logs", "/ai", "/practice", "/study"], checkAssessment);
 router.use(learningRouter);
 router.use(aiRouter);

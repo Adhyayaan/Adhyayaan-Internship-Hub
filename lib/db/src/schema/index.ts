@@ -25,3 +25,4 @@ export * from "./messages";
 export * from "./study";
 export * from "./assessment";
 export * from "./admin-audit";
+export * from "./mentorship";

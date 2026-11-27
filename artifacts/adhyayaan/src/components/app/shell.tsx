@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound, KeyRound } from 'lucide-react';
+import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound, KeyRound, MessagesSquare } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
@@ -11,6 +11,7 @@ const NAV = [
   { href: '/', label: 'Today', icon: LayoutGrid },
   { href: '/explore', label: 'Explore', icon: Compass },
   { href: '/my-learning', label: 'My learning', icon: BookOpenText },
+  { href: '/mentorship', label: 'Mentorship', icon: MessagesSquare },
   { href: '/practice', label: 'Practice', icon: Brain },
   { href: '/projects', label: 'Projects', icon: FolderGit2 },
   { href: '/logbook', label: 'Logbook', icon: NotebookPen },
@@ -18,6 +19,7 @@ const NAV = [
 ];
 const GUIDE_NAV = [
   { href: '/guide', label: 'Guide dashboard', icon: UsersRound },
+  { href: '/mentorship', label: 'Mentorship', icon: MessagesSquare },
   { href: '/profile', label: 'Account', icon: UserRound },
 ];
 const ADMIN_NAV = [
@@ -141,7 +143,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      {user && !user.isGuide && !user.isAdmin && !loc.startsWith('/admin') && !loc.startsWith('/profile/reports/') && <AdhyaGuide />}
+      {user && !user.isGuide && !user.isAdmin && !loc.startsWith('/admin') && !loc.startsWith('/mentorship') && !loc.startsWith('/profile/reports/') && <AdhyaGuide />}
 
       <nav aria-label="Main navigation" aria-hidden={!showMobileNav} style={{ gridTemplateColumns: `repeat(${navigation.length > 4 ? 5 : Math.max(1, navigation.length)}, minmax(0, 1fr))` }} className={`mobile-bottom-nav fixed inset-x-2 bottom-0 z-40 grid gap-0.5 rounded-t-2xl bg-sidebar px-1.5 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 shadow-2xl md:hidden ${showMobileNav ? '' : 'mobile-bottom-nav-hidden'}`}>
         {navigation.slice(0, 4).map((n) => (

@@ -285,6 +285,96 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Internship Guide access required }
         "404": { description: Report or assigned learner not found }
+  /mentorship/threads:
+    get:
+      operationId: listMentorshipThreads
+      responses:
+        "200":
+          description: Course-specific conversations available to the signed-in student or guide
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MentorshipThread" }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+  /mentorship/threads/{enrollmentId}/messages:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: listMentorshipMessages
+      responses:
+        "200":
+          description: Private conversation history for this course enrollment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipMessagesResponse" }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+        "404": { description: Course enrollment not found }
+    post:
+      operationId: sendMentorshipMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MentorshipMessageInput" }
+      responses:
+        "201":
+          description: Message saved and sent to the course conversation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipMessage" }
+        "400": { description: "Invalid message, meeting link, or attachment" }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+        "404": { description: Course enrollment not found }
+  /mentorship/threads/{enrollmentId}/uploads:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: requestMentorshipUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MentorshipUploadInput" }
+      responses:
+        "201":
+          description: Short-lived private upload URL and signed attachment token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipUploadResponse" }
+        "400": { description: Unsupported file type or size }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+  /mentorship/threads/{enrollmentId}/events:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: streamMentorshipEvents
+      responses:
+        "200":
+          description: Reconnecting server-sent notifications for new conversation messages
+          content:
+            text/event-stream:
+              schema: { type: string }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+  /mentorship/attachments/{attachmentId}:
+    parameters:
+      - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: downloadMentorshipAttachment
+      responses:
+        "200":
+          description: "Private attachment, available only to the student and currently assigned guide"
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "401": { description: Sign in first }
+        "403": { description: Student or assigned guide access required }
+        "404": { description: Attachment not found }
   /study-media/01/{file}:
     parameters:
       - { name: file, in: path, required: true, schema: { type: string, pattern: '^(01-[0-9]{1,2}\.(svg|mp4)|consent-pilot\.(mp4|vtt|jpg))$' } }
@@ -1008,6 +1098,82 @@ components:
         selectedCourseId: { type: ["string", "null"] }
         learnerCount: { type: integer }
         learners: { type: array, items: { $ref: "#/components/schemas/GuideLearner" } }
+    MentorshipAttachment:
+      type: object
+      required: [id, fileName, contentType, size, downloadUrl, isImage]
+      properties:
+        id: { type: string, format: uuid }
+        fileName: { type: string }
+        contentType: { type: string }
+        size: { type: integer }
+        downloadUrl: { type: string }
+        isImage: { type: boolean }
+    MentorshipMessage:
+      type: object
+      required: [id, enrollmentId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, attachments, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        enrollmentId: { type: string, format: uuid }
+        senderId: { type: string, format: uuid }
+        senderName: { type: string }
+        senderRole: { type: string, enum: [student, guide] }
+        kind: { type: string, enum: [text, meeting] }
+        body: { type: string }
+        meetingUrl: { type: ["string", "null"], format: uri }
+        meetingStartsAt: { type: ["string", "null"], format: date-time }
+        meetingAgenda: { type: string }
+        attachments: { type: array, items: { $ref: "#/components/schemas/MentorshipAttachment" } }
+        createdAt: { type: string, format: date-time }
+    MentorshipThread:
+      type: object
+      required: [enrollmentId, courseId, courseTitle, hours, status, studentId, studentName, guideId, guideName, canSend, lastMessagePreview, lastMessageAt, messageCount]
+      properties:
+        enrollmentId: { type: string, format: uuid }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        hours: { type: integer, enum: [60, 120] }
+        status: { type: string }
+        studentId: { type: string, format: uuid }
+        studentName: { type: string }
+        guideId: { type: ["string", "null"], format: uuid }
+        guideName: { type: ["string", "null"] }
+        canSend: { type: boolean }
+        lastMessagePreview: { type: ["string", "null"] }
+        lastMessageAt: { type: ["string", "null"], format: date-time }
+        messageCount: { type: integer }
+    MentorshipMessagesResponse:
+      type: object
+      required: [thread, messages]
+      properties:
+        thread: { $ref: "#/components/schemas/MentorshipThread" }
+        messages: { type: array, items: { $ref: "#/components/schemas/MentorshipMessage" } }
+    MentorshipMessageInput:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [text, meeting] }
+        body: { type: string, maxLength: 5000 }
+        meetingUrl: { type: string, format: uri, maxLength: 500 }
+        meetingStartsAt: { type: string, format: date-time }
+        meetingAgenda: { type: string, maxLength: 1000 }
+        uploadTokens:
+          type: array
+          maxItems: 5
+          items: { type: string, maxLength: 4096 }
+    MentorshipUploadInput:
+      type: object
+      required: [fileName, contentType, size]
+      properties:
+        fileName: { type: string, minLength: 1, maxLength: 160 }
+        contentType: { type: string, maxLength: 120 }
+        size: { type: integer, minimum: 1, maximum: 10485760 }
+    MentorshipUploadResponse:
+      type: object
+      required: [uploadUrl, uploadToken, expiresAt]
+      properties:
+        uploadUrl: { type: string, format: uri }
+        uploadToken: { type: string }
+        expiresAt: { type: string, format: date-time }
     StudySection:
       type: object
       required: [heading, body]

@@ -506,6 +506,126 @@ export interface GuideDashboard {
   learners: GuideLearner[];
 }
 
+export interface MentorshipAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  downloadUrl: string;
+  isImage: boolean;
+}
+
+export type MentorshipMessageSenderRole = typeof MentorshipMessageSenderRole[keyof typeof MentorshipMessageSenderRole];
+
+
+export const MentorshipMessageSenderRole = {
+  student: 'student',
+  guide: 'guide',
+} as const;
+
+export type MentorshipMessageKind = typeof MentorshipMessageKind[keyof typeof MentorshipMessageKind];
+
+
+export const MentorshipMessageKind = {
+  text: 'text',
+  meeting: 'meeting',
+} as const;
+
+export interface MentorshipMessage {
+  id: string;
+  enrollmentId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: MentorshipMessageSenderRole;
+  kind: MentorshipMessageKind;
+  body: string;
+  /** @nullable */
+  meetingUrl: string | null;
+  /** @nullable */
+  meetingStartsAt: string | null;
+  meetingAgenda: string;
+  attachments: MentorshipAttachment[];
+  createdAt: string;
+}
+
+export type MentorshipThreadHours = typeof MentorshipThreadHours[keyof typeof MentorshipThreadHours];
+
+
+export const MentorshipThreadHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export interface MentorshipThread {
+  enrollmentId: string;
+  courseId: string;
+  courseTitle: string;
+  hours: MentorshipThreadHours;
+  status: string;
+  studentId: string;
+  studentName: string;
+  /** @nullable */
+  guideId: string | null;
+  /** @nullable */
+  guideName: string | null;
+  canSend: boolean;
+  /** @nullable */
+  lastMessagePreview: string | null;
+  /** @nullable */
+  lastMessageAt: string | null;
+  messageCount: number;
+}
+
+export interface MentorshipMessagesResponse {
+  thread: MentorshipThread;
+  messages: MentorshipMessage[];
+}
+
+export type MentorshipMessageInputKind = typeof MentorshipMessageInputKind[keyof typeof MentorshipMessageInputKind];
+
+
+export const MentorshipMessageInputKind = {
+  text: 'text',
+  meeting: 'meeting',
+} as const;
+
+export interface MentorshipMessageInput {
+  kind: MentorshipMessageInputKind;
+  /** @maxLength 5000 */
+  body?: string;
+  /** @maxLength 500 */
+  meetingUrl?: string;
+  meetingStartsAt?: string;
+  /** @maxLength 1000 */
+  meetingAgenda?: string;
+  /**
+     * @maxItems 5
+     * @items.maxLength 4096
+     */
+  uploadTokens?: string[];
+}
+
+export interface MentorshipUploadInput {
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  fileName: string;
+  /** @maxLength 120 */
+  contentType: string;
+  /**
+     * @minimum 1
+     * @maximum 10485760
+     */
+  size: number;
+}
+
+export interface MentorshipUploadResponse {
+  uploadUrl: string;
+  uploadToken: string;
+  expiresAt: string;
+}
+
 export interface StudySection {
   heading: string;
   body: string;
