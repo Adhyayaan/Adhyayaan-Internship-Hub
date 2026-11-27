@@ -102,7 +102,7 @@ export function AdminGuidesPanel() {
 
   const pool = guidesQuery.data;
   const courses = coursesQuery.data ?? [];
-  return <section className="space-y-6" aria-labelledby="admin-guides-heading">
+  return <section id="guide-pool" className="space-y-6 scroll-mt-20" aria-labelledby="admin-guides-heading">
     <header className="flex flex-col gap-2 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div><p className="font-mono text-[10px] uppercase tracking-[.18em] text-accent">People & pathways</p><h2 id="admin-guides-heading" className="font-display mt-1 text-2xl font-black text-primary sm:text-3xl">Guide directory</h2><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Set course coverage, control assignment availability and match eligible guides to unassigned enrolments.</p></div>
       {pool && <div className="flex gap-2"><span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-bold text-primary">{pool.guides.length} guides</span><span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-bold text-primary">{pool.unassignedEnrollments.length} awaiting guide</span></div>}

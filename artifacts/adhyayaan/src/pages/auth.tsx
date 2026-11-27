@@ -140,8 +140,8 @@ function useSignedInRedirect(fallback: string) {
   const [, nav] = useLocation();
   useEffect(() => {
     if (!isLoading && user) {
-      const destination = next || (user.isAdmin ? '/admin' : fallback);
-      nav(user.assessmentRequired && !user.assessmentCompletedAt && !user.isAdmin ? assessmentHref(destination) : destination, { replace: true });
+      const destination = user.mustChangePassword ? '/change-password' : next || (user.isSuperadmin ? '/superadmin' : user.isAdmin ? '/admin' : fallback);
+      nav(user.assessmentRequired && !user.assessmentCompletedAt && !user.isAdmin && !user.isSuperadmin ? assessmentHref(destination) : destination, { replace: true });
     }
   }, [isLoading, user, next, fallback, nav]);
   return { blocked: isLoading || !!user, next };
@@ -160,8 +160,8 @@ export function Login() {
     try {
       const s = await login.mutateAsync({ data: { email: f.email.trim(), password: f.password } });
       reset(s);
-      const destination = next || (s.user?.isAdmin ? '/admin' : '/');
-      nav(s.user?.assessmentRequired && !s.user.assessmentCompletedAt && !s.user.isAdmin ? assessmentHref(destination) : destination, { replace: true });
+      const destination = s.user?.mustChangePassword ? '/change-password' : next || (s.user?.isSuperadmin ? '/superadmin' : s.user?.isAdmin ? '/admin' : '/');
+      nav(s.user?.assessmentRequired && !s.user.assessmentCompletedAt && !s.user.isAdmin && !s.user.isSuperadmin ? assessmentHref(destination) : destination, { replace: true });
     }
     catch (x) { setErr(errMsg(x)); }
   };

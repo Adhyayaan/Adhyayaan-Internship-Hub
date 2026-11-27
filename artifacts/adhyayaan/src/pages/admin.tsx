@@ -18,7 +18,7 @@ import { AdminGuidesPanel } from '@/pages/admin-guides';
 
 function useAdminGate(path: string) {
   const { user, isLoading } = useAuth();
-  const ok = !!user?.isAdmin;
+  const ok = !!user?.isAdmin || !!user?.isSuperadmin;
   let gate = null;
   if (isLoading) gate = <div className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></div>;
   else if (!user) gate = (

@@ -12,7 +12,7 @@ export default function Profile() {
   useTitle('Profile');
   const { user, isLoading } = useAuth();
   const logout = useLogout();
-  const isStudent = !!user && !user.isGuide && !user.isAdmin;
+  const isStudent = !!user && !user.isGuide && !user.isAdmin && !user.isSuperadmin;
   const assessment = useGetAssessment({ query: { enabled: isStudent, queryKey: getGetAssessmentQueryKey() } });
   const wait = assessment.data?.nextRetakeAt;
   const reset = useResetForSession();
@@ -64,13 +64,16 @@ export default function Profile() {
         <Link href="/assessment/guide" className="mt-5 inline-block text-sm font-medium text-primary underline underline-offset-2">How we use your answers</Link>
       </section> : (
         <section className="ink-card mt-6 max-w-2xl p-5 sm:p-8">
-          <h2 className="text-xl font-semibold text-primary">{user.isGuide ? 'Internship Guide account' : 'Administrator account'}</h2>
+           <h2 className="text-xl font-semibold text-primary">{user.isSuperadmin ? 'Superadmin account' : user.isGuide ? 'Internship Guide account' : 'Administrator account'}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {user.isGuide
+             {user.isSuperadmin
+               ? 'Your platform operator access includes account-role controls and platform-wide internship visibility.'
+               : user.isGuide
               ? 'Your guide access is separate from student learning records. Open your dashboard to support learners assigned to you.'
               : 'Your admin workspace is separate from student learning records.'}
           </p>
           {user.isGuide && <Button asChild className="mt-4"><Link href="/guide">Open guide dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
+           {user.isSuperadmin && <div className="mt-4 flex flex-wrap gap-2"><Button asChild><Link href="/superadmin" data-testid="link-profile-superadmin">Open superadmin workspace <ArrowRight className="ml-2 h-4 w-4" /></Link></Button><Button asChild variant="outline"><Link href="/admin" data-testid="link-profile-admin">Open admin workspace</Link></Button></div>}
         </section>
       )}
     </div>

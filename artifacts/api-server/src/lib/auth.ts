@@ -18,7 +18,10 @@ export function publicUser(user: Learner) {
   return {
     id: user.id, name: user.name, email: user.email, college: user.college, discipline: user.discipline,
     assessmentRequired: user.assessmentRequired, assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
-    isAdmin: user.role === "admin", isGuide: user.role === "guide",
+    isAdmin: user.role === "admin" || user.role === "superadmin",
+    isGuide: user.role === "guide",
+    isSuperadmin: user.role === "superadmin",
+    mustChangePassword: user.mustChangePassword,
   };
 }
 
@@ -96,7 +99,22 @@ export function checkAssessment(req: Request, res: Response, next: NextFunction)
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   requireLearner(req, res, () => {
-    if (req.learner?.role !== "admin") { res.status(403).json({ error: "Administrator access is required." }); return; }
+    if (req.learner?.role !== "admin" && req.learner?.role !== "superadmin") { res.status(403).json({ error: "Administrator access is required." }); return; }
     next();
   });
+}
+
+export function requireSuperadmin(req: Request, res: Response, next: NextFunction) {
+  requireLearner(req, res, () => {
+    if (req.learner?.role !== "superadmin") { res.status(403).json({ error: "Superadmin access is required." }); return; }
+    next();
+  });
+}
+
+export function requireTemporaryPasswordChangeComplete(req: Request, res: Response, next: NextFunction) {
+  if (req.learner?.mustChangePassword) {
+    res.status(403).json({ error: "Change your temporary password before using the platform.", code: "PASSWORD_CHANGE_REQUIRED" });
+    return;
+  }
+  next();
 }

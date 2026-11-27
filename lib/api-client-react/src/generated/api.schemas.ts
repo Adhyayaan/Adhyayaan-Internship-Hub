@@ -250,6 +250,134 @@ export interface AdminGuideUpdate {
   availableForAssignments?: boolean;
 }
 
+export interface SuperadminCourseTotal {
+  courseId: string;
+  title: string;
+  enrollmentCount: number;
+  activeEnrollmentCount: number;
+  completedEnrollmentCount: number;
+}
+
+export type SuperadminRoleAuditEntryPreviousRole = typeof SuperadminRoleAuditEntryPreviousRole[keyof typeof SuperadminRoleAuditEntryPreviousRole];
+
+
+export const SuperadminRoleAuditEntryPreviousRole = {
+  student: 'student',
+  admin: 'admin',
+  guide: 'guide',
+  superadmin: 'superadmin',
+} as const;
+
+export type SuperadminRoleAuditEntryNewRole = typeof SuperadminRoleAuditEntryNewRole[keyof typeof SuperadminRoleAuditEntryNewRole];
+
+
+export const SuperadminRoleAuditEntryNewRole = {
+  student: 'student',
+  admin: 'admin',
+  guide: 'guide',
+  superadmin: 'superadmin',
+} as const;
+
+export interface SuperadminRoleAuditEntry {
+  id: string;
+  /** @nullable */
+  actorName: string | null;
+  /** @nullable */
+  targetName: string | null;
+  previousRole: SuperadminRoleAuditEntryPreviousRole;
+  newRole: SuperadminRoleAuditEntryNewRole;
+  createdAt: string;
+}
+
+export interface SuperadminAnalytics {
+  totalAccounts: number;
+  studentCount: number;
+  adminCount: number;
+  guideCount: number;
+  superadminCount: number;
+  enrollmentCount: number;
+  activeEnrollmentCount: number;
+  completedEnrollmentCount: number;
+  loggedPracticalHours: number;
+  savedReportCount: number;
+  adminReportViews: number;
+  guideReportViews: number;
+  courseTotals: SuperadminCourseTotal[];
+  recentRoleChanges: SuperadminRoleAuditEntry[];
+}
+
+export type SuperadminAccountRole = typeof SuperadminAccountRole[keyof typeof SuperadminAccountRole];
+
+
+export const SuperadminAccountRole = {
+  student: 'student',
+  admin: 'admin',
+  guide: 'guide',
+  superadmin: 'superadmin',
+} as const;
+
+export interface SuperadminAccount {
+  id: string;
+  name: string;
+  email: string;
+  college: string;
+  discipline: string;
+  role: SuperadminAccountRole;
+  createdAt: string;
+  enrollmentCount: number;
+}
+
+export interface SuperadminAccountDirectory {
+  accounts: SuperadminAccount[];
+  page: number;
+  pageSize: number;
+  matchCount: number;
+}
+
+export type SuperadminRoleUpdateInputRole = typeof SuperadminRoleUpdateInputRole[keyof typeof SuperadminRoleUpdateInputRole];
+
+
+export const SuperadminRoleUpdateInputRole = {
+  student: 'student',
+  admin: 'admin',
+  superadmin: 'superadmin',
+} as const;
+
+export interface SuperadminRoleUpdateInput {
+  role: SuperadminRoleUpdateInputRole;
+}
+
+export interface SuperadminGuideInput {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minItems 1
+     * @maxItems 30
+     */
+  supportedCourseIds: string[];
+  availableForAssignments?: boolean;
+}
+
+export interface SuperadminGuideProvision {
+  guide: AdminGuide;
+  /** @minLength 10 */
+  temporaryPassword: string;
+  mustChangePassword: true;
+}
+
+export interface InitialPasswordChangeInput {
+  /**
+     * @minLength 10
+     * @maxLength 128
+     */
+  newPassword: string;
+}
+
 export interface GuideCourse {
   id: string;
   title: string;
@@ -565,6 +693,8 @@ export interface User {
   assessmentCompletedAt: string | null;
   isAdmin: boolean;
   isGuide: boolean;
+  isSuperadmin: boolean;
+  mustChangePassword: boolean;
 }
 
 export interface Session {
@@ -847,6 +977,30 @@ export const ListAdminLearnersAssessment = {
   all: 'all',
   completed: 'completed',
   pending: 'pending',
+} as const;
+
+export type ListSuperadminAccountsParams = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+role?: ListSuperadminAccountsRole;
+/**
+ * @minimum 1
+ * @maximum 100000
+ */
+page?: number;
+};
+
+export type ListSuperadminAccountsRole = typeof ListSuperadminAccountsRole[keyof typeof ListSuperadminAccountsRole];
+
+
+export const ListSuperadminAccountsRole = {
+  all: 'all',
+  student: 'student',
+  admin: 'admin',
+  guide: 'guide',
+  superadmin: 'superadmin',
 } as const;
 
 export type GetGuideDashboardParams = {

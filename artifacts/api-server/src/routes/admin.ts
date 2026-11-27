@@ -165,14 +165,14 @@ router.post("/admin/guides", async (req, res): Promise<void> => {
   if (supportedCourseIds.some((courseId) => !findCourse(courseId))) {
     res.status(400).json({ error: "Choose internships from the available course list." }); return;
   }
-  let failure: "not_found" | "admin" | null = null;
+  let failure: "not_found" | "privileged" | null = null;
   let userId: string | null = null;
   await db.transaction(async (tx) => {
     await lockGuideAssignmentPool(tx);
     const [account] = await tx.select({ id: learners.id, role: learners.role }).from(learners)
       .where(sql`lower(${learners.email}) = ${input.data.email.trim().toLowerCase()}`).limit(1);
     if (!account) { failure = "not_found"; return; }
-    if (account.role === "admin") { failure = "admin"; return; }
+    if (account.role === "admin" || account.role === "superadmin") { failure = "privileged"; return; }
     userId = account.id;
     await tx.update(learners).set({ role: "guide" }).where(eq(learners.id, account.id));
     await tx.insert(internshipGuides).values({
@@ -184,7 +184,7 @@ router.post("/admin/guides", async (req, res): Promise<void> => {
     });
   });
   if (failure === "not_found") { res.status(404).json({ error: "No account matches that email. Ask the person to register first." }); return; }
-  if (failure === "admin") { res.status(409).json({ error: "An administrator account cannot be changed to a guide." }); return; }
+  if (failure === "privileged") { res.status(409).json({ error: "An admin or Superadmin account cannot be changed to a guide." }); return; }
   const guide = userId ? await adminGuideView(userId) : null;
   if (!guide) { res.status(500).json({ error: "The guide account could not be saved." }); return; }
   res.status(201).json(ProvisionAdminGuideResponse.parse(guide));

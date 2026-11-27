@@ -17,4 +17,6 @@ export interface User {
   assessmentCompletedAt: string | null;
   isAdmin: boolean;
   isGuide: boolean;
+  isSuperadmin: boolean;
+  mustChangePassword: boolean;
 }

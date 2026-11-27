@@ -1,9 +1,9 @@
 import { Router, type IRouter } from "express";
 import { rateLimit } from "express-rate-limit";
 import { randomUUID } from "node:crypto";
-import { db, learners } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { RegisterBody, LoginBody, GetSessionResponse } from "@workspace/api-zod";
+import { db, learnerSessions, learners } from "@workspace/db";
+import { and, eq } from "drizzle-orm";
+import { RegisterBody, LoginBody, GetSessionResponse, CompleteInitialPasswordChangeBody } from "@workspace/api-zod";
 import { publicUser, hashPassword, verifyPassword, createSession, clearSession } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -33,6 +33,28 @@ router.post("/auth/login", limiter, async (req, res): Promise<void> => {
   // A dummy hash performs equivalent work when the email is unknown.
   const valid = await verifyPassword(parsed.data.password, user?.passwordHash ?? `${"0".repeat(32)}:${"0".repeat(128)}`);
   if (!user || !valid) { res.status(401).json({ error: "The email or password is incorrect." }); return; }
+  await createSession(req, res, user.id);
+  res.json(GetSessionResponse.parse({ user: publicUser(user) }));
+});
+router.post("/auth/initial-password", limiter, async (req, res): Promise<void> => {
+  if (!req.learner) { res.status(401).json({ error: "Please sign in first." }); return; }
+  const parsed = CompleteInitialPasswordChangeBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Use a new password of 10–128 characters." }); return; }
+  if (!req.learner.mustChangePassword) {
+    res.status(409).json({ error: "This account does not need an initial password change." });
+    return;
+  }
+  if (await verifyPassword(parsed.data.newPassword, req.learner.passwordHash)) {
+    res.status(400).json({ error: "Choose a password different from the temporary password." });
+    return;
+  }
+  const passwordHash = await hashPassword(parsed.data.newPassword);
+  const [user] = await db.update(learners)
+    .set({ passwordHash, mustChangePassword: false })
+    .where(and(eq(learners.id, req.learner.id), eq(learners.mustChangePassword, true)))
+    .returning();
+  if (!user) { res.status(409).json({ error: "The initial password was already changed. Sign in again." }); return; }
+  await db.delete(learnerSessions).where(eq(learnerSessions.userId, user.id));
   await createSession(req, res, user.id);
   res.json(GetSessionResponse.parse({ user: publicUser(user) }));
 });

@@ -155,7 +155,7 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Administrator access required }
         "404": { description: No account matches that email }
-        "409": { description: An administrator cannot be changed to a guide }
+        "409": { description: An admin or Superadmin account cannot be changed to a guide }
   /admin/guides/{id}:
     parameters:
       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -191,6 +191,71 @@ paths:
         "403": { description: Administrator access required }
         "404": { description: Enrolment not found }
         "409": { description: A guide is already assigned or no eligible guide is available }
+  /superadmin/analytics:
+    get:
+      operationId: getSuperadminAnalytics
+      responses:
+        "200":
+          description: Platform-wide learner, guide and programme metrics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuperadminAnalytics" }
+        "401": { description: Sign in first }
+        "403": { description: Superadmin access required }
+  /superadmin/guides:
+    post:
+      operationId: createSuperadminGuide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SuperadminGuideInput" }
+      responses:
+        "201":
+          description: New guide account and one-time temporary password
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuperadminGuideProvision" }
+        "400": { description: Invalid guide details or course coverage }
+        "401": { description: Sign in first }
+        "403": { description: Superadmin access required }
+        "409": { description: An account with this email already exists }
+  /superadmin/accounts:
+    get:
+      operationId: listSuperadminAccounts
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 120 } }
+        - { name: role, in: query, schema: { type: string, enum: [all, student, admin, guide, superadmin] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000 } }
+      responses:
+        "200":
+          description: Paginated account directory for role management
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuperadminAccountDirectory" }
+        "401": { description: Sign in first }
+        "403": { description: Superadmin access required }
+  /superadmin/accounts/{id}/role:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateSuperadminAccountRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SuperadminRoleUpdateInput" }
+      responses:
+        "200":
+          description: Updated account role, with the change recorded for audit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuperadminAccount" }
+        "400": { description: Invalid role change }
+        "401": { description: Sign in first }
+        "403": { description: Superadmin access required }
+        "404": { description: Account not found }
+        "409": { description: Self changes or removal of the last superadmin are not allowed }
   /guide/dashboard:
     get:
       operationId: getGuideDashboard
@@ -360,6 +425,23 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Session" }
+  /auth/initial-password:
+    post:
+      operationId: completeInitialPasswordChange
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InitialPasswordChangeInput" }
+      responses:
+        "200":
+          description: Temporary password replaced with a new password
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "400": { description: New password does not meet the length requirement }
+        "401": { description: Sign in first }
+        "409": { description: This account does not need an initial password change }
   /auth/logout:
     post:
       operationId: logout
@@ -780,6 +862,92 @@ components:
           maxItems: 30
           items: { type: string }
         availableForAssignments: { type: boolean }
+    SuperadminCourseTotal:
+      type: object
+      required: [courseId, title, enrollmentCount, activeEnrollmentCount, completedEnrollmentCount]
+      properties:
+        courseId: { type: string }
+        title: { type: string }
+        enrollmentCount: { type: integer }
+        activeEnrollmentCount: { type: integer }
+        completedEnrollmentCount: { type: integer }
+    SuperadminRoleAuditEntry:
+      type: object
+      required: [id, actorName, targetName, previousRole, newRole, createdAt]
+      properties:
+        id: { type: string }
+        actorName: { type: ["string", "null"] }
+        targetName: { type: ["string", "null"] }
+        previousRole: { type: string, enum: [student, admin, guide, superadmin] }
+        newRole: { type: string, enum: [student, admin, guide, superadmin] }
+        createdAt: { type: string, format: date-time }
+    SuperadminAnalytics:
+      type: object
+      required: [totalAccounts, studentCount, adminCount, guideCount, superadminCount, enrollmentCount, activeEnrollmentCount, completedEnrollmentCount, loggedPracticalHours, savedReportCount, adminReportViews, guideReportViews, courseTotals, recentRoleChanges]
+      properties:
+        totalAccounts: { type: integer }
+        studentCount: { type: integer }
+        adminCount: { type: integer }
+        guideCount: { type: integer }
+        superadminCount: { type: integer }
+        enrollmentCount: { type: integer }
+        activeEnrollmentCount: { type: integer }
+        completedEnrollmentCount: { type: integer }
+        loggedPracticalHours: { type: number }
+        savedReportCount: { type: integer }
+        adminReportViews: { type: integer }
+        guideReportViews: { type: integer }
+        courseTotals: { type: array, items: { $ref: "#/components/schemas/SuperadminCourseTotal" } }
+        recentRoleChanges: { type: array, items: { $ref: "#/components/schemas/SuperadminRoleAuditEntry" } }
+    SuperadminAccount:
+      type: object
+      required: [id, name, email, college, discipline, role, createdAt, enrollmentCount]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        college: { type: string }
+        discipline: { type: string }
+        role: { type: string, enum: [student, admin, guide, superadmin] }
+        createdAt: { type: string, format: date-time }
+        enrollmentCount: { type: integer }
+    SuperadminAccountDirectory:
+      type: object
+      required: [accounts, page, pageSize, matchCount]
+      properties:
+        accounts: { type: array, items: { $ref: "#/components/schemas/SuperadminAccount" } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        matchCount: { type: integer }
+    SuperadminRoleUpdateInput:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, enum: [student, admin, superadmin] }
+    SuperadminGuideInput:
+      type: object
+      required: [name, email, supportedCourseIds]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email, maxLength: 254 }
+        supportedCourseIds:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { type: string }
+        availableForAssignments: { type: boolean, default: true }
+    SuperadminGuideProvision:
+      type: object
+      required: [guide, temporaryPassword, mustChangePassword]
+      properties:
+        guide: { $ref: "#/components/schemas/AdminGuide" }
+        temporaryPassword: { type: string, minLength: 10 }
+        mustChangePassword: { type: boolean, const: true }
+    InitialPasswordChangeInput:
+      type: object
+      required: [newPassword]
+      properties:
+        newPassword: { type: string, minLength: 10, maxLength: 128 }
     GuideCourse:
       type: object
       required: [id, title]
@@ -978,7 +1146,7 @@ components:
         success: { type: boolean }
     User:
       type: object
-      required: [id, name, email, college, discipline, assessmentRequired, assessmentCompletedAt, isAdmin, isGuide]
+      required: [id, name, email, college, discipline, assessmentRequired, assessmentCompletedAt, isAdmin, isGuide, isSuperadmin, mustChangePassword]
       properties:
         id: { type: string }
         name: { type: string }
@@ -989,6 +1157,8 @@ components:
         assessmentCompletedAt: { type: ["string", "null"] }
         isAdmin: { type: boolean }
         isGuide: { type: boolean }
+        isSuperadmin: { type: boolean }
+        mustChangePassword: { type: boolean }
     Session:
       type: object
       required: [user]

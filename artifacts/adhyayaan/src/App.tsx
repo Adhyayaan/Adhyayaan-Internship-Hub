@@ -23,6 +23,8 @@ import Assessment, { AssessmentGuide, LearningReportPage } from '@/pages/assessm
 import { AdminDirectoryPage, AdminLearnerPage, AdminLearningReportPage } from '@/pages/admin';
 import { AdminGuidesPanel } from '@/pages/admin-guides';
 import { GuideDashboardPage, GuideLearningReportPage } from '@/pages/guide';
+import SuperadminPage from '@/pages/superadmin';
+import ChangePasswordPage from '@/pages/change-password';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -30,6 +32,7 @@ function Router() {
   const [loc] = useLocation();
   const here = useHere();
   const { user, isLoading } = useAuth();
+  if (!isLoading && user?.mustChangePassword && loc !== '/change-password') return <Redirect to="/change-password" replace />;
   if (loc === '/login' || loc === '/register') {
     return (
       <RoutedErrorBoundary>
@@ -43,6 +46,7 @@ function Router() {
   if (loc === '/assessment' || loc === '/assessment/guide') {
     if (isLoading) return <AuthSplash />;
     if (user?.isGuide) return <Redirect to="/guide" replace />;
+    if (user?.isSuperadmin) return <Redirect to="/superadmin" replace />;
     if (user?.isAdmin) return <Redirect to="/admin" replace />;
     return (
       <RoutedErrorBoundary>
@@ -54,9 +58,11 @@ function Router() {
     );
   }
   if (isLoading) return <AuthSplash />;
-  if (user?.isGuide && !loc.startsWith('/guide') && loc !== '/profile') return <Redirect to="/guide" replace />;
-  if (user?.isAdmin && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/admin" replace />;
-  if (user && !user.isGuide && !user.isAdmin && user.assessmentRequired && !user.assessmentCompletedAt) {
+  if (loc === '/change-password') return <RoutedErrorBoundary><ChangePasswordPage /></RoutedErrorBoundary>;
+  if (user?.isSuperadmin && !loc.startsWith('/superadmin') && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/superadmin" replace />;
+  if (user?.isGuide && !user.isSuperadmin && !loc.startsWith('/guide') && loc !== '/profile') return <Redirect to="/guide" replace />;
+  if (user?.isAdmin && !user.isSuperadmin && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/admin" replace />;
+  if (user && !user.isGuide && !user.isAdmin && !user.isSuperadmin && user.assessmentRequired && !user.assessmentCompletedAt) {
     return <Redirect to={assessmentHref(here)} replace />;
   }
   if (loc === '/') {
@@ -80,6 +86,7 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/guide/learners/:learnerId/reports/:reportId" component={GuideLearningReportPage} />
           <Route path="/guide" component={GuideDashboardPage} />
+          <Route path="/superadmin" component={SuperadminPage} />
           <Route path="/admin/learners/:id/reports/:reportId" component={AdminLearningReportPage} />
           <Route path="/admin/learners/:id" component={AdminLearnerPage} />
           <Route path="/admin" component={AdminDirectoryPage} />

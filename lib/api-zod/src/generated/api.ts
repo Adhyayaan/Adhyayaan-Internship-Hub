@@ -489,6 +489,120 @@ export const AssignAdminGuideResponse = zod.object({
 })
 
 
+export const GetSuperadminAnalyticsResponse = zod.object({
+  "totalAccounts": zod.number().int(),
+  "studentCount": zod.number().int(),
+  "adminCount": zod.number().int(),
+  "guideCount": zod.number().int(),
+  "superadminCount": zod.number().int(),
+  "enrollmentCount": zod.number().int(),
+  "activeEnrollmentCount": zod.number().int(),
+  "completedEnrollmentCount": zod.number().int(),
+  "loggedPracticalHours": zod.number(),
+  "savedReportCount": zod.number().int(),
+  "adminReportViews": zod.number().int(),
+  "guideReportViews": zod.number().int(),
+  "courseTotals": zod.array(zod.object({
+  "courseId": zod.string(),
+  "title": zod.string(),
+  "enrollmentCount": zod.number().int(),
+  "activeEnrollmentCount": zod.number().int(),
+  "completedEnrollmentCount": zod.number().int()
+})),
+  "recentRoleChanges": zod.array(zod.object({
+  "id": zod.string(),
+  "actorName": zod.string().nullable(),
+  "targetName": zod.string().nullable(),
+  "previousRole": zod.enum(['student', 'admin', 'guide', 'superadmin']),
+  "newRole": zod.enum(['student', 'admin', 'guide', 'superadmin']),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+export const createSuperadminGuideBodyNameMin = 2;
+export const createSuperadminGuideBodyNameMax = 120;
+
+export const createSuperadminGuideBodyEmailMax = 254;
+
+export const createSuperadminGuideBodySupportedCourseIdsMax = 30;
+
+export const createSuperadminGuideBodyAvailableForAssignmentsDefault = true;
+
+export const CreateSuperadminGuideBody = zod.object({
+  "name": zod.string().min(createSuperadminGuideBodyNameMin).max(createSuperadminGuideBodyNameMax),
+  "email": zod.string().email().max(createSuperadminGuideBodyEmailMax),
+  "supportedCourseIds": zod.array(zod.string()).min(1).max(createSuperadminGuideBodySupportedCourseIdsMax),
+  "availableForAssignments": zod.boolean().default(createSuperadminGuideBodyAvailableForAssignmentsDefault)
+})
+
+export const createSuperadminGuideResponseTemporaryPasswordMin = 10;
+
+
+
+export const CreateSuperadminGuideResponse = zod.object({
+  "guide": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "supportedCourseIds": zod.array(zod.string()),
+  "availableForAssignments": zod.boolean(),
+  "activeLearners": zod.number().int()
+}),
+  "temporaryPassword": zod.string().min(createSuperadminGuideResponseTemporaryPasswordMin),
+  "mustChangePassword": zod.literal(true)
+})
+
+
+export const listSuperadminAccountsQuerySearchMax = 120;
+
+export const listSuperadminAccountsQueryPageMax = 100000;
+
+
+
+export const ListSuperadminAccountsQueryParams = zod.object({
+  "search": zod.coerce.string().max(listSuperadminAccountsQuerySearchMax).optional(),
+  "role": zod.enum(['all', 'student', 'admin', 'guide', 'superadmin']).optional(),
+  "page": zod.coerce.number().int().min(1).max(listSuperadminAccountsQueryPageMax).optional()
+})
+
+export const ListSuperadminAccountsResponse = zod.object({
+  "accounts": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "role": zod.enum(['student', 'admin', 'guide', 'superadmin']),
+  "createdAt": zod.coerce.date(),
+  "enrollmentCount": zod.number().int()
+})),
+  "page": zod.number().int(),
+  "pageSize": zod.number().int(),
+  "matchCount": zod.number().int()
+})
+
+
+export const UpdateSuperadminAccountRoleParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const UpdateSuperadminAccountRoleBody = zod.object({
+  "role": zod.enum(['student', 'admin', 'superadmin'])
+})
+
+export const UpdateSuperadminAccountRoleResponse = zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "role": zod.enum(['student', 'admin', 'guide', 'superadmin']),
+  "createdAt": zod.coerce.date(),
+  "enrollmentCount": zod.number().int()
+})
+
+
 export const GetGuideDashboardQueryParams = zod.object({
   "courseId": zod.coerce.string().optional()
 })
@@ -893,7 +1007,9 @@ export const GetSessionResponse = zod.object({
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
   "isAdmin": zod.boolean(),
-  "isGuide": zod.boolean()
+  "isGuide": zod.boolean(),
+  "isSuperadmin": zod.boolean(),
+  "mustChangePassword": zod.boolean()
 }),zod.null()])
 })
 
@@ -930,7 +1046,9 @@ export const RegisterResponse = zod.object({
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
   "isAdmin": zod.boolean(),
-  "isGuide": zod.boolean()
+  "isGuide": zod.boolean(),
+  "isSuperadmin": zod.boolean(),
+  "mustChangePassword": zod.boolean()
 }),zod.null()])
 })
 
@@ -957,7 +1075,35 @@ export const LoginResponse = zod.object({
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
   "isAdmin": zod.boolean(),
-  "isGuide": zod.boolean()
+  "isGuide": zod.boolean(),
+  "isSuperadmin": zod.boolean(),
+  "mustChangePassword": zod.boolean()
+}),zod.null()])
+})
+
+
+export const completeInitialPasswordChangeBodyNewPasswordMin = 10;
+export const completeInitialPasswordChangeBodyNewPasswordMax = 128;
+
+
+
+export const CompleteInitialPasswordChangeBody = zod.object({
+  "newPassword": zod.string().min(completeInitialPasswordChangeBodyNewPasswordMin).max(completeInitialPasswordChangeBodyNewPasswordMax)
+})
+
+export const CompleteInitialPasswordChangeResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "assessmentRequired": zod.boolean(),
+  "assessmentCompletedAt": zod.string().nullable(),
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean(),
+  "isSuperadmin": zod.boolean(),
+  "mustChangePassword": zod.boolean()
 }),zod.null()])
 })
 
@@ -1040,7 +1186,9 @@ export const GetDashboardResponse = zod.object({
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
   "isAdmin": zod.boolean(),
-  "isGuide": zod.boolean()
+  "isGuide": zod.boolean(),
+  "isSuperadmin": zod.boolean(),
+  "mustChangePassword": zod.boolean()
 }),zod.null()]),
   "stats": zod.object({
   "activeInternships": zod.number().int(),

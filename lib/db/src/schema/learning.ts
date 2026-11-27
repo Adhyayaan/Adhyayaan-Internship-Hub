@@ -9,8 +9,9 @@ export const learners = pgTable("learners", {
   college: text("college").notNull().default(""),
   discipline: text("discipline").notNull().default(""),
   assessmentRequired: boolean("assessment_required").notNull().default(false),
+  mustChangePassword: boolean("must_change_password").notNull().default(false),
   assessmentCompletedAt: timestamp("assessment_completed_at", { withTimezone: true }),
-  role: text("role", { enum: ["student", "admin", "guide"] }).notNull().default("student"),
+  role: text("role", { enum: ["student", "admin", "guide", "superadmin"] }).notNull().default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 export const learnerSessions = pgTable("learner_sessions", {

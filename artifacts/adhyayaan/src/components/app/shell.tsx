@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound } from 'lucide-react';
+import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound, KeyRound } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
@@ -22,6 +22,11 @@ const GUIDE_NAV = [
 ];
 const ADMIN_NAV = [
   { href: '/admin', label: 'Admin', icon: ShieldCheck },
+  { href: '/profile', label: 'Account', icon: UserRound },
+];
+const SUPERADMIN_NAV = [
+  { href: '/superadmin', label: 'Platform overview', icon: KeyRound },
+  { href: '/admin', label: 'Admin workspace', icon: ShieldCheck },
   { href: '/profile', label: 'Account', icon: UserRound },
 ];
 
@@ -48,7 +53,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [mobileFormFocused, setMobileFormFocused] = useState(false);
   const lastScrollY = useRef(0);
   const { user } = useAuth();
-  const navigation = user?.isGuide ? GUIDE_NAV : user?.isAdmin ? ADMIN_NAV : NAV;
+  const navigation = user?.isSuperadmin ? SUPERADMIN_NAV : user?.isGuide ? GUIDE_NAV : user?.isAdmin ? ADMIN_NAV : NAV;
   const active = (h: string) => (h === '/' ? loc === '/' : loc.startsWith(h) || (h === '/explore' && loc.startsWith('/courses')));
   const here = useHere();
   const initials = user?.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
