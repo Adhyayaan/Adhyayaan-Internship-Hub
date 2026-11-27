@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp, index, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgTable, text, timestamp, index, primaryKey, uniqueIndex, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { enrollments, learners } from "./learning";
 
@@ -7,15 +7,22 @@ export const mentorshipMessages = pgTable("learning_mentorship_messages", {
   enrollmentId: text("enrollment_id").notNull().references(() => enrollments.id, { onDelete: "cascade" }),
   senderId: text("sender_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
   senderRole: text("sender_role", { enum: ["student", "guide"] }).notNull(),
-  kind: text("kind", { enum: ["text", "meeting"] }).notNull(),
+  kind: text("kind", { enum: ["text", "meeting", "question", "question_response"] }).notNull(),
   body: text("body").notNull().default(""),
   meetingUrl: text("meeting_url"),
   meetingStartsAt: timestamp("meeting_starts_at", { withTimezone: true }),
   meetingAgenda: text("meeting_agenda").notNull().default(""),
+  replyToMessageId: text("reply_to_message_id").references((): AnyPgColumn => mentorshipMessages.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index("learning_mentorship_messages_enrollment_created").on(table.enrollmentId, table.createdAt),
 ]);
+
+export const mentorshipQuestions = pgTable("learning_mentorship_questions", {
+  messageId: text("message_id").primaryKey().references(() => mentorshipMessages.id, { onDelete: "cascade" }),
+  type: text("type", { enum: ["multiple_choice", "open_response"] }).notNull(),
+  options: jsonb("options").$type<string[]>().notNull().default([]),
+});
 
 export const mentorshipAttachments = pgTable("learning_mentorship_attachments", {
   id: text("id").primaryKey(),
@@ -47,8 +54,10 @@ export const mentorshipNotificationPreferences = pgTable("learning_mentorship_no
 });
 
 export const insertMentorshipMessageSchema = createInsertSchema(mentorshipMessages);
+export const insertMentorshipQuestionSchema = createInsertSchema(mentorshipQuestions);
 export const insertMentorshipAttachmentSchema = createInsertSchema(mentorshipAttachments);
 export type MentorshipMessage = typeof mentorshipMessages.$inferSelect;
+export type MentorshipQuestion = typeof mentorshipQuestions.$inferSelect;
 export type MentorshipAttachment = typeof mentorshipAttachments.$inferSelect;
 export type MentorshipThreadRead = typeof mentorshipThreadReads.$inferSelect;
 export type MentorshipNotificationPreference = typeof mentorshipNotificationPreferences.$inferSelect;

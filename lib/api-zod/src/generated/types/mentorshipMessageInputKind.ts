@@ -12,4 +12,5 @@ export type MentorshipMessageInputKind = typeof MentorshipMessageInputKind[keyof
 export const MentorshipMessageInputKind = {
   text: 'text',
   meeting: 'meeting',
+  question: 'question',
 } as const;

@@ -791,6 +791,12 @@ export const ListMentorshipMessagesParams = zod.object({
   "enrollmentId": zod.coerce.string().uuid()
 })
 
+export const listMentorshipMessagesResponseMessagesItemQuestionOneOptionsItemMax = 200;
+
+export const listMentorshipMessagesResponseMessagesItemQuestionOneOptionsMax = 6;
+
+
+
 export const ListMentorshipMessagesResponse = zod.object({
   "thread": zod.object({
   "enrollmentId": zod.string().uuid(),
@@ -814,11 +820,16 @@ export const ListMentorshipMessagesResponse = zod.object({
   "senderId": zod.string().uuid(),
   "senderName": zod.string(),
   "senderRole": zod.enum(['student', 'guide']),
-  "kind": zod.enum(['text', 'meeting']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
   "body": zod.string(),
   "meetingUrl": zod.string().url().nullable(),
   "meetingStartsAt": zod.coerce.date().nullable(),
   "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(listMentorshipMessagesResponseMessagesItemQuestionOneOptionsItemMax)).max(listMentorshipMessagesResponseMessagesItemQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
   "attachments": zod.array(zod.object({
   "id": zod.string().uuid(),
   "fileName": zod.string(),
@@ -842,6 +853,10 @@ export const sendMentorshipMessageBodyMeetingUrlMax = 500;
 
 export const sendMentorshipMessageBodyMeetingAgendaMax = 1000;
 
+export const sendMentorshipMessageBodyQuestionOptionsItemMax = 200;
+
+export const sendMentorshipMessageBodyQuestionOptionsMax = 6;
+
 export const sendMentorshipMessageBodyUploadTokensItemMax = 4096;
 
 export const sendMentorshipMessageBodyUploadTokensMax = 5;
@@ -849,13 +864,23 @@ export const sendMentorshipMessageBodyUploadTokensMax = 5;
 
 
 export const SendMentorshipMessageBody = zod.object({
-  "kind": zod.enum(['text', 'meeting']),
+  "kind": zod.enum(['text', 'meeting', 'question']),
   "body": zod.string().max(sendMentorshipMessageBodyBodyMax).optional(),
   "meetingUrl": zod.string().url().max(sendMentorshipMessageBodyMeetingUrlMax).optional(),
   "meetingStartsAt": zod.coerce.date().optional(),
   "meetingAgenda": zod.string().max(sendMentorshipMessageBodyMeetingAgendaMax).optional(),
+  "question": zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().min(1).max(sendMentorshipMessageBodyQuestionOptionsItemMax)).max(sendMentorshipMessageBodyQuestionOptionsMax).optional()
+}).optional(),
   "uploadTokens": zod.array(zod.string().max(sendMentorshipMessageBodyUploadTokensItemMax)).max(sendMentorshipMessageBodyUploadTokensMax).optional()
 })
+
+export const sendMentorshipMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const sendMentorshipMessageResponseQuestionOneOptionsMax = 6;
+
+
 
 export const SendMentorshipMessageResponse = zod.object({
   "id": zod.string().uuid(),
@@ -863,11 +888,63 @@ export const SendMentorshipMessageResponse = zod.object({
   "senderId": zod.string().uuid(),
   "senderName": zod.string(),
   "senderRole": zod.enum(['student', 'guide']),
-  "kind": zod.enum(['text', 'meeting']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
   "body": zod.string(),
   "meetingUrl": zod.string().url().nullable(),
   "meetingStartsAt": zod.coerce.date().nullable(),
   "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(sendMentorshipMessageResponseQuestionOneOptionsItemMax)).max(sendMentorshipMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const AnswerMentorshipQuestionParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid(),
+  "questionId": zod.coerce.string().uuid()
+})
+
+export const answerMentorshipQuestionBodyResponseMax = 3000;
+
+
+
+export const AnswerMentorshipQuestionBody = zod.object({
+  "response": zod.string().min(1).max(answerMentorshipQuestionBodyResponseMax)
+})
+
+export const answerMentorshipQuestionResponseQuestionOneOptionsItemMax = 200;
+
+export const answerMentorshipQuestionResponseQuestionOneOptionsMax = 6;
+
+
+
+export const AnswerMentorshipQuestionResponse = zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(answerMentorshipQuestionResponseQuestionOneOptionsItemMax)).max(answerMentorshipQuestionResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
   "attachments": zod.array(zod.object({
   "id": zod.string().uuid(),
   "fileName": zod.string(),

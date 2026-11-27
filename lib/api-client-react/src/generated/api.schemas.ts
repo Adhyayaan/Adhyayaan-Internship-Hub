@@ -535,7 +535,26 @@ export type MentorshipMessageKind = typeof MentorshipMessageKind[keyof typeof Me
 export const MentorshipMessageKind = {
   text: 'text',
   meeting: 'meeting',
+  question: 'question',
+  question_response: 'question_response',
 } as const;
+
+export type MentorshipQuestionType = typeof MentorshipQuestionType[keyof typeof MentorshipQuestionType];
+
+
+export const MentorshipQuestionType = {
+  multiple_choice: 'multiple_choice',
+  open_response: 'open_response',
+} as const;
+
+export interface MentorshipQuestion {
+  type: MentorshipQuestionType;
+  /**
+     * @maxItems 6
+     * @items.maxLength 200
+     */
+  options: string[];
+}
 
 export interface MentorshipMessage {
   id: string;
@@ -550,8 +569,37 @@ export interface MentorshipMessage {
   /** @nullable */
   meetingStartsAt: string | null;
   meetingAgenda: string;
+  question: MentorshipQuestion | null;
+  /** @nullable */
+  replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
   createdAt: string;
+}
+
+export type MentorshipQuestionInputType = typeof MentorshipQuestionInputType[keyof typeof MentorshipQuestionInputType];
+
+
+export const MentorshipQuestionInputType = {
+  multiple_choice: 'multiple_choice',
+  open_response: 'open_response',
+} as const;
+
+export interface MentorshipQuestionInput {
+  type: MentorshipQuestionInputType;
+  /**
+     * @maxItems 6
+     * @items.minLength 1
+     * @items.maxLength 200
+     */
+  options?: string[];
+}
+
+export interface MentorshipQuestionResponseInput {
+  /**
+     * @minLength 1
+     * @maxLength 3000
+     */
+  response: string;
 }
 
 export type MentorshipThreadHours = typeof MentorshipThreadHours[keyof typeof MentorshipThreadHours];
@@ -602,6 +650,7 @@ export type MentorshipMessageInputKind = typeof MentorshipMessageInputKind[keyof
 export const MentorshipMessageInputKind = {
   text: 'text',
   meeting: 'meeting',
+  question: 'question',
 } as const;
 
 export interface MentorshipMessageInput {
@@ -613,6 +662,7 @@ export interface MentorshipMessageInput {
   meetingStartsAt?: string;
   /** @maxLength 1000 */
   meetingAgenda?: string;
+  question?: MentorshipQuestionInput;
   /**
      * @maxItems 5
      * @items.maxLength 4096

@@ -13,6 +13,40 @@ const ALLOWED_MENTORSHIP_FILE_TYPES = new Set([
 ]);
 
 export const MAX_MENTORSHIP_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+export type MentorshipQuestionType = "multiple_choice" | "open_response";
+
+export type NormalizedMentorshipQuestion = {
+  type: MentorshipQuestionType;
+  options: string[];
+};
+
+export function normalizeMentorshipQuestion(
+  type: MentorshipQuestionType,
+  options: string[] = [],
+): NormalizedMentorshipQuestion | null {
+  const cleanOptions = options.map((option) => option.trim());
+  if (type === "open_response") {
+    return cleanOptions.length === 0 ? { type, options: [] } : null;
+  }
+  if (
+    cleanOptions.length < 2
+    || cleanOptions.length > 6
+    || cleanOptions.some((option) => !option || option.length > 200)
+    || new Set(cleanOptions.map((option) => option.toLocaleLowerCase())).size !== cleanOptions.length
+  ) {
+    return null;
+  }
+  return { type, options: cleanOptions };
+}
+
+export function isValidMentorshipQuestionResponse(
+  question: NormalizedMentorshipQuestion,
+  response: string,
+): boolean {
+  const cleanResponse = response.trim();
+  if (!cleanResponse || cleanResponse.length > 3000) return false;
+  return question.type === "open_response" || question.options.includes(cleanResponse);
+}
 
 export function canAccessMentorshipThread(
   user: { id: string; role: string },

@@ -12,4 +12,6 @@ export type MentorshipMessageKind = typeof MentorshipMessageKind[keyof typeof Me
 export const MentorshipMessageKind = {
   text: 'text',
   meeting: 'meeting',
+  question: 'question',
+  question_response: 'question_response',
 } as const;

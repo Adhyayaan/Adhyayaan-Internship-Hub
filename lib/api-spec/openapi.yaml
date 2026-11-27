@@ -382,6 +382,27 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Student or assigned guide access required }
         "404": { description: Course enrollment not found }
+  /mentorship/threads/{enrollmentId}/questions/{questionId}/responses:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: questionId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: answerMentorshipQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MentorshipQuestionResponseInput" }
+      responses:
+        "201":
+          description: Formative response saved as a private conversation message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipMessage" }
+        "400": { description: Invalid response or answer choice }
+        "401": { description: Sign in first }
+        "403": { description: Only the enrolled student can answer this question }
+        "404": { description: Question not found in this conversation }
   /mentorship/threads/{enrollmentId}/uploads:
     parameters:
       - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1169,20 +1190,48 @@ components:
         isImage: { type: boolean }
     MentorshipMessage:
       type: object
-      required: [id, enrollmentId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, attachments, createdAt]
+      required: [id, enrollmentId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, createdAt]
       properties:
         id: { type: string, format: uuid }
         enrollmentId: { type: string, format: uuid }
         senderId: { type: string, format: uuid }
         senderName: { type: string }
         senderRole: { type: string, enum: [student, guide] }
-        kind: { type: string, enum: [text, meeting] }
+        kind: { type: string, enum: [text, meeting, question, question_response] }
         body: { type: string }
         meetingUrl: { type: ["string", "null"], format: uri }
         meetingStartsAt: { type: ["string", "null"], format: date-time }
         meetingAgenda: { type: string }
+        question:
+          anyOf:
+            - { $ref: "#/components/schemas/MentorshipQuestion" }
+            - { type: "null" }
+        replyToMessageId: { type: ["string", "null"], format: uuid }
         attachments: { type: array, items: { $ref: "#/components/schemas/MentorshipAttachment" } }
         createdAt: { type: string, format: date-time }
+    MentorshipQuestion:
+      type: object
+      required: [type, options]
+      properties:
+        type: { type: string, enum: [multiple_choice, open_response] }
+        options:
+          type: array
+          maxItems: 6
+          items: { type: string, maxLength: 200 }
+    MentorshipQuestionInput:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [multiple_choice, open_response] }
+        options:
+          type: array
+          maxItems: 6
+          items: { type: string, minLength: 1, maxLength: 200 }
+    MentorshipQuestionResponseInput:
+      type: object
+      required: [response]
+      properties:
+        response: { type: string, minLength: 1, maxLength: 3000 }
     MentorshipThread:
       type: object
       required: [enrollmentId, courseId, courseTitle, hours, status, studentId, studentName, guideId, guideName, canSend, lastMessagePreview, lastMessageAt, messageCount, unreadCount]
@@ -1221,11 +1270,12 @@ components:
       type: object
       required: [kind]
       properties:
-        kind: { type: string, enum: [text, meeting] }
+        kind: { type: string, enum: [text, meeting, question] }
         body: { type: string, maxLength: 5000 }
         meetingUrl: { type: string, format: uri, maxLength: 500 }
         meetingStartsAt: { type: string, format: date-time }
         meetingAgenda: { type: string, maxLength: 1000 }
+        question: { $ref: "#/components/schemas/MentorshipQuestionInput" }
         uploadTokens:
           type: array
           maxItems: 5

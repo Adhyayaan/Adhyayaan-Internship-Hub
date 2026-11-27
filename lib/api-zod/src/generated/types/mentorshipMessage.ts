@@ -8,6 +8,7 @@
 import type { MentorshipAttachment } from './mentorshipAttachment';
 import type { MentorshipMessageKind } from './mentorshipMessageKind';
 import type { MentorshipMessageSenderRole } from './mentorshipMessageSenderRole';
+import type { MentorshipQuestion } from './mentorshipQuestion';
 
 export interface MentorshipMessage {
   id: string;
@@ -22,6 +23,9 @@ export interface MentorshipMessage {
   /** @nullable */
   meetingStartsAt: Date | null;
   meetingAgenda: string;
+  question: MentorshipQuestion | null;
+  /** @nullable */
+  replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
   createdAt: Date;
 }

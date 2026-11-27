@@ -9,11 +9,15 @@ import {
   mentorshipAttachments,
   mentorshipMessages,
   mentorshipNotificationPreferences,
+  mentorshipQuestions,
   mentorshipThreadReads,
   type Learner,
   type MentorshipMessage,
 } from "@workspace/db";
 import {
+  AnswerMentorshipQuestionBody,
+  AnswerMentorshipQuestionParams,
+  AnswerMentorshipQuestionResponse,
   DownloadMentorshipAttachmentParams,
   ListMentorshipMessagesParams,
   ListMentorshipMessagesResponse,
@@ -39,7 +43,9 @@ import {
   canSendMentorshipMessage,
   isAllowedMentorshipAttachment,
   isGoogleMeetLink,
+  isValidMentorshipQuestionResponse,
   MAX_MENTORSHIP_ATTACHMENT_BYTES,
+  normalizeMentorshipQuestion,
   sanitizeMentorshipFileName,
 } from "../lib/mentorship-rules";
 import {
@@ -86,7 +92,7 @@ function threadView(
   student: PersonSummary,
   guide: PersonSummary | null,
   user: Learner,
-  latest?: { kind: "text" | "meeting"; body: string; meetingAgenda: string; createdAt: Date },
+  latest?: { kind: "text" | "meeting" | "question" | "question_response"; body: string; meetingAgenda: string; createdAt: Date },
   messageCount = 0,
   unreadCount = 0,
 ) {
@@ -95,6 +101,10 @@ function threadView(
   const lastMessagePreview = latest
     ? latest.kind === "meeting"
       ? `Google Meet session${latest.meetingAgenda ? ` · ${latest.meetingAgenda}` : ""}`
+      : latest.kind === "question"
+        ? `Learning question · ${latest.body.trim().replace(/\s+/g, " ").slice(0, 130)}`
+        : latest.kind === "question_response"
+          ? `Question response · ${latest.body.trim().replace(/\s+/g, " ").slice(0, 130)}`
       : latest.body.trim().replace(/\s+/g, " ").slice(0, 160) || "Shared an attachment"
     : null;
   return {
@@ -282,9 +292,14 @@ async function getMessagesForEnrollment(enrollmentId: string) {
     .orderBy(asc(mentorshipMessages.createdAt), asc(mentorshipMessages.id));
   if (rows.length === 0) return [];
   const messageIds = rows.map((row) => row.message.id);
+  const questionIds = rows.filter((row) => row.message.kind === "question").map((row) => row.message.id);
   const attachments = await db.select().from(mentorshipAttachments)
     .where(inArray(mentorshipAttachments.messageId, messageIds))
     .orderBy(asc(mentorshipAttachments.createdAt));
+  const questions = questionIds.length
+    ? await db.select().from(mentorshipQuestions).where(inArray(mentorshipQuestions.messageId, questionIds))
+    : [];
+  const questionsByMessage = new Map(questions.map((question) => [question.messageId, question]));
   const attachmentsByMessage = new Map<string, typeof attachments>();
   for (const attachment of attachments) {
     const group = attachmentsByMessage.get(attachment.messageId) ?? [];
@@ -294,6 +309,12 @@ async function getMessagesForEnrollment(enrollmentId: string) {
   return rows.map(({ message, senderName }) => ({
     ...message,
     senderName,
+    question: questionsByMessage.get(message.id)
+      ? {
+          type: questionsByMessage.get(message.id)!.type,
+          options: questionsByMessage.get(message.id)!.options,
+        }
+      : null,
     attachments: (attachmentsByMessage.get(message.id) ?? []).map((attachment) => ({
       id: attachment.id,
       fileName: attachment.fileName,
@@ -341,6 +362,80 @@ router.get("/mentorship/threads/:enrollmentId/messages", async (req, res): Promi
   const messages = await getMessagesForEnrollment(access.enrollment.id);
   res.set("Cache-Control", "private, no-store");
   res.json(ListMentorshipMessagesResponse.parse({ thread, messages }));
+});
+
+router.post("/mentorship/threads/:enrollmentId/questions/:questionId/responses", async (req, res): Promise<void> => {
+  const params = AnswerMentorshipQuestionParams.safeParse(req.params);
+  const parsed = AnswerMentorshipQuestionBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Write a response and try again." });
+    return;
+  }
+  const user = req.learner!;
+  if (user.role !== "student") {
+    res.status(403).json({ error: "Only the enrolled student can answer this question." });
+    return;
+  }
+  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
+  if (!access) {
+    res.status(403).json({ error: "You are not part of this conversation." });
+    return;
+  }
+  if (!access.guide || !canSendMentorshipMessage(user, access.enrollment)) {
+    res.status(403).json({ error: "A guide must be assigned before you can answer." });
+    return;
+  }
+  const [question] = await db.select({
+    message: mentorshipMessages,
+    question: mentorshipQuestions,
+  }).from(mentorshipMessages)
+    .innerJoin(mentorshipQuestions, eq(mentorshipQuestions.messageId, mentorshipMessages.id))
+    .where(and(
+      eq(mentorshipMessages.id, params.data.questionId),
+      eq(mentorshipMessages.enrollmentId, access.enrollment.id),
+      eq(mentorshipMessages.kind, "question"),
+    ))
+    .limit(1);
+  if (!question || question.message.senderRole !== "guide") {
+    res.status(404).json({ error: "This question was not found in the conversation." });
+    return;
+  }
+  const responseText = parsed.data.response.trim();
+  const normalizedQuestion = {
+    type: question.question.type,
+    options: question.question.options,
+  };
+  if (!isValidMentorshipQuestionResponse(normalizedQuestion, responseText)) {
+    res.status(400).json({
+      error: question.question.type === "multiple_choice"
+        ? "Choose one of the options shown."
+        : "Write a response of up to 3,000 characters.",
+    });
+    return;
+  }
+
+  const [saved] = await db.insert(mentorshipMessages).values({
+    id: randomUUID(),
+    enrollmentId: access.enrollment.id,
+    senderId: user.id,
+    senderRole: "student",
+    kind: "question_response",
+    body: responseText,
+    replyToMessageId: question.message.id,
+  }).returning();
+  if (!saved) {
+    res.status(409).json({ error: "Your response could not be saved. Please try again." });
+    return;
+  }
+  const result = AnswerMentorshipQuestionResponse.parse({
+    ...saved,
+    senderName: user.name,
+    question: null,
+    attachments: [],
+  });
+  publishMentorshipMessage(access.enrollment.id, saved.id);
+  if (access.guide) publishMentorshipNotification(access.guide.id, access.enrollment.id, saved.id);
+  res.status(201).set("Cache-Control", "private, no-store").json(result);
 });
 
 router.post("/mentorship/threads/:enrollmentId/uploads", async (req, res): Promise<void> => {
@@ -398,16 +493,31 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
   const body = (parsed.data.body ?? "").trim();
   const meetingAgenda = (parsed.data.meetingAgenda ?? "").trim();
   const uploadTokens = parsed.data.uploadTokens ?? [];
+  let questionData: ReturnType<typeof normalizeMentorshipQuestion> = null;
   if (parsed.data.kind === "meeting") {
     if (user.role !== "guide") {
       res.status(403).json({ error: "Only the assigned guide can share a Meet session." });
       return;
     }
-    if (!parsed.data.meetingUrl || !isGoogleMeetLink(parsed.data.meetingUrl) || uploadTokens.length) {
+    if (!parsed.data.meetingUrl || !isGoogleMeetLink(parsed.data.meetingUrl) || uploadTokens.length || parsed.data.question) {
       res.status(400).json({ error: "Paste a valid Google Meet link. Meeting posts cannot include file attachments." });
       return;
     }
-  } else if (parsed.data.meetingUrl || parsed.data.meetingStartsAt || parsed.data.meetingAgenda) {
+  } else if (parsed.data.kind === "question") {
+    if (user.role !== "guide") {
+      res.status(403).json({ error: "Only the assigned guide can ask a learning question." });
+      return;
+    }
+    if (!body || body.length > 1200 || uploadTokens.length || parsed.data.meetingUrl || parsed.data.meetingStartsAt || meetingAgenda || !parsed.data.question) {
+      res.status(400).json({ error: "Add a question of up to 1,200 characters, with no attachments or meeting details." });
+      return;
+    }
+    questionData = normalizeMentorshipQuestion(parsed.data.question.type, parsed.data.question.options);
+    if (!questionData) {
+      res.status(400).json({ error: "A multiple-choice question needs 2–6 distinct options. Open questions do not use options." });
+      return;
+    }
+  } else if (parsed.data.meetingUrl || parsed.data.meetingStartsAt || parsed.data.meetingAgenda || parsed.data.question) {
     res.status(400).json({ error: "Meeting details can only be included in a Meet session post." });
     return;
   }
@@ -451,8 +561,16 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
         meetingUrl: parsed.data.kind === "meeting" ? parsed.data.meetingUrl! : null,
         meetingStartsAt: parsed.data.kind === "meeting" ? parsed.data.meetingStartsAt ?? null : null,
         meetingAgenda: parsed.data.kind === "meeting" ? meetingAgenda : "",
+        replyToMessageId: null,
       }).returning();
       if (!message) throw new Error("Message insert did not return a row.");
+      if (questionData) {
+        await tx.insert(mentorshipQuestions).values({
+          messageId: message.id,
+          type: questionData.type,
+          options: questionData.options,
+        });
+      }
       const attachments = claims.length
         ? await tx.insert(mentorshipAttachments).values(claims.map((claim) => ({
           id: randomUUID(),
@@ -477,6 +595,7 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
   const response = SendMentorshipMessageResponse.parse({
     ...saved,
     senderName: user.name,
+    question: questionData,
     attachments: savedAttachments.map((attachment) => ({
       id: attachment.id,
       fileName: attachment.fileName,

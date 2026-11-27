@@ -57,6 +57,7 @@ import type {
   MentorshipMessagesResponse,
   MentorshipNotificationPreference,
   MentorshipNotificationPreferenceInput,
+  MentorshipQuestionResponseInput,
   MentorshipThread,
   MentorshipUploadInput,
   MentorshipUploadResponse,
@@ -2323,6 +2324,91 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getSendMentorshipMessageMutationOptions(options), queryClient);
+    }
+
+export const getAnswerMentorshipQuestionUrl = (enrollmentId: string,
+    questionId: string,) => {
+
+
+
+
+  return `/api/mentorship/threads/${enrollmentId}/questions/${questionId}/responses`
+}
+
+export const answerMentorshipQuestion = async (enrollmentId: string,
+    questionId: string,
+    mentorshipQuestionResponseInput: MentorshipQuestionResponseInput, options?: Parameters<typeof customFetch>[1]): Promise<MentorshipMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MentorshipMessage>(getAnswerMentorshipQuestionUrl(enrollmentId,questionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(mentorshipQuestionResponseInput)
+  }
+);}
+
+
+
+
+
+export const getAnswerMentorshipQuestionMutationKey = () => ['answerMentorshipQuestion'] as const;
+
+export const getAnswerMentorshipQuestionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof answerMentorshipQuestion>>, TError,AnswerMentorshipQuestionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof answerMentorshipQuestion>>, TError,AnswerMentorshipQuestionMutationVariables, TContext> => {
+
+const mutationKey = getAnswerMentorshipQuestionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof answerMentorshipQuestion>>, AnswerMentorshipQuestionMutationVariables> = (props) => {
+          const {enrollmentId,questionId,data} = props ?? {};
+
+          return  answerMentorshipQuestion(enrollmentId,questionId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnswerMentorshipQuestionMutationResult = NonNullable<Awaited<ReturnType<typeof answerMentorshipQuestion>>>
+    export type AnswerMentorshipQuestionMutationBody = BodyType<MentorshipQuestionResponseInput>
+    export type AnswerMentorshipQuestionMutationError = ErrorType<void>
+    export type AnswerMentorshipQuestionMutationVariables = {enrollmentId: string;questionId: string;data: BodyType<MentorshipQuestionResponseInput>}
+
+    export const useAnswerMentorshipQuestion = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof answerMentorshipQuestion>>, TError,AnswerMentorshipQuestionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof answerMentorshipQuestion>>,
+        TError,
+        AnswerMentorshipQuestionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAnswerMentorshipQuestionMutationOptions(options), queryClient);
     }
 
 export const getRequestMentorshipUploadUrl = (enrollmentId: string,) => {

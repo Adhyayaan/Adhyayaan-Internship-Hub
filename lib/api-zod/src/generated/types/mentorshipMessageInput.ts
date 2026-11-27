@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { MentorshipMessageInputKind } from './mentorshipMessageInputKind';
+import type { MentorshipQuestionInput } from './mentorshipQuestionInput';
 
 export interface MentorshipMessageInput {
   kind: MentorshipMessageInputKind;
@@ -16,6 +17,7 @@ export interface MentorshipMessageInput {
   meetingStartsAt?: Date;
   /** @maxLength 1000 */
   meetingAgenda?: string;
+  question?: MentorshipQuestionInput;
   /**
      * @maxItems 5
      * @items.maxLength 4096
