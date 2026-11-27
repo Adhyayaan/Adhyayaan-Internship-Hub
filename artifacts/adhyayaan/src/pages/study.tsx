@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, BookOpen, CheckCircle2, Circle, Clock, ExternalLink, Info, Languages, ListTree, Loader2, Play, ShieldAlert } from 'lucide-react';
-import { useGetStudyBook, getGetStudyBookQueryKey, useGetStudyBookBengali, getGetStudyBookBengaliQueryKey, useSaveStudyProgress, type StudyBook, type StudyLesson, type StudyModule, type StudyProgress } from '@workspace/api-client-react';
+import { useGetStudyBook, getGetStudyBookQueryKey, useGetStudyBookBengali, getGetStudyBookBengaliQueryKey, useListEnrollments, getListEnrollmentsQueryKey, useSaveStudyProgress, type Enrollment, type StudyBook, type StudyLesson, type StudyModule, type StudyProgress } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -12,10 +12,11 @@ import { ModuleVideo } from '@/components/study/module-video';
 import { PilotVideo } from '@/components/study/pilot-video';
 import { TeachPanel } from '@/components/study/teach-panel';
 import { useToast } from '@/hooks/use-toast';
-import { authHref, errMsg, useAuth, useTitle } from '@/lib/app';
+import { authHref, errMsg, formatHours, formatIndiaDate, useAuth, useTitle } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
 
 type Flat = { lesson: StudyLesson; module: StudyModule; mi: number; li: number; idx: number };
+type ScheduleState = 'loading' | 'error' | 'ready' | 'signed-out';
 
 function flatten(book: StudyBook): Flat[] {
   const out: Flat[] = [];
@@ -25,7 +26,19 @@ function flatten(book: StudyBook): Flat[] {
 
 export default function StudyPage() {
   const { courseId = '', lessonId } = useParams<{ courseId: string; lessonId?: string }>();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const isStudent = !!user && !user.isAdmin && !user.isGuide;
+  const enrollments = useListEnrollments({
+    query: { enabled: isStudent, queryKey: getListEnrollmentsQueryKey() },
+  });
+  const enrollment = enrollments.data?.find((item) => item.course.id === courseId);
+  const scheduleState: ScheduleState = authLoading || enrollments.isLoading
+    ? 'loading'
+    : !isStudent
+      ? 'signed-out'
+      : enrollments.error
+        ? 'error'
+        : 'ready';
   const [language, setLanguage] = useState<'en' | 'bn'>(() => {
     try { return localStorage.getItem('adhyayaan-study-language-01') === 'bn' ? 'bn' : 'en'; } catch { return 'en'; }
   });
@@ -46,8 +59,8 @@ export default function StudyPage() {
   if (!q.data) return <NotAuthored courseId={courseId} />;
   const setBookLanguage = (next: 'en' | 'bn') => setLanguage(next);
   return lessonId
-    ? <Reader book={q.data} lessonId={lessonId} userId={user?.id ?? null} language={language} onLanguageChange={setBookLanguage} />
-    : <Cover book={q.data} signedIn={!!user} language={language} onLanguageChange={setBookLanguage} />;
+    ? <Reader book={q.data} lessonId={lessonId} userId={user?.id ?? null} language={language} onLanguageChange={setBookLanguage} enrollment={enrollment} scheduleState={scheduleState} />
+    : <Cover book={q.data} signedIn={!!user} language={language} onLanguageChange={setBookLanguage} enrollment={enrollment} scheduleState={scheduleState} />;
 }
 
 function useProgressMap(book: StudyBook) {
@@ -55,7 +68,7 @@ function useProgressMap(book: StudyBook) {
 }
 
 /* ------------------------------------------------------------------ cover */
-function Cover({ book, signedIn, language, onLanguageChange }: { book: StudyBook; signedIn: boolean; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void }) {
+function Cover({ book, signedIn, language, onLanguageChange, enrollment, scheduleState }: { book: StudyBook; signedIn: boolean; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void; enrollment?: Enrollment; scheduleState: ScheduleState }) {
   const flat = useMemo(() => flatten(book), [book]);
   const pm = useProgressMap(book);
   const here = useHere();
@@ -111,16 +124,18 @@ function Cover({ book, signedIn, language, onLanguageChange }: { book: StudyBook
           <ol className="grid gap-3 sm:grid-cols-2">
             {g.list.map((m) => {
               const mi = book.modules.indexOf(m);
-              const done = m.lessons.filter((l) => pm.get(l.id)?.read).length;
               return (
                 <li key={m.id} className="ink-card lift overflow-hidden" data-testid={`card-module-${m.id}`}>
-                  <Link href={`/study/${book.courseId}/${m.lessons[0]?.id}`} className="flex gap-4 p-4" data-testid={`link-module-${m.id}`}>
-                    <img src={m.imageUrl} alt="" loading="lazy" className="h-20 w-20 shrink-0 rounded-xl border bg-muted object-cover" />
-                    <div className="min-w-0">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">{bn ? `অধ্যায় ${String(mi + 1).padStart(2, '0')}` : `Chapter ${String(mi + 1).padStart(2, '0')}`}</p>
-                      <p className="font-display text-lg font-semibold leading-tight text-primary">{m.title}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{m.lessons.length} {bn ? 'টি পাঠ' : 'lessons'}{signedIn ? ` · ${done} ${bn ? 'পড়া' : 'read'}` : ''}</p>
+                  <Link href={`/study/${book.courseId}/${m.lessons[0]?.id}`} className="block rounded-[inherit] p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-module-${m.id}`}>
+                    <div className="flex min-w-0 gap-4">
+                      <img src={m.imageUrl} alt="" loading="lazy" className="h-20 w-20 shrink-0 rounded-xl border bg-muted object-cover" />
+                      <div className="min-w-0">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">{bn ? `অধ্যায় ${String(mi + 1).padStart(2, '0')}` : `Chapter ${String(mi + 1).padStart(2, '0')}`}</p>
+                        <p className="font-display text-lg font-semibold leading-tight text-primary">{m.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{m.lessons.length} {bn ? 'টি পাঠ' : 'lessons'}</p>
+                      </div>
                     </div>
+                    <ChapterCompletion module={m} progress={pm} enrollment={enrollment} scheduleState={scheduleState} signedIn={signedIn} language={language} />
                   </Link>
                 </li>
               );
@@ -132,8 +147,67 @@ function Cover({ book, signedIn, language, onLanguageChange }: { book: StudyBook
   );
 }
 
+function ChapterCompletion({ module, progress, enrollment, scheduleState, signedIn, language, compact = false }: {
+  module: StudyModule;
+  progress: Map<string, StudyProgress>;
+  enrollment?: Enrollment;
+  scheduleState: ScheduleState;
+  signedIn: boolean;
+  language: 'en' | 'bn';
+  compact?: boolean;
+}) {
+  const bn = language === 'bn';
+  const total = module.lessons.length;
+  const readProgress = module.lessons
+    .map((lesson) => progress.get(lesson.id))
+    .filter((item): item is StudyProgress => !!item?.read);
+  const readCount = readProgress.length;
+  const percent = total ? Math.round((readCount / total) * 100) : 0;
+  const completed = total > 0 && readCount === total;
+  const completedAt = completed
+    ? readProgress.map((item) => item.updatedAt).filter((date) => Number.isFinite(Date.parse(date))).sort((a, b) => Date.parse(b) - Date.parse(a))[0]
+    : undefined;
+  const schedule = enrollment?.pacing.moduleSchedule.find((item) => item.moduleId === module.id);
+  const targetText = schedule
+    ? `${bn ? 'সপ্তাহ' : 'Week'} ${schedule.startWeek}${schedule.endWeek === schedule.startWeek ? '' : `–${schedule.endWeek}`} · ${bn ? 'শেষ' : 'by'} ${formatIndiaDate(schedule.endDate, true)} · ${formatHours(schedule.estimatedHours)} ${bn ? 'ঘণ্টা' : 'planned hrs'}`
+    : enrollment
+      ? bn
+        ? `এই অধ্যায়টি তোমার ${enrollment.hours} ঘণ্টার পথের সময়সূচিতে নেই।`
+        : `Not scheduled for your ${enrollment.hours}-hour track.`
+      : scheduleState === 'loading'
+        ? bn ? 'তোমার পথের সময়সূচি আনা হচ্ছে…' : 'Loading your track schedule…'
+        : scheduleState === 'error'
+          ? bn ? 'সময়সূচি পাওয়া যায়নি। আবার পৃষ্ঠা খোলো।' : 'Schedule unavailable. Reload the page to try again.'
+          : scheduleState === 'signed-out'
+            ? bn ? 'ব্যক্তিগত লক্ষ্য দেখতে সাইন ইন করে পথে যোগ দাও।' : 'Sign in and enrol to see your personal target.'
+            : bn
+              ? 'অধ্যায়ের লক্ষ্য পেতে ৬০ বা ১২০ ঘণ্টার পথে যোগ দাও।'
+              : 'Enrol in a 60- or 120-hour track to set a chapter target.';
+  const achievedText = !signedIn
+    ? bn ? 'অগ্রগতি রাখতে সাইন ইন করো।' : 'Sign in to save your progress.'
+    : completed
+      ? `${bn ? 'সম্পন্ন' : 'Completed'}${completedAt ? ` · ${formatIndiaDate(completedAt, true)}` : ''}`
+      : `${readCount}/${total} ${bn ? 'টি পাঠ পড়া' : 'lessons read'} · ${percent}%`;
+
+  return (
+    <div className={`mt-3 rounded-xl border bg-secondary/30 ${compact ? 'p-2' : 'p-3'}`} data-testid={`chapter-completion-${module.id}`}>
+      <div className={`grid gap-2 ${compact ? '' : 'sm:grid-cols-2'}`}>
+        <div className="min-w-0">
+          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-[hsl(var(--ledger))]">{bn ? 'লক্ষ্য' : 'Target'}</p>
+          <p className={`${compact ? 'text-[10px]' : 'text-xs'} mt-0.5 leading-snug text-foreground`}>{targetText}</p>
+        </div>
+        <div className="min-w-0">
+          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-accent">{bn ? 'এখন পর্যন্ত' : 'Achieved'}</p>
+          <p className={`${compact ? 'text-[10px]' : 'text-xs'} mt-0.5 leading-snug text-foreground`} data-testid={`chapter-achieved-${module.id}`}>{achievedText}</p>
+        </div>
+      </div>
+      {signedIn && <div className="mt-2"><Meter value={percent} tone="accent" /></div>}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ reader */
-function Reader({ book, lessonId, userId, language, onLanguageChange }: { book: StudyBook; lessonId: string; userId: string | null; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void }) {
+function Reader({ book, lessonId, userId, language, onLanguageChange, enrollment, scheduleState }: { book: StudyBook; lessonId: string; userId: string | null; language: 'en' | 'bn'; onLanguageChange: (language: 'en' | 'bn') => void; enrollment?: Enrollment; scheduleState: ScheduleState }) {
   const bn = language === 'bn';
   const flat = useMemo(() => flatten(book), [book]);
   const pm = useProgressMap(book);
@@ -200,7 +274,7 @@ function Reader({ book, lessonId, userId, language, onLanguageChange }: { book: 
   const pilot = module.pilotVideo && module.pilotVideo.lessonId === lesson.id ? module.pilotVideo : undefined;
   const pilotPlayer = pilot ? <PilotVideo key={`${lesson.id}-${userId ?? 'guest'}`} pilot={pilot} transcript={pilot.transcript} userId={userId} language={language} /> : null;
 
-  const toc = <Contents book={book} flat={flat} pm={pm} current={lesson.id} onPick={() => setTocOpen(false)} language={language} />;
+  const toc = <Contents book={book} flat={flat} pm={pm} current={lesson.id} onPick={() => setTocOpen(false)} language={language} enrollment={enrollment} scheduleState={scheduleState} signedIn={!!userId} />;
 
   return (
     <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
@@ -331,7 +405,7 @@ function Reader({ book, lessonId, userId, language, onLanguageChange }: { book: 
   );
 }
 
-function Contents({ book, flat, pm, current, onPick, language }: { book: StudyBook; flat: Flat[]; pm: Map<string, StudyProgress>; current: string; onPick: () => void; language: 'en' | 'bn' }) {
+function Contents({ book, flat, pm, current, onPick, language, enrollment, scheduleState, signedIn }: { book: StudyBook; flat: Flat[]; pm: Map<string, StudyProgress>; current: string; onPick: () => void; language: 'en' | 'bn'; enrollment?: Enrollment; scheduleState: ScheduleState; signedIn: boolean }) {
   const bn = language === 'bn';
   const read = flat.filter((f) => pm.get(f.lesson.id)?.read).length;
   return (
@@ -345,6 +419,7 @@ function Contents({ book, flat, pm, current, onPick, language }: { book: StudyBo
           <li key={m.id}>
             {mi > 0 && m.extended && !book.modules[mi - 1].extended && <p className="mb-3 border-t pt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[hsl(32_70%_32%)]">{bn ? 'বিস্তৃত · ১২০ ঘণ্টা' : 'Extended · 120h'}</p>}
             <p className="text-xs font-semibold text-foreground/80"><span className="font-mono text-accent">{String(mi + 1).padStart(2, '0')}</span> {m.title}</p>
+            <ChapterCompletion module={m} progress={pm} enrollment={enrollment} scheduleState={scheduleState} signedIn={signedIn} language={language} compact />
             <ul className="mt-1.5 space-y-0.5 border-l pl-3">
               {m.lessons.map((l) => {
                 const pr = pm.get(l.id), on = l.id === current;
