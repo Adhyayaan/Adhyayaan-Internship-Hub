@@ -512,27 +512,160 @@ export interface GuideDashboard {
   learners: GuideLearner[];
 }
 
-export interface MentorshipAttachment {
-  id: string;
-  fileName: string;
-  contentType: string;
-  size: number;
-  downloadUrl: string;
-  isImage: boolean;
+export type GuideSupportLearnerHours = typeof GuideSupportLearnerHours[keyof typeof GuideSupportLearnerHours];
+
+
+export const GuideSupportLearnerHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export type SupportPaceEvidenceStatus = typeof SupportPaceEvidenceStatus[keyof typeof SupportPaceEvidenceStatus];
+
+
+export const SupportPaceEvidenceStatus = {
+  ahead: 'ahead',
+  on_track: 'on_track',
+  behind: 'behind',
+  complete: 'complete',
+} as const;
+
+export type SupportPaceEvidenceThresholdDays = typeof SupportPaceEvidenceThresholdDays[keyof typeof SupportPaceEvidenceThresholdDays];
+
+
+export const SupportPaceEvidenceThresholdDays = {
+  NUMBER_7: 7,
+} as const;
+
+export interface SupportPaceEvidence {
+  status: SupportPaceEvidenceStatus;
+  deltaDays: number;
+  thresholdDays: SupportPaceEvidenceThresholdDays;
+  triggered: boolean;
 }
 
-export type MentorshipMessageSenderRole = typeof MentorshipMessageSenderRole[keyof typeof MentorshipMessageSenderRole];
+export type SupportLearningEvidenceMinimumChecks = typeof SupportLearningEvidenceMinimumChecks[keyof typeof SupportLearningEvidenceMinimumChecks];
 
 
-export const MentorshipMessageSenderRole = {
+export const SupportLearningEvidenceMinimumChecks = {
+  NUMBER_3: 3,
+} as const;
+
+export type SupportLearningEvidenceRequiredSecurePercent = typeof SupportLearningEvidenceRequiredSecurePercent[keyof typeof SupportLearningEvidenceRequiredSecurePercent];
+
+
+export const SupportLearningEvidenceRequiredSecurePercent = {
+  NUMBER_50: 50,
+} as const;
+
+export interface SupportLearningEvidence {
+  count: number;
+  secureCount: number;
+  nonSecureCount: number;
+  minimumChecks: SupportLearningEvidenceMinimumChecks;
+  /** @nullable */
+  securePercent: number | null;
+  requiredSecurePercent: SupportLearningEvidenceRequiredSecurePercent;
+  eligible: boolean;
+  triggered: boolean;
+}
+
+export interface GuideSupportLearner {
+  id: string;
+  name: string;
+  email: string;
+  enrollmentId: string;
+  courseId: string;
+  courseTitle: string;
+  hours: GuideSupportLearnerHours;
+  courseStatus: string;
+  completedPercent: number;
+  expectedPercent: number;
+  pace: SupportPaceEvidence;
+  learningChecks: SupportLearningEvidence;
+  needsSupportReview: boolean;
+  reasons: string[];
+}
+
+export interface GuideSupportReview {
+  supportedCourses: GuideCourse[];
+  /** @nullable */
+  selectedCourseId: string | null;
+  learners: GuideSupportLearner[];
+}
+
+export interface SupportGroupCreateInput {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  courseId: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @minLength 10
+     * @maxLength 500
+     */
+  purpose: string;
+  /**
+     * @minItems 2
+     * @maxItems 20
+     */
+  enrollmentIds: string[];
+}
+
+export interface SupportGroupMembershipInput {
+  /** @maxItems 20 */
+  addEnrollmentIds?: string[];
+  /** @maxItems 20 */
+  removeUserIds?: string[];
+}
+
+export interface SupportGroupMember {
+  userId: string;
+  name: string;
+  enrollmentId: string;
+  joinedAt: string;
+}
+
+export interface SupportGroup {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  name: string;
+  purpose: string;
+  guideId: string;
+  guideName: string;
+  memberCount: number;
+  messageCount: number;
+  /** @nullable */
+  lastMessagePreview: string | null;
+  /** @nullable */
+  lastMessageAt: string | null;
+  canManageMembers: boolean;
+  createdAt: string;
+}
+
+export interface SupportGroupMembershipResponse {
+  group: SupportGroup;
+  members: SupportGroupMember[];
+}
+
+export type SupportGroupMessageSenderRole = typeof SupportGroupMessageSenderRole[keyof typeof SupportGroupMessageSenderRole];
+
+
+export const SupportGroupMessageSenderRole = {
   student: 'student',
   guide: 'guide',
 } as const;
 
-export type MentorshipMessageKind = typeof MentorshipMessageKind[keyof typeof MentorshipMessageKind];
+export type SupportGroupMessageKind = typeof SupportGroupMessageKind[keyof typeof SupportGroupMessageKind];
 
 
-export const MentorshipMessageKind = {
+export const SupportGroupMessageKind = {
   text: 'text',
   meeting: 'meeting',
   question: 'question',
@@ -556,6 +689,104 @@ export interface MentorshipQuestion {
   options: string[];
 }
 
+export interface MentorshipAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  downloadUrl: string;
+  isImage: boolean;
+}
+
+export interface SupportGroupMessage {
+  id: string;
+  groupId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: SupportGroupMessageSenderRole;
+  kind: SupportGroupMessageKind;
+  body: string;
+  /** @nullable */
+  meetingUrl: string | null;
+  /** @nullable */
+  meetingStartsAt: string | null;
+  meetingAgenda: string;
+  question: MentorshipQuestion | null;
+  /** @nullable */
+  replyToMessageId: string | null;
+  attachments: MentorshipAttachment[];
+  createdAt: string;
+}
+
+export interface SupportGroupMessagesResponse {
+  group: SupportGroup;
+  members: SupportGroupMember[];
+  messages: SupportGroupMessage[];
+}
+
+export type SupportGroupMessageInputKind = typeof SupportGroupMessageInputKind[keyof typeof SupportGroupMessageInputKind];
+
+
+export const SupportGroupMessageInputKind = {
+  text: 'text',
+  meeting: 'meeting',
+  question: 'question',
+} as const;
+
+export type MentorshipQuestionInputType = typeof MentorshipQuestionInputType[keyof typeof MentorshipQuestionInputType];
+
+
+export const MentorshipQuestionInputType = {
+  multiple_choice: 'multiple_choice',
+  open_response: 'open_response',
+} as const;
+
+export interface MentorshipQuestionInput {
+  type: MentorshipQuestionInputType;
+  /**
+     * @maxItems 6
+     * @items.minLength 1
+     * @items.maxLength 200
+     */
+  options?: string[];
+}
+
+export interface SupportGroupMessageInput {
+  kind: SupportGroupMessageInputKind;
+  /** @maxLength 5000 */
+  body?: string;
+  /** @maxLength 500 */
+  meetingUrl?: string;
+  meetingStartsAt?: string;
+  /** @maxLength 1000 */
+  meetingAgenda?: string;
+  question?: MentorshipQuestionInput;
+  replyToMessageId?: string;
+  /**
+     * @maxItems 5
+     * @items.maxLength 4096
+     */
+  uploadTokens?: string[];
+}
+
+export type MentorshipMessageSenderRole = typeof MentorshipMessageSenderRole[keyof typeof MentorshipMessageSenderRole];
+
+
+export const MentorshipMessageSenderRole = {
+  student: 'student',
+  guide: 'guide',
+} as const;
+
+export type MentorshipMessageKind = typeof MentorshipMessageKind[keyof typeof MentorshipMessageKind];
+
+
+export const MentorshipMessageKind = {
+  text: 'text',
+  meeting: 'meeting',
+  question: 'question',
+  question_response: 'question_response',
+} as const;
+
 export interface MentorshipMessage {
   id: string;
   enrollmentId: string;
@@ -574,24 +805,6 @@ export interface MentorshipMessage {
   replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
   createdAt: string;
-}
-
-export type MentorshipQuestionInputType = typeof MentorshipQuestionInputType[keyof typeof MentorshipQuestionInputType];
-
-
-export const MentorshipQuestionInputType = {
-  multiple_choice: 'multiple_choice',
-  open_response: 'open_response',
-} as const;
-
-export interface MentorshipQuestionInput {
-  type: MentorshipQuestionInputType;
-  /**
-     * @maxItems 6
-     * @items.minLength 1
-     * @items.maxLength 200
-     */
-  options?: string[];
 }
 
 export interface MentorshipQuestionResponseInput {
@@ -1189,6 +1402,10 @@ export const ListSuperadminAccountsRole = {
 } as const;
 
 export type GetGuideDashboardParams = {
+courseId?: string;
+};
+
+export type GetGuideSupportReviewParams = {
 courseId?: string;
 };
 

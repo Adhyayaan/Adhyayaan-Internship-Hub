@@ -449,6 +449,170 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Student or assigned guide access required }
         "404": { description: Attachment not found }
+  /guide/support-review:
+    get:
+      operationId: getGuideSupportReview
+      parameters:
+        - { name: courseId, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Assigned learners in a course with transparent pace and repeated study-check signals
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GuideSupportReview" }
+        "400": { description: Unsupported course or missing course selection }
+        "401": { description: Sign in first }
+        "403": { description: Internship Guide access required }
+  /guide/support-groups:
+    post:
+      operationId: createGuideSupportGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SupportGroupCreateInput" }
+      responses:
+        "201":
+          description: Course support group created with the guide's selected learners
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroup" }
+        "400": { description: "Invalid name, purpose, course, or learner selection" }
+        "401": { description: Sign in first }
+        "403": { description: Internship Guide access required }
+  /guide/support-groups/{groupId}/members:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateGuideSupportGroupMembers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SupportGroupMembershipInput" }
+      responses:
+        "200":
+          description: Updated membership for a group created by the guide
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMembershipResponse" }
+        "400": { description: Invalid enrollment or membership change }
+        "401": { description: Sign in first }
+        "403": { description: Only the group guide can manage members }
+        "404": { description: Support group not found }
+  /support-groups:
+    get:
+      operationId: listSupportGroups
+      responses:
+        "200":
+          description: Groups created by the guide or joined by the signed-in learner
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SupportGroup" }
+        "401": { description: Sign in first }
+        "403": { description: Student or guide access required }
+  /support-groups/{groupId}/messages:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: listSupportGroupMessages
+      responses:
+        "200":
+          description: Shared conversation visible only to its guide and invited group members
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMessagesResponse" }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Support group not found }
+    post:
+      operationId: sendSupportGroupMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SupportGroupMessageInput" }
+      responses:
+        "201":
+          description: Message, guide Meet link, or formative question saved to the shared group
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMessage" }
+        "400": { description: "Invalid message, question, meeting link, or attachment" }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required; only the guide can ask questions or share Meet links }
+        "404": { description: Support group not found }
+  /support-groups/{groupId}/uploads:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: requestSupportGroupUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MentorshipUploadInput" }
+      responses:
+        "201":
+          description: Short-lived private upload URL bound to this group and member
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipUploadResponse" }
+        "400": { description: Unsupported file type or size }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Support group not found }
+  /support-groups/{groupId}/questions/{questionId}/responses:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: questionId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: answerSupportGroupQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MentorshipQuestionResponseInput" }
+      responses:
+        "201":
+          description: Formative response saved in the shared group conversation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMessage" }
+        "400": { description: Invalid response or answer choice }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Question not found in this group }
+  /support-groups/{groupId}/events:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: streamSupportGroupEvents
+      responses:
+        "200":
+          description: Reconnecting event stream for group messages
+          content:
+            text/event-stream:
+              schema: { type: string }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Support group not found }
+  /support-groups/attachments/{attachmentId}:
+    parameters:
+      - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: downloadSupportGroupAttachment
+      responses:
+        "200":
+          description: Private group attachment, available only to its guide and invited members
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Attachment not found }
   /study-media/01/{file}:
     parameters:
       - { name: file, in: path, required: true, schema: { type: string, pattern: '^(01-[0-9]{1,2}\.(svg|mp4)|consent-pilot\.(mp4|vtt|jpg))$' } }
@@ -1178,6 +1342,151 @@ components:
         selectedCourseId: { type: ["string", "null"] }
         learnerCount: { type: integer }
         learners: { type: array, items: { $ref: "#/components/schemas/GuideLearner" } }
+    GuideSupportReview:
+      type: object
+      required: [supportedCourses, selectedCourseId, learners]
+      properties:
+        supportedCourses: { type: array, items: { $ref: "#/components/schemas/GuideCourse" } }
+        selectedCourseId: { type: ["string", "null"] }
+        learners: { type: array, items: { $ref: "#/components/schemas/GuideSupportLearner" } }
+    GuideSupportLearner:
+      type: object
+      required: [id, name, email, enrollmentId, courseId, courseTitle, hours, courseStatus, completedPercent, expectedPercent, pace, learningChecks, needsSupportReview, reasons]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        enrollmentId: { type: string, format: uuid }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        hours: { type: integer, enum: [60, 120] }
+        courseStatus: { type: string }
+        completedPercent: { type: integer }
+        expectedPercent: { type: integer }
+        pace: { $ref: "#/components/schemas/SupportPaceEvidence" }
+        learningChecks: { $ref: "#/components/schemas/SupportLearningEvidence" }
+        needsSupportReview: { type: boolean }
+        reasons: { type: array, items: { type: string } }
+    SupportPaceEvidence:
+      type: object
+      required: [status, deltaDays, thresholdDays, triggered]
+      properties:
+        status: { type: string, enum: [ahead, on_track, behind, complete] }
+        deltaDays: { type: number }
+        thresholdDays: { type: integer, enum: [7] }
+        triggered: { type: boolean }
+    SupportLearningEvidence:
+      type: object
+      required: [count, secureCount, nonSecureCount, minimumChecks, securePercent, requiredSecurePercent, eligible, triggered]
+      properties:
+        count: { type: integer }
+        secureCount: { type: integer }
+        nonSecureCount: { type: integer }
+        minimumChecks: { type: integer, enum: [3] }
+        securePercent: { type: ["number", "null"] }
+        requiredSecurePercent: { type: integer, enum: [50] }
+        eligible: { type: boolean }
+        triggered: { type: boolean }
+    SupportGroupCreateInput:
+      type: object
+      required: [courseId, name, purpose, enrollmentIds]
+      properties:
+        courseId: { type: string, minLength: 1, maxLength: 120 }
+        name: { type: string, minLength: 2, maxLength: 100 }
+        purpose: { type: string, minLength: 10, maxLength: 500 }
+        enrollmentIds:
+          type: array
+          minItems: 2
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    SupportGroupMembershipInput:
+      type: object
+      properties:
+        addEnrollmentIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        removeUserIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    SupportGroupMember:
+      type: object
+      required: [userId, name, enrollmentId, joinedAt]
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        enrollmentId: { type: string, format: uuid }
+        joinedAt: { type: string, format: date-time }
+    SupportGroup:
+      type: object
+      required: [id, courseId, courseTitle, name, purpose, guideId, guideName, memberCount, messageCount, lastMessagePreview, lastMessageAt, canManageMembers, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        name: { type: string }
+        purpose: { type: string }
+        guideId: { type: string, format: uuid }
+        guideName: { type: string }
+        memberCount: { type: integer }
+        messageCount: { type: integer }
+        lastMessagePreview: { type: ["string", "null"] }
+        lastMessageAt: { type: ["string", "null"], format: date-time }
+        canManageMembers: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    SupportGroupMembershipResponse:
+      type: object
+      required: [group, members]
+      properties:
+        group: { $ref: "#/components/schemas/SupportGroup" }
+        members: { type: array, items: { $ref: "#/components/schemas/SupportGroupMember" } }
+    SupportGroupMessage:
+      type: object
+      required: [id, groupId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        groupId: { type: string, format: uuid }
+        senderId: { type: string, format: uuid }
+        senderName: { type: string }
+        senderRole: { type: string, enum: [student, guide] }
+        kind: { type: string, enum: [text, meeting, question, question_response] }
+        body: { type: string }
+        meetingUrl: { type: ["string", "null"], format: uri }
+        meetingStartsAt: { type: ["string", "null"], format: date-time }
+        meetingAgenda: { type: string }
+        question:
+          anyOf:
+            - { $ref: "#/components/schemas/MentorshipQuestion" }
+            - { type: "null" }
+        replyToMessageId: { type: ["string", "null"], format: uuid }
+        attachments: { type: array, items: { $ref: "#/components/schemas/MentorshipAttachment" } }
+        createdAt: { type: string, format: date-time }
+    SupportGroupMessagesResponse:
+      type: object
+      required: [group, members, messages]
+      properties:
+        group: { $ref: "#/components/schemas/SupportGroup" }
+        members: { type: array, items: { $ref: "#/components/schemas/SupportGroupMember" } }
+        messages: { type: array, items: { $ref: "#/components/schemas/SupportGroupMessage" } }
+    SupportGroupMessageInput:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [text, meeting, question] }
+        body: { type: string, maxLength: 5000 }
+        meetingUrl: { type: string, format: uri, maxLength: 500 }
+        meetingStartsAt: { type: string, format: date-time }
+        meetingAgenda: { type: string, maxLength: 1000 }
+        question: { $ref: "#/components/schemas/MentorshipQuestionInput" }
+        replyToMessageId: { type: string, format: uuid }
+        uploadTokens:
+          type: array
+          maxItems: 5
+          items: { type: string, maxLength: 4096 }
     MentorshipAttachment:
       type: object
       required: [id, fileName, contentType, size, downloadUrl, isImage]

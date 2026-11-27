@@ -530,3 +530,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;op
   .adhya-panel > div:nth-of-type(2){max-height:none}
 }
 @media(prefers-reduced-motion:reduce){.adhya-panel,.adhya-avatar{animation:none}.adhya-invite,.adhya-launcher,.mobile-bottom-nav{transition:none}.adhya-invite:hover,.adhya-launcher:hover{transform:none}}
+
+/* Course support: a calm field-notes palette for shared work. */
+:root{--support-moss:164 34% 31%;--support-wash:164 28% 92%;--support-gold:39 72% 49%}
+.support-enter{animation:rise .4s cubic-bezier(.2,.8,.2,1) both}
+.support-message{animation:messageIn .24s ease-out both}
+@keyframes messageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.support-scroll{scrollbar-color:hsl(var(--border)) transparent;scrollbar-width:thin}
+@media(prefers-reduced-motion:reduce){.support-enter,.support-message{animation:none}}

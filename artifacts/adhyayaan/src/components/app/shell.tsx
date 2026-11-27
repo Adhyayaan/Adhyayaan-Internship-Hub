@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound, KeyRound, MessagesSquare } from 'lucide-react';
+import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound, KeyRound, MessagesSquare, Users } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/explore', label: 'Explore', icon: Compass },
   { href: '/my-learning', label: 'My learning', icon: BookOpenText },
   { href: '/mentorship', label: 'Mentorship', icon: MessagesSquare },
+  { href: '/support-groups', label: 'Course groups', icon: Users },
   { href: '/practice', label: 'Practice', icon: Brain },
   { href: '/projects', label: 'Projects', icon: FolderGit2 },
   { href: '/logbook', label: 'Logbook', icon: NotebookPen },
@@ -20,6 +21,8 @@ const NAV = [
 ];
 const GUIDE_NAV = [
   { href: '/guide', label: 'Guide dashboard', icon: UsersRound },
+  { href: '/guide/support', label: 'Course support', icon: ShieldCheck },
+  { href: '/support-groups', label: 'Course groups', icon: Users },
   { href: '/mentorship', label: 'Mentorship', icon: MessagesSquare },
   { href: '/profile', label: 'Account', icon: UserRound },
 ];

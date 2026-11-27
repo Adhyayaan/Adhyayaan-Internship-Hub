@@ -27,6 +27,7 @@ import SuperadminPage from '@/pages/superadmin';
 import ChangePasswordPage from '@/pages/change-password';
 import { MentorshipListPage } from '@/pages/mentorship';
 import MentorshipThreadPage from '@/pages/mentorship';
+import { GuideSupportPage, SupportGroupPage, SupportGroupsPage } from '@/pages/support-groups';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -62,7 +63,7 @@ function Router() {
   if (isLoading) return <AuthSplash />;
   if (loc === '/change-password') return <RoutedErrorBoundary><ChangePasswordPage /></RoutedErrorBoundary>;
   if (user?.isSuperadmin && !loc.startsWith('/superadmin') && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/superadmin" replace />;
-  if (user?.isGuide && !user.isSuperadmin && !loc.startsWith('/guide') && !loc.startsWith('/mentorship') && loc !== '/profile') return <Redirect to="/guide" replace />;
+  if (user?.isGuide && !user.isSuperadmin && !loc.startsWith('/guide') && !loc.startsWith('/mentorship') && !loc.startsWith('/support-groups') && loc !== '/profile') return <Redirect to="/guide" replace />;
   if (user?.isAdmin && !user.isSuperadmin && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/admin" replace />;
   if (user && !user.isGuide && !user.isAdmin && !user.isSuperadmin && user.assessmentRequired && !user.assessmentCompletedAt) {
     return <Redirect to={assessmentHref(here)} replace />;
@@ -82,6 +83,9 @@ function Router() {
           <Route path="/my-learning" component={MyLearning} />
           <Route path="/mentorship" component={MentorshipListPage} />
           <Route path="/mentorship/:enrollmentId" component={MentorshipThreadPage} />
+          <Route path="/guide/support" component={GuideSupportPage} />
+          <Route path="/support-groups" component={SupportGroupsPage} />
+          <Route path="/support-groups/:groupId" component={SupportGroupPage} />
           <Route path="/projects" component={Projects} />
           <Route path="/logbook" component={Logbook} />
           <Route path="/practice" component={Practice} />

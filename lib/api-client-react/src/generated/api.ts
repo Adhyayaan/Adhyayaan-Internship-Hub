@@ -44,7 +44,9 @@ import type {
   EnrollmentInput,
   EnrollmentUpdate,
   GetGuideDashboardParams,
+  GetGuideSupportReviewParams,
   GuideDashboard,
+  GuideSupportReview,
   HealthStatus,
   InitialPasswordChangeInput,
   LearningReport,
@@ -79,6 +81,13 @@ import type {
   SuperadminGuidePasswordReset,
   SuperadminGuideProvision,
   SuperadminRoleUpdateInput,
+  SupportGroup,
+  SupportGroupCreateInput,
+  SupportGroupMembershipInput,
+  SupportGroupMembershipResponse,
+  SupportGroupMessage,
+  SupportGroupMessageInput,
+  SupportGroupMessagesResponse,
   WorkLog
 } from './api.schemas';
 
@@ -2672,6 +2681,904 @@ export function useDownloadMentorshipAttachment<TData = Awaited<ReturnType<typeo
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getDownloadMentorshipAttachmentQueryOptions(attachmentId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGuideSupportReviewUrl = (params?: GetGuideSupportReviewParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/guide/support-review?${stringifiedParams}` : `/api/guide/support-review`
+}
+
+export const getGuideSupportReview = async (params?: GetGuideSupportReviewParams, options?: Parameters<typeof customFetch>[1]): Promise<GuideSupportReview> => {
+
+  return customFetch<GuideSupportReview>(getGetGuideSupportReviewUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGuideSupportReviewQueryKey = (params?: GetGuideSupportReviewParams,) => {
+    return [
+    `/api/guide/support-review`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetGuideSupportReviewQueryOptions = <TData = Awaited<ReturnType<typeof getGuideSupportReview>>, TError = ErrorType<void>>(params?: GetGuideSupportReviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGuideSupportReviewQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGuideSupportReview>>> = ({ signal }) => getGuideSupportReview(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGuideSupportReviewQueryResult = NonNullable<Awaited<ReturnType<typeof getGuideSupportReview>>>
+export type GetGuideSupportReviewQueryError = ErrorType<void>
+
+
+export function useGetGuideSupportReview<TData = Awaited<ReturnType<typeof getGuideSupportReview>>, TError = ErrorType<void>>(
+ params: undefined |  GetGuideSupportReviewParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideSupportReview>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideSupportReview>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideSupportReview<TData = Awaited<ReturnType<typeof getGuideSupportReview>>, TError = ErrorType<void>>(
+ params?: GetGuideSupportReviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideSupportReview>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideSupportReview>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideSupportReview<TData = Awaited<ReturnType<typeof getGuideSupportReview>>, TError = ErrorType<void>>(
+ params?: GetGuideSupportReviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetGuideSupportReview<TData = Awaited<ReturnType<typeof getGuideSupportReview>>, TError = ErrorType<void>>(
+ params?: GetGuideSupportReviewParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideSupportReview>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGuideSupportReviewQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateGuideSupportGroupUrl = () => {
+
+
+
+
+  return `/api/guide/support-groups`
+}
+
+export const createGuideSupportGroup = async (supportGroupCreateInput: SupportGroupCreateInput, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroup> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SupportGroup>(getCreateGuideSupportGroupUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(supportGroupCreateInput)
+  }
+);}
+
+
+
+
+
+export const getCreateGuideSupportGroupMutationKey = () => ['createGuideSupportGroup'] as const;
+
+export const getCreateGuideSupportGroupMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGuideSupportGroup>>, TError,CreateGuideSupportGroupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createGuideSupportGroup>>, TError,CreateGuideSupportGroupMutationVariables, TContext> => {
+
+const mutationKey = getCreateGuideSupportGroupMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createGuideSupportGroup>>, CreateGuideSupportGroupMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createGuideSupportGroup(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateGuideSupportGroupMutationResult = NonNullable<Awaited<ReturnType<typeof createGuideSupportGroup>>>
+    export type CreateGuideSupportGroupMutationBody = BodyType<SupportGroupCreateInput>
+    export type CreateGuideSupportGroupMutationError = ErrorType<void>
+    export type CreateGuideSupportGroupMutationVariables = {data: BodyType<SupportGroupCreateInput>}
+
+    export const useCreateGuideSupportGroup = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGuideSupportGroup>>, TError,CreateGuideSupportGroupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createGuideSupportGroup>>,
+        TError,
+        CreateGuideSupportGroupMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateGuideSupportGroupMutationOptions(options), queryClient);
+    }
+
+export const getUpdateGuideSupportGroupMembersUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/guide/support-groups/${groupId}/members`
+}
+
+export const updateGuideSupportGroupMembers = async (groupId: string,
+    supportGroupMembershipInput: SupportGroupMembershipInput, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMembershipResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SupportGroupMembershipResponse>(getUpdateGuideSupportGroupMembersUrl(groupId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(supportGroupMembershipInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateGuideSupportGroupMembersMutationKey = () => ['updateGuideSupportGroupMembers'] as const;
+
+export const getUpdateGuideSupportGroupMembersMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>, TError,UpdateGuideSupportGroupMembersMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>, TError,UpdateGuideSupportGroupMembersMutationVariables, TContext> => {
+
+const mutationKey = getUpdateGuideSupportGroupMembersMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>, UpdateGuideSupportGroupMembersMutationVariables> = (props) => {
+          const {groupId,data} = props ?? {};
+
+          return  updateGuideSupportGroupMembers(groupId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateGuideSupportGroupMembersMutationResult = NonNullable<Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>>
+    export type UpdateGuideSupportGroupMembersMutationBody = BodyType<SupportGroupMembershipInput>
+    export type UpdateGuideSupportGroupMembersMutationError = ErrorType<void>
+    export type UpdateGuideSupportGroupMembersMutationVariables = {groupId: string;data: BodyType<SupportGroupMembershipInput>}
+
+    export const useUpdateGuideSupportGroupMembers = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>, TError,UpdateGuideSupportGroupMembersMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateGuideSupportGroupMembers>>,
+        TError,
+        UpdateGuideSupportGroupMembersMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateGuideSupportGroupMembersMutationOptions(options), queryClient);
+    }
+
+export const getListSupportGroupsUrl = () => {
+
+
+
+
+  return `/api/support-groups`
+}
+
+export const listSupportGroups = async ( options?: Parameters<typeof customFetch>[1]): Promise<SupportGroup[]> => {
+
+  return customFetch<SupportGroup[]>(getListSupportGroupsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSupportGroupsQueryKey = () => {
+    return [
+    `/api/support-groups`
+    ] as const;
+    }
+
+
+export const getListSupportGroupsQueryOptions = <TData = Awaited<ReturnType<typeof listSupportGroups>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSupportGroupsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSupportGroups>>> = ({ signal }) => listSupportGroups({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListSupportGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof listSupportGroups>>>
+export type ListSupportGroupsQueryError = ErrorType<void>
+
+
+export function useListSupportGroups<TData = Awaited<ReturnType<typeof listSupportGroups>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSupportGroups>>,
+          TError,
+          Awaited<ReturnType<typeof listSupportGroups>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSupportGroups<TData = Awaited<ReturnType<typeof listSupportGroups>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSupportGroups>>,
+          TError,
+          Awaited<ReturnType<typeof listSupportGroups>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSupportGroups<TData = Awaited<ReturnType<typeof listSupportGroups>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListSupportGroups<TData = Awaited<ReturnType<typeof listSupportGroups>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListSupportGroupsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListSupportGroupMessagesUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/messages`
+}
+
+export const listSupportGroupMessages = async (groupId: string, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMessagesResponse> => {
+
+  return customFetch<SupportGroupMessagesResponse>(getListSupportGroupMessagesUrl(groupId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSupportGroupMessagesQueryKey = (groupId: string,) => {
+    return [
+    `/api/support-groups/${groupId}/messages`
+    ] as const;
+    }
+
+
+export const getListSupportGroupMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listSupportGroupMessages>>, TError = ErrorType<void>>(groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSupportGroupMessagesQueryKey(groupId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSupportGroupMessages>>> = ({ signal }) => listSupportGroupMessages(groupId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: groupId !== null && groupId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListSupportGroupMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listSupportGroupMessages>>>
+export type ListSupportGroupMessagesQueryError = ErrorType<void>
+
+
+export function useListSupportGroupMessages<TData = Awaited<ReturnType<typeof listSupportGroupMessages>>, TError = ErrorType<void>>(
+ groupId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSupportGroupMessages>>,
+          TError,
+          Awaited<ReturnType<typeof listSupportGroupMessages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSupportGroupMessages<TData = Awaited<ReturnType<typeof listSupportGroupMessages>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSupportGroupMessages>>,
+          TError,
+          Awaited<ReturnType<typeof listSupportGroupMessages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSupportGroupMessages<TData = Awaited<ReturnType<typeof listSupportGroupMessages>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListSupportGroupMessages<TData = Awaited<ReturnType<typeof listSupportGroupMessages>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSupportGroupMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListSupportGroupMessagesQueryOptions(groupId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSendSupportGroupMessageUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/messages`
+}
+
+export const sendSupportGroupMessage = async (groupId: string,
+    supportGroupMessageInput: SupportGroupMessageInput, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SupportGroupMessage>(getSendSupportGroupMessageUrl(groupId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(supportGroupMessageInput)
+  }
+);}
+
+
+
+
+
+export const getSendSupportGroupMessageMutationKey = () => ['sendSupportGroupMessage'] as const;
+
+export const getSendSupportGroupMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSupportGroupMessage>>, TError,SendSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendSupportGroupMessage>>, TError,SendSupportGroupMessageMutationVariables, TContext> => {
+
+const mutationKey = getSendSupportGroupMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendSupportGroupMessage>>, SendSupportGroupMessageMutationVariables> = (props) => {
+          const {groupId,data} = props ?? {};
+
+          return  sendSupportGroupMessage(groupId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendSupportGroupMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendSupportGroupMessage>>>
+    export type SendSupportGroupMessageMutationBody = BodyType<SupportGroupMessageInput>
+    export type SendSupportGroupMessageMutationError = ErrorType<void>
+    export type SendSupportGroupMessageMutationVariables = {groupId: string;data: BodyType<SupportGroupMessageInput>}
+
+    export const useSendSupportGroupMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSupportGroupMessage>>, TError,SendSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sendSupportGroupMessage>>,
+        TError,
+        SendSupportGroupMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSendSupportGroupMessageMutationOptions(options), queryClient);
+    }
+
+export const getRequestSupportGroupUploadUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/uploads`
+}
+
+export const requestSupportGroupUpload = async (groupId: string,
+    mentorshipUploadInput: MentorshipUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<MentorshipUploadResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MentorshipUploadResponse>(getRequestSupportGroupUploadUrl(groupId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(mentorshipUploadInput)
+  }
+);}
+
+
+
+
+
+export const getRequestSupportGroupUploadMutationKey = () => ['requestSupportGroupUpload'] as const;
+
+export const getRequestSupportGroupUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestSupportGroupUpload>>, TError,RequestSupportGroupUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestSupportGroupUpload>>, TError,RequestSupportGroupUploadMutationVariables, TContext> => {
+
+const mutationKey = getRequestSupportGroupUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestSupportGroupUpload>>, RequestSupportGroupUploadMutationVariables> = (props) => {
+          const {groupId,data} = props ?? {};
+
+          return  requestSupportGroupUpload(groupId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestSupportGroupUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestSupportGroupUpload>>>
+    export type RequestSupportGroupUploadMutationBody = BodyType<MentorshipUploadInput>
+    export type RequestSupportGroupUploadMutationError = ErrorType<void>
+    export type RequestSupportGroupUploadMutationVariables = {groupId: string;data: BodyType<MentorshipUploadInput>}
+
+    export const useRequestSupportGroupUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestSupportGroupUpload>>, TError,RequestSupportGroupUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestSupportGroupUpload>>,
+        TError,
+        RequestSupportGroupUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestSupportGroupUploadMutationOptions(options), queryClient);
+    }
+
+export const getAnswerSupportGroupQuestionUrl = (groupId: string,
+    questionId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/questions/${questionId}/responses`
+}
+
+export const answerSupportGroupQuestion = async (groupId: string,
+    questionId: string,
+    mentorshipQuestionResponseInput: MentorshipQuestionResponseInput, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SupportGroupMessage>(getAnswerSupportGroupQuestionUrl(groupId,questionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(mentorshipQuestionResponseInput)
+  }
+);}
+
+
+
+
+
+export const getAnswerSupportGroupQuestionMutationKey = () => ['answerSupportGroupQuestion'] as const;
+
+export const getAnswerSupportGroupQuestionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof answerSupportGroupQuestion>>, TError,AnswerSupportGroupQuestionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof answerSupportGroupQuestion>>, TError,AnswerSupportGroupQuestionMutationVariables, TContext> => {
+
+const mutationKey = getAnswerSupportGroupQuestionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof answerSupportGroupQuestion>>, AnswerSupportGroupQuestionMutationVariables> = (props) => {
+          const {groupId,questionId,data} = props ?? {};
+
+          return  answerSupportGroupQuestion(groupId,questionId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnswerSupportGroupQuestionMutationResult = NonNullable<Awaited<ReturnType<typeof answerSupportGroupQuestion>>>
+    export type AnswerSupportGroupQuestionMutationBody = BodyType<MentorshipQuestionResponseInput>
+    export type AnswerSupportGroupQuestionMutationError = ErrorType<void>
+    export type AnswerSupportGroupQuestionMutationVariables = {groupId: string;questionId: string;data: BodyType<MentorshipQuestionResponseInput>}
+
+    export const useAnswerSupportGroupQuestion = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof answerSupportGroupQuestion>>, TError,AnswerSupportGroupQuestionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof answerSupportGroupQuestion>>,
+        TError,
+        AnswerSupportGroupQuestionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAnswerSupportGroupQuestionMutationOptions(options), queryClient);
+    }
+
+export const getStreamSupportGroupEventsUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/events`
+}
+
+export const streamSupportGroupEvents = async (groupId: string, options?: Parameters<typeof customFetch>[1]): Promise<string> => {
+
+  return customFetch<string>(getStreamSupportGroupEventsUrl(groupId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getStreamSupportGroupEventsQueryKey = (groupId: string,) => {
+    return [
+    `/api/support-groups/${groupId}/events`
+    ] as const;
+    }
+
+
+export const getStreamSupportGroupEventsQueryOptions = <TData = Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError = ErrorType<void>>(groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getStreamSupportGroupEventsQueryKey(groupId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof streamSupportGroupEvents>>> = ({ signal }) => streamSupportGroupEvents(groupId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: groupId !== null && groupId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type StreamSupportGroupEventsQueryResult = NonNullable<Awaited<ReturnType<typeof streamSupportGroupEvents>>>
+export type StreamSupportGroupEventsQueryError = ErrorType<void>
+
+
+export function useStreamSupportGroupEvents<TData = Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError = ErrorType<void>>(
+ groupId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamSupportGroupEvents>>,
+          TError,
+          Awaited<ReturnType<typeof streamSupportGroupEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamSupportGroupEvents<TData = Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamSupportGroupEvents>>,
+          TError,
+          Awaited<ReturnType<typeof streamSupportGroupEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamSupportGroupEvents<TData = Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useStreamSupportGroupEvents<TData = Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError = ErrorType<void>>(
+ groupId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSupportGroupEvents>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getStreamSupportGroupEventsQueryOptions(groupId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDownloadSupportGroupAttachmentUrl = (attachmentId: string,) => {
+
+
+
+
+  return `/api/support-groups/attachments/${attachmentId}`
+}
+
+export const downloadSupportGroupAttachment = async (attachmentId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadSupportGroupAttachmentUrl(attachmentId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadSupportGroupAttachmentQueryKey = (attachmentId: string,) => {
+    return [
+    `/api/support-groups/attachments/${attachmentId}`
+    ] as const;
+    }
+
+
+export const getDownloadSupportGroupAttachmentQueryOptions = <TData = Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError = ErrorType<void>>(attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadSupportGroupAttachmentQueryKey(attachmentId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>> = ({ signal }) => downloadSupportGroupAttachment(attachmentId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: attachmentId !== null && attachmentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadSupportGroupAttachmentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>>
+export type DownloadSupportGroupAttachmentQueryError = ErrorType<void>
+
+
+export function useDownloadSupportGroupAttachment<TData = Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadSupportGroupAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof downloadSupportGroupAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadSupportGroupAttachment<TData = Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadSupportGroupAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof downloadSupportGroupAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadSupportGroupAttachment<TData = Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDownloadSupportGroupAttachment<TData = Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSupportGroupAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDownloadSupportGroupAttachmentQueryOptions(attachmentId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

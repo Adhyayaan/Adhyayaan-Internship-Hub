@@ -996,6 +996,359 @@ export const DownloadMentorshipAttachmentParams = zod.object({
 export const DownloadMentorshipAttachmentResponse = zod.unknown()
 
 
+export const GetGuideSupportReviewQueryParams = zod.object({
+  "courseId": zod.coerce.string().optional()
+})
+
+export const GetGuideSupportReviewResponse = zod.object({
+  "supportedCourses": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string()
+})),
+  "selectedCourseId": zod.string().nullable(),
+  "learners": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "enrollmentId": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "hours": zod.union([zod.literal(60),zod.literal(120)]),
+  "courseStatus": zod.string(),
+  "completedPercent": zod.number().int(),
+  "expectedPercent": zod.number().int(),
+  "pace": zod.object({
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "deltaDays": zod.number(),
+  "thresholdDays": zod.literal(7),
+  "triggered": zod.boolean()
+}),
+  "learningChecks": zod.object({
+  "count": zod.number().int(),
+  "secureCount": zod.number().int(),
+  "nonSecureCount": zod.number().int(),
+  "minimumChecks": zod.literal(3),
+  "securePercent": zod.number().nullable(),
+  "requiredSecurePercent": zod.literal(50),
+  "eligible": zod.boolean(),
+  "triggered": zod.boolean()
+}),
+  "needsSupportReview": zod.boolean(),
+  "reasons": zod.array(zod.string())
+}))
+})
+
+
+export const createGuideSupportGroupBodyCourseIdMax = 120;
+
+export const createGuideSupportGroupBodyNameMin = 2;
+export const createGuideSupportGroupBodyNameMax = 100;
+
+export const createGuideSupportGroupBodyPurposeMin = 10;
+export const createGuideSupportGroupBodyPurposeMax = 500;
+
+export const createGuideSupportGroupBodyEnrollmentIdsMin = 2;
+export const createGuideSupportGroupBodyEnrollmentIdsMax = 20;
+
+
+
+export const CreateGuideSupportGroupBody = zod.object({
+  "courseId": zod.string().min(1).max(createGuideSupportGroupBodyCourseIdMax),
+  "name": zod.string().min(createGuideSupportGroupBodyNameMin).max(createGuideSupportGroupBodyNameMax),
+  "purpose": zod.string().min(createGuideSupportGroupBodyPurposeMin).max(createGuideSupportGroupBodyPurposeMax),
+  "enrollmentIds": zod.array(zod.string().uuid()).min(createGuideSupportGroupBodyEnrollmentIdsMin).max(createGuideSupportGroupBodyEnrollmentIdsMax)
+})
+
+export const CreateGuideSupportGroupResponse = zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "name": zod.string(),
+  "purpose": zod.string(),
+  "guideId": zod.string().uuid(),
+  "guideName": zod.string(),
+  "memberCount": zod.number().int(),
+  "messageCount": zod.number().int(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "canManageMembers": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const UpdateGuideSupportGroupMembersParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const updateGuideSupportGroupMembersBodyAddEnrollmentIdsMax = 20;
+
+export const updateGuideSupportGroupMembersBodyRemoveUserIdsMax = 20;
+
+
+
+export const UpdateGuideSupportGroupMembersBody = zod.object({
+  "addEnrollmentIds": zod.array(zod.string().uuid()).max(updateGuideSupportGroupMembersBodyAddEnrollmentIdsMax).optional(),
+  "removeUserIds": zod.array(zod.string().uuid()).max(updateGuideSupportGroupMembersBodyRemoveUserIdsMax).optional()
+})
+
+export const UpdateGuideSupportGroupMembersResponse = zod.object({
+  "group": zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "name": zod.string(),
+  "purpose": zod.string(),
+  "guideId": zod.string().uuid(),
+  "guideName": zod.string(),
+  "memberCount": zod.number().int(),
+  "messageCount": zod.number().int(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "canManageMembers": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}),
+  "members": zod.array(zod.object({
+  "userId": zod.string().uuid(),
+  "name": zod.string(),
+  "enrollmentId": zod.string().uuid(),
+  "joinedAt": zod.coerce.date()
+}))
+})
+
+
+export const ListSupportGroupsResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "name": zod.string(),
+  "purpose": zod.string(),
+  "guideId": zod.string().uuid(),
+  "guideName": zod.string(),
+  "memberCount": zod.number().int(),
+  "messageCount": zod.number().int(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "canManageMembers": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListSupportGroupsResponse = zod.array(ListSupportGroupsResponseItem)
+
+
+export const ListSupportGroupMessagesParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsItemMax = 200;
+
+export const listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsMax = 6;
+
+
+
+export const ListSupportGroupMessagesResponse = zod.object({
+  "group": zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "name": zod.string(),
+  "purpose": zod.string(),
+  "guideId": zod.string().uuid(),
+  "guideName": zod.string(),
+  "memberCount": zod.number().int(),
+  "messageCount": zod.number().int(),
+  "lastMessagePreview": zod.string().nullable(),
+  "lastMessageAt": zod.coerce.date().nullable(),
+  "canManageMembers": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}),
+  "members": zod.array(zod.object({
+  "userId": zod.string().uuid(),
+  "name": zod.string(),
+  "enrollmentId": zod.string().uuid(),
+  "joinedAt": zod.coerce.date()
+})),
+  "messages": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "groupId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsItemMax)).max(listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+export const SendSupportGroupMessageParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const sendSupportGroupMessageBodyBodyMax = 5000;
+
+export const sendSupportGroupMessageBodyMeetingUrlMax = 500;
+
+export const sendSupportGroupMessageBodyMeetingAgendaMax = 1000;
+
+export const sendSupportGroupMessageBodyQuestionOptionsItemMax = 200;
+
+export const sendSupportGroupMessageBodyQuestionOptionsMax = 6;
+
+export const sendSupportGroupMessageBodyUploadTokensItemMax = 4096;
+
+export const sendSupportGroupMessageBodyUploadTokensMax = 5;
+
+
+
+export const SendSupportGroupMessageBody = zod.object({
+  "kind": zod.enum(['text', 'meeting', 'question']),
+  "body": zod.string().max(sendSupportGroupMessageBodyBodyMax).optional(),
+  "meetingUrl": zod.string().url().max(sendSupportGroupMessageBodyMeetingUrlMax).optional(),
+  "meetingStartsAt": zod.coerce.date().optional(),
+  "meetingAgenda": zod.string().max(sendSupportGroupMessageBodyMeetingAgendaMax).optional(),
+  "question": zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().min(1).max(sendSupportGroupMessageBodyQuestionOptionsItemMax)).max(sendSupportGroupMessageBodyQuestionOptionsMax).optional()
+}).optional(),
+  "replyToMessageId": zod.string().uuid().optional(),
+  "uploadTokens": zod.array(zod.string().max(sendSupportGroupMessageBodyUploadTokensItemMax)).max(sendSupportGroupMessageBodyUploadTokensMax).optional()
+})
+
+export const sendSupportGroupMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const sendSupportGroupMessageResponseQuestionOneOptionsMax = 6;
+
+
+
+export const SendSupportGroupMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "groupId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(sendSupportGroupMessageResponseQuestionOneOptionsItemMax)).max(sendSupportGroupMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const RequestSupportGroupUploadParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const requestSupportGroupUploadBodyFileNameMax = 160;
+
+export const requestSupportGroupUploadBodyContentTypeMax = 120;
+
+export const requestSupportGroupUploadBodySizeMax = 10485760;
+
+
+
+export const RequestSupportGroupUploadBody = zod.object({
+  "fileName": zod.string().min(1).max(requestSupportGroupUploadBodyFileNameMax),
+  "contentType": zod.string().max(requestSupportGroupUploadBodyContentTypeMax),
+  "size": zod.number().int().min(1).max(requestSupportGroupUploadBodySizeMax)
+})
+
+export const RequestSupportGroupUploadResponse = zod.object({
+  "uploadUrl": zod.string().url(),
+  "uploadToken": zod.string(),
+  "expiresAt": zod.coerce.date()
+})
+
+
+export const AnswerSupportGroupQuestionParams = zod.object({
+  "groupId": zod.coerce.string().uuid(),
+  "questionId": zod.coerce.string().uuid()
+})
+
+export const answerSupportGroupQuestionBodyResponseMax = 3000;
+
+
+
+export const AnswerSupportGroupQuestionBody = zod.object({
+  "response": zod.string().min(1).max(answerSupportGroupQuestionBodyResponseMax)
+})
+
+export const answerSupportGroupQuestionResponseQuestionOneOptionsItemMax = 200;
+
+export const answerSupportGroupQuestionResponseQuestionOneOptionsMax = 6;
+
+
+
+export const AnswerSupportGroupQuestionResponse = zod.object({
+  "id": zod.string().uuid(),
+  "groupId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(answerSupportGroupQuestionResponseQuestionOneOptionsItemMax)).max(answerSupportGroupQuestionResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const StreamSupportGroupEventsParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const StreamSupportGroupEventsResponse = zod.unknown()
+
+
+export const DownloadSupportGroupAttachmentParams = zod.object({
+  "attachmentId": zod.coerce.string().uuid()
+})
+
+export const DownloadSupportGroupAttachmentResponse = zod.unknown()
+
+
 export const getStudyMediaPathFileRegExp = new RegExp('^(01-[0-9]{1,2}\\.(svg|mp4)|consent-pilot\\.(mp4|vtt|jpg))$');
 
 
