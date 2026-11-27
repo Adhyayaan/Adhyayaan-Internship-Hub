@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
 import { AdhyaGuide } from '@/components/app/adhya-guide';
+import { MentorshipNotifications } from '@/components/app/mentorship-notifications';
 
 const NAV = [
   { href: '/', label: 'Today', icon: LayoutGrid },
@@ -89,6 +90,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const showMobileNav = mobileNavVisible && !mobileFormFocused;
   return (
     <div className="min-h-[100dvh] md:flex">
+      {user && (user.isGuide || (!user.isAdmin && !user.isSuperadmin)) && <MentorshipNotifications />}
       <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col bg-sidebar p-5 text-sidebar-foreground md:flex">
         <Logo light />
         <p className="mt-2 pl-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/50">cognitive · adaptive learning</p>

@@ -764,9 +764,27 @@ export const ListMentorshipThreadsResponseItem = zod.object({
   "canSend": zod.boolean(),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
-  "messageCount": zod.number().int()
+  "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int()
 })
 export const ListMentorshipThreadsResponse = zod.array(ListMentorshipThreadsResponseItem)
+
+
+export const GetMentorshipNotificationPreferenceResponse = zod.object({
+  "browserNotificationsEnabled": zod.boolean()
+})
+
+
+export const UpdateMentorshipNotificationPreferenceBody = zod.object({
+  "browserNotificationsEnabled": zod.boolean()
+})
+
+export const UpdateMentorshipNotificationPreferenceResponse = zod.object({
+  "browserNotificationsEnabled": zod.boolean()
+})
+
+
+export const StreamMentorshipNotificationsResponse = zod.unknown()
 
 
 export const ListMentorshipMessagesParams = zod.object({
@@ -787,7 +805,8 @@ export const ListMentorshipMessagesResponse = zod.object({
   "canSend": zod.boolean(),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
-  "messageCount": zod.number().int()
+  "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int()
 }),
   "messages": zod.array(zod.object({
   "id": zod.string().uuid(),

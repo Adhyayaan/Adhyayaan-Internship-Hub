@@ -71,6 +71,8 @@ export * from './mentorshipMessageInputKind';
 export * from './mentorshipMessageKind';
 export * from './mentorshipMessageSenderRole';
 export * from './mentorshipMessagesResponse';
+export * from './mentorshipNotificationPreference';
+export * from './mentorshipNotificationPreferenceInput';
 export * from './mentorshipThread';
 export * from './mentorshipThreadHours';
 export * from './mentorshipUploadInput';

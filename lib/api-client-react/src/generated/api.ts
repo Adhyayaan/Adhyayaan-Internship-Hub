@@ -55,6 +55,8 @@ import type {
   MentorshipMessage,
   MentorshipMessageInput,
   MentorshipMessagesResponse,
+  MentorshipNotificationPreference,
+  MentorshipNotificationPreferenceInput,
   MentorshipThread,
   MentorshipUploadInput,
   MentorshipUploadResponse,
@@ -1861,6 +1863,278 @@ export function useListMentorshipThreads<TData = Awaited<ReturnType<typeof listM
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListMentorshipThreadsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMentorshipNotificationPreferenceUrl = () => {
+
+
+
+
+  return `/api/mentorship/notification-preference`
+}
+
+export const getMentorshipNotificationPreference = async ( options?: Parameters<typeof customFetch>[1]): Promise<MentorshipNotificationPreference> => {
+
+  return customFetch<MentorshipNotificationPreference>(getGetMentorshipNotificationPreferenceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMentorshipNotificationPreferenceQueryKey = () => {
+    return [
+    `/api/mentorship/notification-preference`
+    ] as const;
+    }
+
+
+export const getGetMentorshipNotificationPreferenceQueryOptions = <TData = Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMentorshipNotificationPreferenceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>> = ({ signal }) => getMentorshipNotificationPreference({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMentorshipNotificationPreferenceQueryResult = NonNullable<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>>
+export type GetMentorshipNotificationPreferenceQueryError = ErrorType<void>
+
+
+export function useGetMentorshipNotificationPreference<TData = Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMentorshipNotificationPreference>>,
+          TError,
+          Awaited<ReturnType<typeof getMentorshipNotificationPreference>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMentorshipNotificationPreference<TData = Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMentorshipNotificationPreference>>,
+          TError,
+          Awaited<ReturnType<typeof getMentorshipNotificationPreference>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMentorshipNotificationPreference<TData = Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetMentorshipNotificationPreference<TData = Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMentorshipNotificationPreference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMentorshipNotificationPreferenceQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateMentorshipNotificationPreferenceUrl = () => {
+
+
+
+
+  return `/api/mentorship/notification-preference`
+}
+
+export const updateMentorshipNotificationPreference = async (mentorshipNotificationPreferenceInput: MentorshipNotificationPreferenceInput, options?: Parameters<typeof customFetch>[1]): Promise<MentorshipNotificationPreference> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MentorshipNotificationPreference>(getUpdateMentorshipNotificationPreferenceUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(mentorshipNotificationPreferenceInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateMentorshipNotificationPreferenceMutationKey = () => ['updateMentorshipNotificationPreference'] as const;
+
+export const getUpdateMentorshipNotificationPreferenceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>, TError,UpdateMentorshipNotificationPreferenceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>, TError,UpdateMentorshipNotificationPreferenceMutationVariables, TContext> => {
+
+const mutationKey = getUpdateMentorshipNotificationPreferenceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>, UpdateMentorshipNotificationPreferenceMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateMentorshipNotificationPreference(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMentorshipNotificationPreferenceMutationResult = NonNullable<Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>>
+    export type UpdateMentorshipNotificationPreferenceMutationBody = BodyType<MentorshipNotificationPreferenceInput>
+    export type UpdateMentorshipNotificationPreferenceMutationError = ErrorType<void>
+    export type UpdateMentorshipNotificationPreferenceMutationVariables = {data: BodyType<MentorshipNotificationPreferenceInput>}
+
+    export const useUpdateMentorshipNotificationPreference = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>, TError,UpdateMentorshipNotificationPreferenceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateMentorshipNotificationPreference>>,
+        TError,
+        UpdateMentorshipNotificationPreferenceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateMentorshipNotificationPreferenceMutationOptions(options), queryClient);
+    }
+
+export const getStreamMentorshipNotificationsUrl = () => {
+
+
+
+
+  return `/api/mentorship/events`
+}
+
+export const streamMentorshipNotifications = async ( options?: Parameters<typeof customFetch>[1]): Promise<string> => {
+
+  return customFetch<string>(getStreamMentorshipNotificationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getStreamMentorshipNotificationsQueryKey = () => {
+    return [
+    `/api/mentorship/events`
+    ] as const;
+    }
+
+
+export const getStreamMentorshipNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getStreamMentorshipNotificationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof streamMentorshipNotifications>>> = ({ signal }) => streamMentorshipNotifications({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type StreamMentorshipNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof streamMentorshipNotifications>>>
+export type StreamMentorshipNotificationsQueryError = ErrorType<void>
+
+
+export function useStreamMentorshipNotifications<TData = Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamMentorshipNotifications>>,
+          TError,
+          Awaited<ReturnType<typeof streamMentorshipNotifications>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamMentorshipNotifications<TData = Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamMentorshipNotifications>>,
+          TError,
+          Awaited<ReturnType<typeof streamMentorshipNotifications>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamMentorshipNotifications<TData = Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useStreamMentorshipNotifications<TData = Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamMentorshipNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getStreamMentorshipNotificationsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

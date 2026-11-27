@@ -25,4 +25,5 @@ export interface MentorshipThread {
   /** @nullable */
   lastMessageAt: Date | null;
   messageCount: number;
+  unreadCount: number;
 }

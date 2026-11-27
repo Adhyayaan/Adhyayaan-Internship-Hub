@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, index, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { enrollments, learners } from "./learning";
 
@@ -31,7 +31,24 @@ export const mentorshipAttachments = pgTable("learning_mentorship_attachments", 
   index("learning_mentorship_attachments_message").on(table.messageId),
 ]);
 
+export const mentorshipThreadReads = pgTable("learning_mentorship_thread_reads", {
+  enrollmentId: text("enrollment_id").notNull().references(() => enrollments.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
+  lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+  lastReadMessageId: text("last_read_message_id"),
+}, (table) => [
+  primaryKey({ columns: [table.enrollmentId, table.userId] }),
+]);
+
+export const mentorshipNotificationPreferences = pgTable("learning_mentorship_notification_preferences", {
+  userId: text("user_id").primaryKey().references(() => learners.id, { onDelete: "cascade" }),
+  browserNotificationsEnabled: boolean("browser_notifications_enabled").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const insertMentorshipMessageSchema = createInsertSchema(mentorshipMessages);
 export const insertMentorshipAttachmentSchema = createInsertSchema(mentorshipAttachments);
 export type MentorshipMessage = typeof mentorshipMessages.$inferSelect;
 export type MentorshipAttachment = typeof mentorshipAttachments.$inferSelect;
+export type MentorshipThreadRead = typeof mentorshipThreadReads.$inferSelect;
+export type MentorshipNotificationPreference = typeof mentorshipNotificationPreferences.$inferSelect;

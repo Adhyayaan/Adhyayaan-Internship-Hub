@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream";
 import { Router, type IRouter } from "express";
-import { asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import {
   db,
   enrollments,
   learners,
   mentorshipAttachments,
   mentorshipMessages,
+  mentorshipNotificationPreferences,
+  mentorshipThreadReads,
   type Learner,
   type MentorshipMessage,
 } from "@workspace/db";
@@ -21,10 +23,17 @@ import {
   SendMentorshipMessageBody,
   SendMentorshipMessageResponse,
   StreamMentorshipEventsParams,
+  UpdateMentorshipNotificationPreferenceBody,
 } from "@workspace/api-zod";
 import { checkAssessment, requireLearner } from "../lib/auth";
 import { findCourse } from "../lib/catalog";
-import { publishMentorshipMessage, subscribeToMentorshipThread } from "../lib/mentorship-events";
+import {
+  publishMentorshipMessage,
+  publishMentorshipNotification,
+  subscribeToMentorshipNotifications,
+  subscribeToMentorshipThread,
+} from "../lib/mentorship-events";
+import { getMentorshipCounterpartId } from "../lib/mentorship-notifications";
 import {
   canAccessMentorshipThread,
   canSendMentorshipMessage,
@@ -79,6 +88,7 @@ function threadView(
   user: Learner,
   latest?: { kind: "text" | "meeting"; body: string; meetingAgenda: string; createdAt: Date },
   messageCount = 0,
+  unreadCount = 0,
 ) {
   const course = findCourse(enrollment.courseId);
   if (!course) return null;
@@ -101,6 +111,7 @@ function threadView(
     lastMessagePreview,
     lastMessageAt: latest?.createdAt ?? null,
     messageCount,
+    unreadCount,
   };
 }
 
@@ -117,10 +128,10 @@ async function buildThread(
     createdAt: mentorshipMessages.createdAt,
   }).from(mentorshipMessages)
     .where(eq(mentorshipMessages.enrollmentId, enrollment.id))
-    .orderBy(mentorshipMessages.enrollmentId, desc(mentorshipMessages.createdAt));
+    .orderBy(mentorshipMessages.enrollmentId, desc(mentorshipMessages.createdAt), desc(mentorshipMessages.id));
   const [summary] = await db.select({ total: count() }).from(mentorshipMessages)
     .where(eq(mentorshipMessages.enrollmentId, enrollment.id));
-  return threadView(access.enrollment, access.student, access.guide, user, latest, summary?.total ?? 0);
+  return threadView(access.enrollment, access.student, access.guide, user, latest, summary?.total ?? 0, 0);
 }
 
 router.get("/mentorship/threads", async (req, res): Promise<void> => {
@@ -151,12 +162,31 @@ router.get("/mentorship/threads", async (req, res): Promise<void> => {
     createdAt: mentorshipMessages.createdAt,
   }).from(mentorshipMessages)
     .where(inArray(mentorshipMessages.enrollmentId, enrollmentIds))
-    .orderBy(mentorshipMessages.enrollmentId, desc(mentorshipMessages.createdAt));
+    .orderBy(mentorshipMessages.enrollmentId, desc(mentorshipMessages.createdAt), desc(mentorshipMessages.id));
   const latestByEnrollment = new Map(latestRows.map((row) => [row.enrollmentId, row]));
   const countRows = await db.select({ enrollmentId: mentorshipMessages.enrollmentId, total: count() })
     .from(mentorshipMessages).where(inArray(mentorshipMessages.enrollmentId, enrollmentIds))
     .groupBy(mentorshipMessages.enrollmentId);
   const countByEnrollment = new Map(countRows.map((row) => [row.enrollmentId, row.total]));
+  const unreadRows = await db.select({
+    enrollmentId: mentorshipMessages.enrollmentId,
+    total: count(),
+  }).from(mentorshipMessages)
+    .leftJoin(mentorshipThreadReads, and(
+      eq(mentorshipThreadReads.enrollmentId, mentorshipMessages.enrollmentId),
+      eq(mentorshipThreadReads.userId, user.id),
+    ))
+    .where(and(
+      inArray(mentorshipMessages.enrollmentId, enrollmentIds),
+      ne(mentorshipMessages.senderId, user.id),
+      or(
+        isNull(mentorshipThreadReads.userId),
+        isNull(mentorshipThreadReads.lastReadAt),
+        sql`(${mentorshipMessages.createdAt}, ${mentorshipMessages.id}) > (${mentorshipThreadReads.lastReadAt}, ${mentorshipThreadReads.lastReadMessageId})`,
+      ),
+    ))
+    .groupBy(mentorshipMessages.enrollmentId);
+  const unreadByEnrollment = new Map(unreadRows.map((row) => [row.enrollmentId, row.total]));
 
   const result = rows.flatMap((enrollment) => {
     const student = peopleById.get(enrollment.userId);
@@ -170,11 +200,76 @@ router.get("/mentorship/threads", async (req, res): Promise<void> => {
       user,
       latestByEnrollment.get(enrollment.id),
       countByEnrollment.get(enrollment.id) ?? 0,
+      unreadByEnrollment.get(enrollment.id) ?? 0,
     );
     return value ? [value] : [];
   });
   res.set("Cache-Control", "private, no-store");
   res.json(ListMentorshipThreadsResponse.parse(result));
+});
+
+router.get("/mentorship/notification-preference", async (req, res): Promise<void> => {
+  const user = req.learner!;
+  if (!roleCanUseMentorship(user)) {
+    res.status(403).json({ error: "Student or assigned guide access is required." });
+    return;
+  }
+  const [preference] = await db.select({
+    browserNotificationsEnabled: mentorshipNotificationPreferences.browserNotificationsEnabled,
+  }).from(mentorshipNotificationPreferences)
+    .where(eq(mentorshipNotificationPreferences.userId, user.id)).limit(1);
+  res.set("Cache-Control", "private, no-store");
+  res.json({ browserNotificationsEnabled: preference?.browserNotificationsEnabled ?? false });
+});
+
+router.put("/mentorship/notification-preference", async (req, res): Promise<void> => {
+  const user = req.learner!;
+  if (!roleCanUseMentorship(user)) {
+    res.status(403).json({ error: "Student or assigned guide access is required." });
+    return;
+  }
+  const parsed = UpdateMentorshipNotificationPreferenceBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Choose whether browser notifications are enabled." });
+    return;
+  }
+  const [preference] = await db.insert(mentorshipNotificationPreferences).values({
+    userId: user.id,
+    browserNotificationsEnabled: parsed.data.browserNotificationsEnabled,
+  }).onConflictDoUpdate({
+    target: mentorshipNotificationPreferences.userId,
+    set: {
+      browserNotificationsEnabled: parsed.data.browserNotificationsEnabled,
+      updatedAt: new Date(),
+    },
+  }).returning({ browserNotificationsEnabled: mentorshipNotificationPreferences.browserNotificationsEnabled });
+  res.set("Cache-Control", "private, no-store");
+  res.json(preference);
+});
+
+router.get("/mentorship/events", async (req, res): Promise<void> => {
+  const user = req.learner!;
+  if (!roleCanUseMentorship(user)) {
+    res.status(403).json({ error: "Student or assigned guide access is required." });
+    return;
+  }
+  res.status(200);
+  res.set({
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "private, no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  res.flushHeaders();
+  res.write("retry: 3000\n: connected\n\n");
+  const unsubscribe = subscribeToMentorshipNotifications(user.id, res);
+  const heartbeat = setInterval(() => {
+    if (!res.destroyed && !res.writableEnded) res.write(": ping\n\n");
+  }, 25_000);
+  res.on("close", () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
 });
 
 async function getMessagesForEnrollment(enrollmentId: string) {
@@ -223,6 +318,25 @@ router.get("/mentorship/threads/:enrollmentId/messages", async (req, res): Promi
     res.status(exists ? 403 : 404).json({ error: exists ? "You are not part of this conversation." : "Course conversation not found." });
     return;
   }
+  const [latestMessage] = await db.select({
+    id: mentorshipMessages.id,
+    createdAt: mentorshipMessages.createdAt,
+  }).from(mentorshipMessages)
+    .where(eq(mentorshipMessages.enrollmentId, access.enrollment.id))
+    .orderBy(desc(mentorshipMessages.createdAt), desc(mentorshipMessages.id))
+    .limit(1);
+  await db.insert(mentorshipThreadReads).values({
+    enrollmentId: access.enrollment.id,
+    userId: req.learner!.id,
+    lastReadAt: latestMessage?.createdAt ?? null,
+    lastReadMessageId: latestMessage?.id ?? null,
+  }).onConflictDoUpdate({
+    target: [mentorshipThreadReads.enrollmentId, mentorshipThreadReads.userId],
+    set: {
+      lastReadAt: latestMessage?.createdAt ?? null,
+      lastReadMessageId: latestMessage?.id ?? null,
+    },
+  });
   const thread = await buildThread(access.enrollment, req.learner!);
   const messages = await getMessagesForEnrollment(access.enrollment.id);
   res.set("Cache-Control", "private, no-store");
@@ -373,6 +487,8 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
     })),
   });
   publishMentorshipMessage(access.enrollment.id, saved.id);
+  const recipientId = getMentorshipCounterpartId(user.id, access.student.id, access.guide?.id ?? null);
+  if (recipientId) publishMentorshipNotification(recipientId, access.enrollment.id, saved.id);
   res.status(201).set("Cache-Control", "private, no-store").json(response);
 });
 

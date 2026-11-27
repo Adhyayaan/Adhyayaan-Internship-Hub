@@ -5,13 +5,15 @@ import { z } from 'zod';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, ArrowUpRight, CalendarDays, Check, ChevronRight, FileText, Image as ImageIcon,
+  ArrowLeft, ArrowUpRight, Bell, CalendarDays, Check, ChevronRight, FileText, Image as ImageIcon,
   LockKeyhole, Paperclip, Send, ShieldCheck, Video, X,
 } from 'lucide-react';
 import {
-  getDownloadMentorshipAttachmentQueryKey, getListMentorshipMessagesQueryKey, getListMentorshipThreadsQueryKey,
+  getDownloadMentorshipAttachmentQueryKey, getGetMentorshipNotificationPreferenceQueryKey,
+  getListMentorshipMessagesQueryKey, getListMentorshipThreadsQueryKey,
   useDownloadMentorshipAttachment, useListMentorshipMessages, useListMentorshipThreads,
-  useRequestMentorshipUpload, useSendMentorshipMessage,
+  useGetMentorshipNotificationPreference, useRequestMentorshipUpload, useSendMentorshipMessage,
+  useUpdateMentorshipNotificationPreference,
   type MentorshipAttachment, type MentorshipMessage, type MentorshipThread,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -63,7 +65,11 @@ function ThreadRow({ thread }: { thread: MentorshipThread }) {
       <span className="mt-2 block truncate text-sm text-foreground/75">{thread.lastMessagePreview || 'A private space for project questions and guidance.'}</span>
     </span>
     <span className="flex items-center justify-between gap-3 text-xs text-muted-foreground sm:justify-end">
-      <span>{when(thread.lastMessageAt)}</span><ChevronRight className="h-4 w-4 shrink-0 text-accent transition-transform group-hover:translate-x-1" />
+      <span className="flex items-center gap-2">
+        {thread.unreadCount > 0 && <span className="rounded-full bg-accent px-2 py-1 font-bold text-accent-foreground" data-testid={`status-unread-${thread.enrollmentId}`}>{thread.unreadCount} unread</span>}
+        <span>{when(thread.lastMessageAt)}</span>
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-accent transition-transform group-hover:translate-x-1" />
     </span>
   </Link>;
 }
@@ -72,6 +78,40 @@ export function MentorshipListPage() {
   useTitle('Mentorship');
   const { user, isLoading: authLoading } = useAuth();
   const q = useListMentorshipThreads({ query: { enabled: !!user, queryKey: getListMentorshipThreadsQueryKey() } });
+  const queryClient = useQueryClient();
+  const notificationPreference = useGetMentorshipNotificationPreference({
+    query: { enabled: !!user, queryKey: getGetMentorshipNotificationPreferenceQueryKey() },
+  });
+  const updateNotificationPreference = useUpdateMentorshipNotificationPreference();
+  const [notificationError, setNotificationError] = useState('');
+
+  async function toggleBrowserNotifications() {
+    const enabled = !notificationPreference.data?.browserNotificationsEnabled;
+    setNotificationError('');
+    try {
+      if (enabled) {
+        if (!('Notification' in window)) {
+          setNotificationError('This browser does not support browser notifications.');
+          return;
+        }
+        let permission = Notification.permission;
+        if (permission === 'default') permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          setNotificationError(permission === 'denied'
+            ? 'Notifications are blocked in this browser. Allow them in browser settings, then try again.'
+            : 'Allow browser notifications to turn this on.');
+          return;
+        }
+      }
+      const saved = await updateNotificationPreference.mutateAsync({
+        data: { browserNotificationsEnabled: enabled },
+      });
+      queryClient.setQueryData(getGetMentorshipNotificationPreferenceQueryKey(), saved);
+    } catch (error) {
+      setNotificationError(errMsg(error));
+    }
+  }
+
   if (authLoading) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></main>;
   if (!user) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><EmptyPanel title="Sign in to view your conversations" icon={<LockKeyhole className="h-6 w-6" />}><p>Your private guide conversations are available after you sign in.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
   return <main className="mx-auto max-w-5xl space-y-6 p-4 pb-24 sm:space-y-8 sm:p-8">
@@ -92,6 +132,20 @@ export function MentorshipListPage() {
         : q.isError ? <ErrorPanel title="We could not load your conversations" message={errMsg(q.error)} onRetry={() => q.refetch()} />
           : !q.data?.length ? <EmptyPanel title="No conversations yet" icon={<FileText className="h-6 w-6" />}><p>When you join an internship pathway, its private guide conversation will appear here.</p><Button asChild variant="outline" className="mt-4"><Link href="/my-learning">Open My Learning</Link></Button></EmptyPanel>
             : <div className="space-y-3">{q.data.map((thread) => <ThreadRow key={thread.enrollmentId} thread={thread} />)}</div>}
+    </section>
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5" aria-label="Notification settings">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Bell className="h-5 w-5" /></span>
+        <div>
+          <h2 className="font-display font-bold text-primary">Browser notifications</h2>
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">Get an alert when a message arrives while Adhyayaan is open. Alerts do not show message text.</p>
+          {notificationError && <p className="mt-2 text-xs text-destructive" role="alert" data-testid="status-notification-error">{notificationError}</p>}
+          {typeof window !== 'undefined' && !('Notification' in window) && <p className="mt-2 text-xs text-muted-foreground">This browser does not support browser notifications.</p>}
+        </div>
+      </div>
+      <Button type="button" variant={notificationPreference.data?.browserNotificationsEnabled ? 'default' : 'outline'} onClick={() => void toggleBrowserNotifications()} disabled={notificationPreference.isLoading || updateNotificationPreference.isPending || (!('Notification' in window) && !notificationPreference.data?.browserNotificationsEnabled)} data-testid="button-toggle-browser-notifications">
+        {updateNotificationPreference.isPending ? 'Saving…' : notificationPreference.data?.browserNotificationsEnabled ? 'On · Turn off' : 'Turn on'}
+      </Button>
     </section>
   </main>;
 }
@@ -179,10 +233,17 @@ export default function MentorshipThreadPage() {
       void qc.invalidateQueries({ queryKey: key });
       void qc.invalidateQueries({ queryKey: threadKey });
     };
-    source.onmessage = refresh;
+    source.addEventListener('message', refresh);
     source.onopen = refresh;
-    return () => source.close();
+    return () => {
+      source.removeEventListener('message', refresh);
+      source.close();
+    };
   }, [enrollmentId, key, qc, threadKey]);
+
+  useEffect(() => {
+    if (q.data) void qc.invalidateQueries({ queryKey: threadKey });
+  }, [q.data, qc, threadKey]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });

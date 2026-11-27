@@ -580,6 +580,15 @@ export interface MentorshipThread {
   /** @nullable */
   lastMessageAt: string | null;
   messageCount: number;
+  unreadCount: number;
+}
+
+export interface MentorshipNotificationPreference {
+  browserNotificationsEnabled: boolean;
+}
+
+export interface MentorshipNotificationPreferenceInput {
+  browserNotificationsEnabled: boolean;
 }
 
 export interface MentorshipMessagesResponse {
