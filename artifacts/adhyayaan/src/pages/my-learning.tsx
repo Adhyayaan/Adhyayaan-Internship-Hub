@@ -1,20 +1,22 @@
+import { chapterWeeks, dueDate, ScheduleBand } from '@/components/app/course-timeline';
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, BookOpenText, Check, Loader2 } from 'lucide-react';
 import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
-import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
+import { type PathwayPace, useGetDashboard, useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { CardSkeletons, Empty, ErrorPanel, Meter, PageHeader, SignInWall } from '@/components/app/bits';
 import { errMsg, progressOf, statusLabel, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
 
-function Pathway({ e }: { e: Enrollment }) {
+function Pathway({ e, plan }: { e: Enrollment; plan?: PathwayPace }) {
   const upd = useUpdateEnrollment();
   const inval = useInvalidateAll();
   const { toast } = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [coachFor, setCoachFor] = useState<string | null>(null);
   const p = progressOf(e);
+  const weeks = chapterWeeks(p.mods, e.hours);
   const locked = statusLabel(e.status) === 'Awaiting mentor review';
 
   const toggle = async (id: string) => {
@@ -56,6 +58,7 @@ function Pathway({ e }: { e: Enrollment }) {
           <div><div className="mb-1 flex justify-between text-xs"><span>Logged hours</span><span className="font-mono">{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
         </div>
       </div>
+      <ScheduleBand hours={e.hours} start={plan?.start} end={plan?.end} />
       <ul className="divide-y border-t">
         {p.mods.map((m, i) => {
           const done = e.completedModules.includes(m.id);
@@ -69,7 +72,7 @@ function Pathway({ e }: { e: Enrollment }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block ${done ? 'text-muted-foreground line-through decoration-accent/60' : ''}`}>{m.title}</span>
-                  <span className="text-xs text-muted-foreground">{m.type} · {e.hours === 60 ? m.hours60 : m.hours120} hrs</span>
+                  <span className="text-xs text-muted-foreground">{weeks[i]} · {e.hours === 60 ? m.hours60 : m.hours120} hrs{plan?.chapters[i] && ` · Due ${dueDate(plan.chapters[i].due)}`}</span>
                 </span>
               </button>
               <CoachToggle size="sm" open={coachFor === m.id} onClick={() => setCoachFor((x) => (x === m.id ? null : m.id))} label="Coach" testId={`button-coach-${e.id}-${m.id}`} />
@@ -104,6 +107,7 @@ function Pathway({ e }: { e: Enrollment }) {
 export default function MyLearning() {
   useTitle('My learning');
   const { user, isLoading } = useAuth();
+  const dashboard = useGetDashboard({ query: { enabled: !!user } });
   const q = useListEnrollments({ query: { enabled: !!user, queryKey: getListEnrollmentsQueryKey() } });
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -113,10 +117,10 @@ export default function MyLearning() {
   }, [q.data]);
   return (
     <div>
-      <PageHeader kicker="My learning" title="Tick it when you can explain it" sub="Mark a module done once you could teach it back to a classmate. That is the cognitive bar — understand, apply, analyse." />
+      <PageHeader kicker="My learning" title="Your course tracks" sub="Follow your chapter deadlines and mark each module complete when you can explain it in your own words." />
       {isLoading ? <CardSkeletons n={2} h="h-64" /> : !user ? <SignInWall what="track your pathways" /> : q.isLoading ? <CardSkeletons n={2} h="h-64" /> : q.error ? <ErrorPanel error={q.error} onRetry={() => q.refetch()} /> : !q.data?.length ? (
         <Empty title="No pathways yet" body="Pick an internship blueprint and a 60 or 120 hour track to begin." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
-      ) : <div className="space-y-6">{q.data.map((e) => <Pathway key={e.id} e={e} />)}</div>}
+      ) : <div className="space-y-6">{q.data.map((e) => <Pathway key={e.id} e={e} plan={dashboard.data?.pacing?.find(p => p.enrollmentId === e.id)} />)}</div>}
     </div>
   );
 }

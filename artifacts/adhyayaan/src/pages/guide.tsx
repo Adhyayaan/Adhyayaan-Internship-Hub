@@ -5,9 +5,7 @@ import {
   useGetGuideWorkspace,
   useListCourses,
   type GuidePoolEntry,
-  type PathwayPace,
 } from "@workspace/api-client-react";
-import { Meter } from "@/components/app/bits";
 import { Button } from "@/components/ui/button";
 import { errMsg, statusLabel, useAuth, useTitle } from "@/lib/app";
 
@@ -16,59 +14,6 @@ function difference(hours: number) {
     ? "On schedule"
     : `${Math.abs(hours)} planned hours ${hours > 0 ? "ahead" : "behind"}`;
 }
-export function Timeline({ plans }: { plans: PathwayPace[] }) {
-  if (!plans.length) return null;
-  return (
-    <section className="mt-8 space-y-4">
-      <h2 className="font-display text-2xl text-primary">
-        Your internship timeline
-      </h2>
-      {plans.map((plan) => (
-        <article key={plan.enrollmentId} className="ink-card space-y-3 p-5">
-          <h3 className="font-semibold">{plan.title}</h3>
-          <p>
-            {plan.start} to {plan.end} · 7.5 hours per week
-          </p>
-          <Meter value={plan.percent} />
-          <p>
-            {plan.percent}% of chapter hours completed · {plan.expected}%
-            expected by today · {difference(plan.deltaHours)}
-          </p>
-          <p>
-            {plan.cohortSize === 1
-              ? "You are the first and only enrolment in this start-date group."
-              : `Your completion is at or above ${plan.percentile}% of the ${plan.cohortSize} learners who started this course on the same date (including ties and yourself).`}
-          </p>
-          <p>
-            Internship guide · {plan.guideName || "Awaiting an available guide"}
-          </p>
-          <details>
-            <summary className="cursor-pointer font-semibold">
-              Chapter hours and deadlines
-            </summary>
-            <ol className="mt-3 divide-y">
-              {plan.chapters.map((c, i) => (
-                <li
-                  key={i}
-                  className="flex flex-wrap justify-between gap-2 py-2"
-                >
-                  <span>
-                    {i + 1}. {c.title}
-                    {c.done && " ✓"}
-                  </span>
-                  <span>
-                    {c.hours} h · due {c.due}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </details>
-        </article>
-      ))}
-    </section>
-  );
-}
-
 export function GuideWorkspace() {
   useTitle("Internship guide");
   const { user } = useAuth();
