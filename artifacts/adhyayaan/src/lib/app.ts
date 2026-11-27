@@ -13,6 +13,7 @@ import {
   type Module,
   type Session,
 } from '@workspace/api-client-react';
+export { formatIndiaDate } from './date-format';
 
 export function useAuth() {
   const q = useGetSession();
@@ -121,15 +122,6 @@ export function ordinal(value: number) {
           ? 'rd'
           : 'th';
   return `${value}${suffix}`;
-}
-
-export function formatIndiaDate(date: string, includeYear = false) {
-  return new Intl.DateTimeFormat('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: 'numeric',
-    month: 'short',
-    ...(includeYear ? { year: 'numeric' } : {}),
-  }).format(new Date(`${date}T12:00:00+05:30`));
 }
 
 export function formatHours(hours: number) {
