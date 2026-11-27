@@ -8,12 +8,14 @@
 import type { Activity } from './activity';
 import type { Course } from './course';
 import type { Enrollment } from './enrollment';
+import type { PathwayPace } from './pathwayPace';
 import type { Stats } from './stats';
 import type { User } from './user';
 
 export interface Dashboard {
   preview: boolean;
   user: User | null;
+  pacing?: PathwayPace[];
   stats: Stats;
   enrollments: Enrollment[];
   recommendations: Course[];

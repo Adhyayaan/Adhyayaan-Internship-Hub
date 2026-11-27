@@ -8,6 +8,59 @@
 import * as zod from 'zod';
 
 
+export const GetGuideWorkspaceResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "college": zod.string(),
+  "email": zod.string(),
+  "discipline": zod.string(),
+  "courseId": zod.string(),
+  "title": zod.string(),
+  "logged": zod.number(),
+  "target": zod.number(),
+  "completed": zod.number(),
+  "chapters": zod.number(),
+  "percent": zod.number(),
+  "deltaHours": zod.number(),
+  "status": zod.string(),
+  "projectUrl": zod.string(),
+  "reflection": zod.string(),
+  "logs": zod.array(zod.object({
+  "date": zod.string(),
+  "hours": zod.number(),
+  "activity": zod.string(),
+  "learning": zod.string()
+}))
+})
+export const GetGuideWorkspaceResponse = zod.array(GetGuideWorkspaceResponseItem)
+
+
+export const GetGuidePoolResponseItem = zod.object({
+  "accountId": zod.string(),
+  "name": zod.string(),
+  "capacity": zod.number(),
+  "courseIds": zod.array(zod.string()),
+  "assigned": zod.number()
+})
+export const GetGuidePoolResponse = zod.array(GetGuidePoolResponseItem)
+
+
+export const configureGuideBodyCapacityMin = 0;
+export const configureGuideBodyCapacityMax = 500;
+
+
+
+export const ConfigureGuideBody = zod.object({
+  "accountId": zod.string(),
+  "capacity": zod.number().int().min(configureGuideBodyCapacityMin).max(configureGuideBodyCapacityMax),
+  "courseIds": zod.array(zod.string())
+})
+
+export const ConfigureGuideResponse = zod.object({
+  "saved": zod.boolean()
+})
+
+
 export const getAssessmentResponseDraftOneAnswersItemQuestionIdMax = 30;
 
 export const getAssessmentResponseDraftOneAnswersItemChoiceMin = 0;
@@ -615,7 +668,8 @@ export const GetSessionResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean().optional()
 }),zod.null()])
 })
 
@@ -651,7 +705,8 @@ export const RegisterResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean().optional()
 }),zod.null()])
 })
 
@@ -677,7 +732,8 @@ export const LoginResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean().optional()
 }),zod.null()])
 })
 
@@ -748,8 +804,27 @@ export const GetDashboardResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean().optional()
 }),zod.null()]),
+  "pacing": zod.array(zod.object({
+  "enrollmentId": zod.string(),
+  "title": zod.string(),
+  "guideName": zod.string(),
+  "chapters": zod.array(zod.object({
+  "title": zod.string(),
+  "hours": zod.number(),
+  "due": zod.string(),
+  "done": zod.boolean()
+})),
+  "percent": zod.number(),
+  "expected": zod.number(),
+  "deltaHours": zod.number(),
+  "cohortSize": zod.number(),
+  "percentile": zod.number(),
+  "start": zod.string(),
+  "end": zod.string()
+})).optional(),
   "stats": zod.object({
   "activeInternships": zod.number().int(),
   "learningHours": zod.number(),

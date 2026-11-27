@@ -34,11 +34,15 @@ import type {
   AssessmentDraft,
   AssessmentRetakeWaitResponse,
   AssessmentWorkspace,
+  ConfigureGuide200,
   Course,
   Dashboard,
   Enrollment,
   EnrollmentInput,
   EnrollmentUpdate,
+  GuidePoolEntry,
+  GuidePoolInput,
+  GuideStudent,
   HealthStatus,
   LearningReport,
   ListAdminLearnersParams,
@@ -84,6 +88,278 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetGuideWorkspaceUrl = () => {
+
+
+
+
+  return `/api/guide/workspace`
+}
+
+export const getGuideWorkspace = async ( options?: Parameters<typeof customFetch>[1]): Promise<GuideStudent[]> => {
+
+  return customFetch<GuideStudent[]>(getGetGuideWorkspaceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGuideWorkspaceQueryKey = () => {
+    return [
+    `/api/guide/workspace`
+    ] as const;
+    }
+
+
+export const getGetGuideWorkspaceQueryOptions = <TData = Awaited<ReturnType<typeof getGuideWorkspace>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGuideWorkspaceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGuideWorkspace>>> = ({ signal }) => getGuideWorkspace({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGuideWorkspaceQueryResult = NonNullable<Awaited<ReturnType<typeof getGuideWorkspace>>>
+export type GetGuideWorkspaceQueryError = ErrorType<unknown>
+
+
+export function useGetGuideWorkspace<TData = Awaited<ReturnType<typeof getGuideWorkspace>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideWorkspace>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideWorkspace>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideWorkspace<TData = Awaited<ReturnType<typeof getGuideWorkspace>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideWorkspace>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideWorkspace>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideWorkspace<TData = Awaited<ReturnType<typeof getGuideWorkspace>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetGuideWorkspace<TData = Awaited<ReturnType<typeof getGuideWorkspace>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideWorkspace>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGuideWorkspaceQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGuidePoolUrl = () => {
+
+
+
+
+  return `/api/admin/guide-pool`
+}
+
+export const getGuidePool = async ( options?: Parameters<typeof customFetch>[1]): Promise<GuidePoolEntry[]> => {
+
+  return customFetch<GuidePoolEntry[]>(getGetGuidePoolUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGuidePoolQueryKey = () => {
+    return [
+    `/api/admin/guide-pool`
+    ] as const;
+    }
+
+
+export const getGetGuidePoolQueryOptions = <TData = Awaited<ReturnType<typeof getGuidePool>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGuidePoolQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGuidePool>>> = ({ signal }) => getGuidePool({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGuidePoolQueryResult = NonNullable<Awaited<ReturnType<typeof getGuidePool>>>
+export type GetGuidePoolQueryError = ErrorType<unknown>
+
+
+export function useGetGuidePool<TData = Awaited<ReturnType<typeof getGuidePool>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuidePool>>,
+          TError,
+          Awaited<ReturnType<typeof getGuidePool>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuidePool<TData = Awaited<ReturnType<typeof getGuidePool>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuidePool>>,
+          TError,
+          Awaited<ReturnType<typeof getGuidePool>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuidePool<TData = Awaited<ReturnType<typeof getGuidePool>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetGuidePool<TData = Awaited<ReturnType<typeof getGuidePool>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuidePool>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGuidePoolQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getConfigureGuideUrl = () => {
+
+
+
+
+  return `/api/admin/guide-pool`
+}
+
+export const configureGuide = async (guidePoolInput: GuidePoolInput, options?: Parameters<typeof customFetch>[1]): Promise<ConfigureGuide200> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ConfigureGuide200>(getConfigureGuideUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(guidePoolInput)
+  }
+);}
+
+
+
+
+
+export const getConfigureGuideMutationKey = () => ['configureGuide'] as const;
+
+export const getConfigureGuideMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof configureGuide>>, TError,ConfigureGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof configureGuide>>, TError,ConfigureGuideMutationVariables, TContext> => {
+
+const mutationKey = getConfigureGuideMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof configureGuide>>, ConfigureGuideMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  configureGuide(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfigureGuideMutationResult = NonNullable<Awaited<ReturnType<typeof configureGuide>>>
+    export type ConfigureGuideMutationBody = BodyType<GuidePoolInput>
+    export type ConfigureGuideMutationError = ErrorType<unknown>
+    export type ConfigureGuideMutationVariables = {data: BodyType<GuidePoolInput>}
+
+    export const useConfigureGuide = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof configureGuide>>, TError,ConfigureGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof configureGuide>>,
+        TError,
+        ConfigureGuideMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConfigureGuideMutationOptions(options), queryClient);
+    }
 
 export const getGetAssessmentUrl = () => {
 

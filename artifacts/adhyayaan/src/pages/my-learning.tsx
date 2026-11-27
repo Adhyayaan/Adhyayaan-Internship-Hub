@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, BookOpenText, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, BookOpenText, CalendarDays, Check, Loader2 } from 'lucide-react';
 import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
-import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
+import { chapterWeeks, dueDate, InternshipPace } from '@/components/app/course-timeline';
+import { useGetDashboard, useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment, type PathwayPace } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { CardSkeletons, Empty, ErrorPanel, Meter, PageHeader, SignInWall } from '@/components/app/bits';
 import { errMsg, progressOf, statusLabel, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
 
-function Pathway({ e }: { e: Enrollment }) {
+function Pathway({ e, plan }: { e: Enrollment; plan?: PathwayPace }) {
   const upd = useUpdateEnrollment();
   const inval = useInvalidateAll();
   const { toast } = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [coachFor, setCoachFor] = useState<string | null>(null);
+  const [byWeek, setByWeek] = useState(false);
   const p = progressOf(e);
+  const weeks = chapterWeeks(p.mods, e.hours);
+  const nextChapter = plan?.chapters.find(chapter => !chapter.done);
   const locked = statusLabel(e.status) === 'Awaiting mentor review';
 
   const toggle = async (id: string) => {
@@ -54,22 +58,42 @@ function Pathway({ e }: { e: Enrollment }) {
         <div className="space-y-3">
           <div><div className="mb-1 flex justify-between text-xs"><span>Modules</span><span className="font-mono">{p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
           <div><div className="mb-1 flex justify-between text-xs"><span>Logged hours</span><span className="font-mono">{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
+          {plan && <InternshipPace plan={plan} />}
         </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t bg-secondary/30 px-6 py-3">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-primary">{e.hours / 7.5}-week timeline</h3>
+          <p className="text-xs text-muted-foreground">
+            {nextChapter
+              ? `Next due ${dueDate(nextChapter.due)} · ${nextChapter.title}`
+              : plan ? 'All scheduled chapters complete' : '7.5 planned hours per week'}
+          </p>
+        </div>
+        <Button size="sm" variant={byWeek ? 'secondary' : 'outline'} aria-pressed={byWeek} onClick={() => setByWeek(!byWeek)}>
+          <CalendarDays aria-hidden className="mr-2 h-4 w-4" /> Group by week
+        </Button>
       </div>
       <ul className="divide-y border-t">
         {p.mods.map((m, i) => {
           const done = e.completedModules.includes(m.id);
           return (
             <li key={m.id}>
+              {byWeek && (i === 0 || weeks[i] !== weeks[i - 1]) && (
+                <h4 className="border-b bg-secondary/50 px-6 py-2 text-sm font-semibold text-primary">{weeks[i]}</h4>
+              )}
               <div className="flex flex-wrap items-center gap-2 p-3 hover:bg-secondary/60 sm:flex-nowrap sm:py-0 sm:pl-0 sm:pr-4">
-              <button onClick={() => toggle(m.id)} disabled={!!busy || locked} data-testid={`button-module-${m.id}`}
+              <button onClick={() => toggle(m.id)} aria-pressed={done} disabled={!!busy || locked} data-testid={`button-module-${m.id}`}
                 className="group flex min-w-0 basis-full items-center gap-3 py-2 text-left transition-colors disabled:cursor-not-allowed sm:flex-1 sm:basis-auto sm:gap-4 sm:px-6 sm:py-3.5">
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${done ? 'scale-105 border-accent bg-accent text-accent-foreground' : 'border-border group-hover:border-accent'}`}>
                   {busy === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : done ? <Check className="h-4 w-4" /> : <span className="font-mono text-[10px] text-muted-foreground">{i + 1}</span>}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block ${done ? 'text-muted-foreground line-through decoration-accent/60' : ''}`}>{m.title}</span>
-                  <span className="text-xs text-muted-foreground">{m.type} · {e.hours === 60 ? m.hours60 : m.hours120} hrs</span>
+                  <span className="text-xs text-muted-foreground">
+                    {m.type} · {e.hours === 60 ? m.hours60 : m.hours120} hrs
+                    {byWeek && plan?.chapters[i] && ` · Due ${dueDate(plan.chapters[i].due)}`}
+                  </span>
                 </span>
               </button>
               <CoachToggle size="sm" open={coachFor === m.id} onClick={() => setCoachFor((x) => (x === m.id ? null : m.id))} label="Coach" testId={`button-coach-${e.id}-${m.id}`} />
@@ -105,6 +129,7 @@ export default function MyLearning() {
   useTitle('My learning');
   const { user, isLoading } = useAuth();
   const q = useListEnrollments({ query: { enabled: !!user, queryKey: getListEnrollmentsQueryKey() } });
+  const dashboard = useGetDashboard({ query: { enabled: !!user } });
   useEffect(() => {
     const id = window.location.hash.slice(1);
     if (!id || !q.data) return;
@@ -116,7 +141,7 @@ export default function MyLearning() {
       <PageHeader kicker="My learning" title="Tick it when you can explain it" sub="Mark a module done once you could teach it back to a classmate. That is the cognitive bar — understand, apply, analyse." />
       {isLoading ? <CardSkeletons n={2} h="h-64" /> : !user ? <SignInWall what="track your pathways" /> : q.isLoading ? <CardSkeletons n={2} h="h-64" /> : q.error ? <ErrorPanel error={q.error} onRetry={() => q.refetch()} /> : !q.data?.length ? (
         <Empty title="No pathways yet" body="Pick an internship blueprint and a 60 or 120 hour track to begin." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
-      ) : <div className="space-y-6">{q.data.map((e) => <Pathway key={e.id} e={e} />)}</div>}
+      ) : <div className="space-y-6">{q.data.map((e) => <Pathway key={e.id} e={e} plan={dashboard.data?.pacing?.find(item => item.enrollmentId === e.id)} />)}</div>}
     </div>
   );
 }

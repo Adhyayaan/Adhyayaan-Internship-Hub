@@ -5,6 +5,72 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+export interface ChapterTarget {
+  title: string;
+  hours: number;
+  due: string;
+  done: boolean;
+}
+
+export interface PathwayPace {
+  enrollmentId: string;
+  title: string;
+  guideName: string;
+  chapters: ChapterTarget[];
+  percent: number;
+  expected: number;
+  deltaHours: number;
+  cohortSize: number;
+  percentile: number;
+  start: string;
+  end: string;
+}
+
+export type GuideStudentLogsItem = {
+  date: string;
+  hours: number;
+  activity: string;
+  learning: string;
+};
+
+export interface GuideStudent {
+  id: string;
+  name: string;
+  college: string;
+  email: string;
+  discipline: string;
+  courseId: string;
+  title: string;
+  logged: number;
+  target: number;
+  completed: number;
+  chapters: number;
+  percent: number;
+  deltaHours: number;
+  status: string;
+  projectUrl: string;
+  reflection: string;
+  logs: GuideStudentLogsItem[];
+}
+
+export interface GuidePoolInput {
+  accountId: string;
+  /**
+     * @minimum 0
+     * @maximum 500
+     */
+  capacity: number;
+  courseIds: string[];
+}
+
+export interface GuidePoolEntry {
+  accountId: string;
+  name: string;
+  capacity: number;
+  courseIds: string[];
+  assigned: number;
+}
+
 export interface AssessmentQuestion {
   id: string;
   prompt: string;
@@ -379,6 +445,7 @@ export interface User {
   /** @nullable */
   assessmentCompletedAt: string | null;
   isAdmin: boolean;
+  isGuide?: boolean;
 }
 
 export interface Session {
@@ -519,6 +586,7 @@ export interface Activity {
 export interface Dashboard {
   preview: boolean;
   user: User | null;
+  pacing?: PathwayPace[];
   stats: Stats;
   enrollments: Enrollment[];
   recommendations: Course[];
@@ -638,6 +706,10 @@ export interface PracticeAttempt {
  * The last assessment was submitted less than seven days ago
  */
 export type AssessmentRetakeWaitResponse = AssessmentRetakeWait;
+
+export type ConfigureGuide200 = {
+  saved: boolean;
+};
 
 export type ListAdminLearnersParams = {
 /**

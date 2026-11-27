@@ -11,6 +11,8 @@ import { courses, findCourse } from "../lib/catalog";
 import { requireLearner, publicUser } from "../lib/auth";
 import { userEnrollments, userLogs, enrollmentView } from "../lib/learning";
 
+import { assignWaiting, learnerPacing, lockPool } from "../lib/guides";
+
 const router: IRouter = Router();
 router.get("/courses", (_req, res) => { res.json(ListCoursesResponse.parse(courses)); });
 router.get("/courses/:id", (req, res): void => {
@@ -21,7 +23,7 @@ router.get("/courses/:id", (req, res): void => {
 });
 router.get("/dashboard", requireLearner, async (req, res): Promise<void> => {
   const user = req.learner!;
-  const [items, logs] = await Promise.all([userEnrollments(user.id), userLogs(user.id)]);
+  const [items, logs, pacing] = await Promise.all([userEnrollments(user.id), userLogs(user.id), learnerPacing(user.id)]);
   const relevant = courses.filter((c) => !items.some((e) => e.course.id === c.id))
     .sort((a, b) => Number(b.disciplines.some((d) => d.toLowerCase() === user.discipline.toLowerCase())) - Number(a.disciplines.some((d) => d.toLowerCase() === user.discipline.toLowerCase()))).slice(0, 3);
   const activity = [
@@ -29,7 +31,7 @@ router.get("/dashboard", requireLearner, async (req, res): Promise<void> => {
     ...items.map((e) => ({ id: e.id, text: `Started ${e.course.title}`, date: e.createdAt.slice(0, 10), type: "enrollment" })),
   ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
   res.json(GetDashboardResponse.parse({
-    preview: false, user: publicUser(user),
+    preview: false, pacing, user: publicUser(user),
     stats: { activeInternships: items.length, learningHours: logs.reduce((s, l) => s + l.hours, 0), completedModules: items.reduce((s, e) => s + e.completedModules.length, 0), submittedProjects: items.filter((e) => e.status === "submitted").length },
     enrollments: items, recommendations: relevant, activity,
   }));
@@ -40,7 +42,12 @@ router.get("/enrollments", requireLearner, async (req, res): Promise<void> => {
 router.post("/enrollments", requireLearner, async (req, res): Promise<void> => {
   const parsed = EnrollBody.safeParse(req.body);
   if (!parsed.success || !findCourse(parsed.data.courseId)) { res.status(400).json({ error: "Choose an available internship and a 60- or 120-hour pathway." }); return; }
-  const [created] = await db.insert(enrollments).values({ id: randomUUID(), userId: req.learner!.id, ...parsed.data }).onConflictDoNothing().returning();
+  const created = await db.transaction(async tx => {
+    await lockPool(tx);
+    const [row] = await tx.insert(enrollments).values({ id: randomUUID(), userId: req.learner!.id, ...parsed.data }).onConflictDoNothing().returning();
+    if (row) await assignWaiting(tx);
+    return row;
+  });
   if (!created) { res.status(409).json({ error: "You already have a pathway for this internship. Open My learning to continue." }); return; }
   res.status(201).json(EnrollResponse.parse(enrollmentView(created, [])));
 });

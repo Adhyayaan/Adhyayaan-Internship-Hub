@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorPanel, Empty, Meter } from '@/components/app/bits';
 import { CourseCard } from '@/components/app/course-card';
+import { InternshipPace } from '@/components/app/course-timeline';
 import { progressOf, statusLabel, useTitle } from '@/lib/app';
 
 export default function Dashboard() {
@@ -102,6 +103,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   {d.enrollments.map((e) => {
                     const p = progressOf(e);
+                    const plan = d.pacing?.find(item => item.enrollmentId === e.id);
                     return (
                       <div key={e.id} className="ink-card p-5" data-testid={`card-enrollment-${e.id}`}>
                         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -115,13 +117,14 @@ export default function Dashboard() {
                           <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Modules</span><span>{p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
                           <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Hours</span><span>{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
                         </div>
+                        {plan && <InternshipPace plan={plan} />}
                         {e.course.id === '01' && (
                           <Link href="/study/01" className="mr-4 mt-4 inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--ledger))] hover:text-accent" data-testid={`link-study-${e.id}`}>
                             Next: read the study book <ArrowRight className="h-4 w-4" />
                           </Link>
                         )}
                         {!d.preview && (
-                          <Link href="/my-learning" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-accent" data-testid={`link-continue-${e.id}`}>
+                          <Link href={`/my-learning#pathway-${e.course.id}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-accent" data-testid={`link-continue-${e.id}`}>
                             Continue <ArrowRight className="h-4 w-4" />
                           </Link>
                         )}

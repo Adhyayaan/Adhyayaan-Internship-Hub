@@ -1,9 +1,10 @@
+import { chapterWeeks, dueDate, ScheduleBand } from '@/components/app/course-timeline';
 import { useState } from 'react';
 import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
 import type { Course, Module } from '@workspace/api-client-react';
 import { Link, useLocation, useParams } from 'wouter';
 import { ArrowLeft, Check, FileWarning, Loader2 } from 'lucide-react';
-import { useEnroll, useGetCourse, useListEnrollments, getListEnrollmentsQueryKey } from '@workspace/api-client-react';
+import { useGetDashboard, useEnroll, useGetCourse, useListEnrollments, getListEnrollmentsQueryKey } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -21,15 +22,20 @@ export default function CoursePage() {
   const inval = useInvalidateAll();
   const [, nav] = useLocation();
   const { toast } = useToast();
-  const [hours, setHours] = useState<60 | 120>(60);
+  const [selectedHours, setHours] = useState<60 | 120>();
+  const existing = enr.data?.find(e => e.course.id === id);
+  const hours = selectedHours ?? (existing?.hours === 120 ? 120 : 60);
+  const dashboard = useGetDashboard({query: {enabled: !!existing}});
+  const plan = existing?.hours === hours ? dashboard.data?.pacing?.find(p => p.enrollmentId === existing.id) : undefined;
   useTitle(q.data?.title ?? 'Internship blueprint');
 
   if (q.isLoading) return <div className="space-y-4"><Skeleton className="h-56 rounded-3xl bg-secondary" /><Skeleton className="h-96 rounded-3xl bg-secondary" /></div>;
   if (q.error || !q.data) return <ErrorPanel error={q.error} onRetry={() => q.refetch()} />;
   const c = q.data;
-  const existing = enr.data?.find((e) => e.course.id === c.id);
+
   const mods = c.modules.filter((m) => (hours === 60 ? m.hours60 > 0 : m.hours120 > 0 || m.hours60 > 0));
 
+  const weeks = chapterWeeks(mods, hours);
   const doEnroll = async () => {
     if (!user) return nav(authHref('login', `/courses/${c.id}`));
     try {
@@ -66,9 +72,10 @@ export default function CoursePage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
         <section>
-          <h2 className="mb-1 font-display text-2xl font-semibold text-primary">Module blueprint</h2>
+          <h2 className="mb-1 font-display text-2xl font-semibold text-primary">Course track</h2>
           <p className="mb-4 text-sm text-muted-foreground">{mods.length} modules apply to the {hours}-hour pathway.</p>
-          <Accordion type="multiple" className="space-y-2">
+          <ScheduleBand hours={hours} start={plan?.start} end={plan?.end} />
+          <Accordion type="multiple" className="mt-3 space-y-2">
             {mods.map((m, i) => (
               <AccordionItem key={m.id} value={m.id} className="ink-card border-none px-5" data-testid={`module-${m.id}`}>
                 <AccordionTrigger className="hover:no-underline">
@@ -76,7 +83,7 @@ export default function CoursePage() {
                     <span className="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</span>
                     <span>
                       <span className="block font-medium">{m.title}</span>
-                      <span className="block text-xs font-normal text-muted-foreground">{m.type} · {hours === 60 ? m.hours60 : m.hours120} hrs</span>
+                      <span className="block text-xs font-normal text-muted-foreground">{weeks[i]} · {hours === 60 ? m.hours60 : m.hours120} hrs{plan?.chapters[i] && ` · Due ${dueDate(plan.chapters[i].due)}`}{plan?.chapters[i]?.done && ' · Complete'}</span>
                     </span>
                   </span>
                 </AccordionTrigger>

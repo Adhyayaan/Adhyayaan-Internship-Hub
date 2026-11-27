@@ -1,3 +1,4 @@
+import guidesRouter from "./guides";
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import authRouter from "./auth";
@@ -15,6 +16,7 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(assessmentRouter);
 router.use(adminRouter);
+router.use(guidesRouter);
 router.use(["/dashboard", "/enrollments", "/logs", "/ai", "/practice", "/study"], checkAssessment);
 router.use(learningRouter);
 router.use(aiRouter);

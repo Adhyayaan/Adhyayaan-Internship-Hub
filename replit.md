@@ -63,3 +63,11 @@ An AI-supported, project-based internship learning platform for final-year colle
 - For development, run `pnpm --filter @workspace/db run admin-access grant ACCOUNT_ID` in the workspace shell after the schema is applied. To remove access, use `revoke` in place of `grant`. Use the account ID, not the email address. Sign in again to open **Admin** at `/admin`. The server checks access on each request.
 - Provision production admin accounts separately after publishing the schema, using your production database's authorised operator access. A development admin grant does not grant access in production. Do not copy keys or database URLs into chat.
 - Study clips are reproducible H.264 summaries rendered serially with `ffmpeg` and DejaVu Sans into a disposable temporary cache; no uploaded footage or persistent media store is required. Render failures are explicit and the transcript remains readable. Retain the renderer's runtime dependencies when publishing. App Storage provisioning failed during this build; do not assume it is configured.
+
+## Internship pacing and guide allocation
+
+Apply the updated Drizzle schema before releasing the API. Existing enrolments keep their original start date. The student dashboard uses Kolkata calendar dates, 7.5 planned hours per week and the assigned hours of completed chapters. Logged work remains a separate measure. For legacy catalogue records with a 60-hour total in the extended column and an empty core column, the core plan uses those weights and the provisional 120-hour plan doubles them.
+
+Administrators can open **Guide pool**, enter a verified existing account ID, select supported courses and set the maximum number of assigned enrolments across those courses. Saving promotes that account to Internship Guide. Pool changes and new enrolments assign waiting learners oldest first to the eligible guide with the most free seats. Setting capacity to zero pauses new assignments. Existing assignments continue, including submitted work awaiting review. Guides open **Guide dashboard** to review their assigned learners across courses or filter to one course.
+
+Run the timeline regression checks with Node 24 using `node --test artifacts/api-server/src/lib/pacing.test.mjs`.
