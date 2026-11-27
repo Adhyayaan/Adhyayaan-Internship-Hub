@@ -1,4 +1,3 @@
-import { dueDate } from '@/components/app/course-timeline';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Coach, CoachMark, CoachToggle } from '@/components/app/coach';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorPanel, Empty, Meter } from '@/components/app/bits';
 import { CourseCard } from '@/components/app/course-card';
+import { InternshipPace } from '@/components/app/course-timeline';
 import { progressOf, statusLabel, useTitle } from '@/lib/app';
 
 export default function Dashboard() {
@@ -17,25 +17,6 @@ export default function Dashboard() {
   const d = q.data;
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Suprabhat' : hour < 17 ? 'Good afternoon' : 'Shubho sandhya';
-
-  if (d?.user && d.enrollments.length && d.pacing?.length && !d.preview) {
-    return <main className="mx-auto max-w-5xl space-y-7">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-semibold text-primary sm:text-4xl">{greet}, {d.user.name.split(' ')[0]}.</h1>
-        <Link className="text-sm font-medium text-accent hover:underline" href="/logbook">Log work hours →</Link>
-      </header>
-      <NextStep d={d} />
-      {d.activity.length > 0 && <details className="border-t pt-4">
-        <summary className="cursor-pointer text-sm font-medium">Recent activity</summary>
-        <ul className="mt-3 divide-y">{d.activity.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm"><span>{item.text}</span><time>{dueDate(item.date.slice(0,10))}</time></li>)}</ul>
-      </details>}
-      <footer className="flex flex-wrap gap-x-6 gap-y-3 border-t pt-4 text-sm text-muted-foreground">
-        <Link href="/my-learning">My learning</Link><Link href="/projects">Projects</Link>
-        <Link href={d.user.assessmentCompletedAt ? '/profile#learning-reports' : '/assessment'}>{d.user.assessmentCompletedAt ? 'Learning report' : 'Learning assessment'}</Link>
-        <Link href="/explore">Explore internships</Link>
-      </footer>
-    </main>;
-  }
 
   return (
     <div>
@@ -122,6 +103,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   {d.enrollments.map((e) => {
                     const p = progressOf(e);
+                    const plan = d.pacing?.find(item => item.enrollmentId === e.id);
                     return (
                       <div key={e.id} className="ink-card p-5" data-testid={`card-enrollment-${e.id}`}>
                         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -135,13 +117,14 @@ export default function Dashboard() {
                           <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Modules</span><span>{p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
                           <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Hours</span><span>{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
                         </div>
+                        {plan && <InternshipPace plan={plan} />}
                         {e.course.id === '01' && (
                           <Link href="/study/01" className="mr-4 mt-4 inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--ledger))] hover:text-accent" data-testid={`link-study-${e.id}`}>
                             Next: read the study book <ArrowRight className="h-4 w-4" />
                           </Link>
                         )}
                         {!d.preview && (
-                          <Link href="/my-learning" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-accent" data-testid={`link-continue-${e.id}`}>
+                          <Link href={`/my-learning#pathway-${e.course.id}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-accent" data-testid={`link-continue-${e.id}`}>
                             Continue <ArrowRight className="h-4 w-4" />
                           </Link>
                         )}
@@ -194,42 +177,8 @@ function NextStep({ d }: { d: DashboardData }) {
   const e = d.enrollments.find((x) => x.id === focus) ?? d.enrollments[0];
   const p = e ? progressOf(e) : null;
   const remaining = p && e ? p.mods.filter((m) => !e.completedModules.includes(m.id)) : [];
-  const plan = d.pacing?.find(plan => plan.enrollmentId === e?.id);
-  const next = plan?.chapters.find(chapter => !chapter.done);
   return (
     <section className="ink-card rise mt-6 overflow-hidden" data-testid="section-next-step">
-      {plan && e ? <>
-        <div className="bg-primary px-5 py-6 text-primary-foreground sm:px-8">
-          {d.enrollments.length > 1 && <label className="mb-4 block text-sm">Course
-            <select className="ml-2 max-w-full rounded-md bg-card p-2 text-foreground" value={e.id} onChange={event => {setFocus(event.target.value); setOpen(false);}}>
-              {d.enrollments.map(item => <option key={item.id} value={item.id}>{item.course.title}</option>)}
-            </select></label>}
-          <h2 className="font-display text-2xl sm:text-3xl">{plan.title}</h2>
-          <p className="mt-2 text-sm opacity-80">{e.hours / 7.5} weeks · {dueDate(plan.start)} – {dueDate(plan.end)}</p>
-        </div>
-        <div className="grid gap-6 p-5 sm:p-8 md:grid-cols-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Chapter completion</p>
-            <p className="my-1 font-display text-5xl font-semibold text-primary">{plan.percent}%</p>
-            <div className="relative my-3 h-3 rounded-full bg-secondary">
-              <div className="h-full rounded-full bg-accent" style={{width: plan.percent + '%'}}/>
-              <span className="absolute inset-y-[-3px] w-0.5 bg-primary" style={{left: 'min('+plan.expected+'%, calc(100% - 2px))'}}/>
-            </div>
-            <p className="text-sm"><strong>{plan.deltaHours === 0 ? 'On schedule' : Math.abs(plan.deltaHours)+' h '+(plan.deltaHours > 0 ? 'ahead' : 'behind')}</strong> · Target today {plan.expected}%</p>
-            <p className="mt-2 text-sm text-muted-foreground">{plan.cohortSize === 1 ? 'Only enrolment on your start date' : `At or above ${plan.percentile}% of your start-date group (${plan.cohortSize} learners, including ties).`}</p>
-          </div>
-          <div className="border-t pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-            <p className="text-sm text-muted-foreground">{next ? 'Next chapter' : 'All chapters complete'}</p>
-            <h3 className="mt-1 font-display text-xl font-semibold">{next?.title ?? 'Project and reflection'}</h3>
-            {next && <p className="mt-1 text-sm">{next.hours} planned hours · Due {dueDate(next.due)}</p>}
-            <Button asChild className="mt-4"><Link href={next ? `/my-learning#pathway-${e.course.id}` : '/projects'}>{next ? 'Open course track' : 'View project'} <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 text-sm sm:px-8">
-          <span>{plan.guideName ? 'Guide · '+plan.guideName : 'Awaiting guide assignment'} · {e.loggedHours}/{e.hours} h logged</span>
-          <CoachToggle open={open} onClick={() => setOpen(!open)} label="Plan with coach" testId="button-coach-next"/>
-        </div>
-      </> : (
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-4 sm:gap-4 sm:p-5 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-center">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-[hsl(40_88%_62%)]"><CoachMark className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
@@ -242,10 +191,9 @@ function NextStep({ d }: { d: DashboardData }) {
           <CoachToggle open={open} onClick={() => setOpen((o) => !o)} label="Plan it with the coach" testId="button-coach-next" />
         </div>
       </div>
-      )}
       {open && (
         <div className="space-y-3 border-t bg-secondary/30 p-4">
-          {!plan && d.enrollments.length > 1 && (
+          {d.enrollments.length > 1 && (
             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Pathway to plan">
               {d.enrollments.map((x) => (
                 <button key={x.id} type="button" role="radio" aria-checked={x.id === e?.id} onClick={() => setFocus(x.id)} data-testid={`button-focus-${x.id}`}
