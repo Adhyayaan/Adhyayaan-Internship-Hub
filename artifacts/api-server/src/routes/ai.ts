@@ -4,7 +4,7 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { db, aiMessages, enrollments, practiceAttempts } from "@workspace/db";
 import { and, desc, eq } from "drizzle-orm";
 import { AskAiBody, AskAiResponse, ListAiMessagesResponse, StartPracticeBody, StartPracticeResponse, ListPracticeResponse, SubmitPracticeBody, SubmitPracticeParams, SubmitPracticeResponse } from "@workspace/api-zod";
-import { requireLearner } from "../lib/auth";
+import { requireStudent } from "../lib/auth";
 import { findCourse } from "../lib/catalog";
 import { generateQuestions, learnerProfile, practiceView } from "../lib/adaptive";
 import { aiLimit, oneAtATime } from "../lib/ai-guard";
@@ -12,7 +12,7 @@ import { plainLanguage } from "../lib/plain-language";
 
 const router: IRouter = Router();
 
-router.get("/ai/messages", requireLearner, async (req, res): Promise<void> => {
+router.get("/ai/messages", requireStudent, async (req, res): Promise<void> => {
   const messages = await db.select().from(aiMessages).where(eq(aiMessages.userId, req.learner!.id)).orderBy(desc(aiMessages.createdAt)).limit(100);
   res.json(ListAiMessagesResponse.parse(messages.reverse().map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }))));
 });
@@ -23,7 +23,7 @@ const toolInstructions = {
   review: "Give formative project feedback: strengths, conceptual gaps, application quality, evidence quality, reasoning, ethics, and three actionable next steps. Never invent having opened a URL. Review only supplied text; ask student to paste a relevant excerpt when needed. Do not give official grades or certify completion.",
   viva: "Conduct a formative viva one question at a time. Move from understanding to applied scenarios to analysis, adapting follow-ups to previous answers. Provide specific feedback on reasoning without completing the student's actual assessment.",
 };
-router.post("/ai/messages", requireLearner, aiLimit, oneAtATime, async (req, res): Promise<void> => {
+router.post("/ai/messages", requireStudent, aiLimit, oneAtATime, async (req, res): Promise<void> => {
   const parsed = AskAiBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Enter a learning question and choose a supported AI tool." }); return; }
   const input = parsed.data;
@@ -57,11 +57,11 @@ router.post("/ai/messages", requireLearner, aiLimit, oneAtATime, async (req, res
     res.status(502).json({ error: "The AI mentor could not respond right now. Your work has not been lost; please retry shortly." });
   }
 });
-router.get("/practice", requireLearner, async (req, res): Promise<void> => {
+router.get("/practice", requireStudent, async (req, res): Promise<void> => {
   const rows = await db.select().from(practiceAttempts).where(eq(practiceAttempts.userId, req.learner!.id)).orderBy(desc(practiceAttempts.createdAt)).limit(50);
   res.json(ListPracticeResponse.parse(rows.map(practiceView)));
 });
-router.post("/practice", requireLearner, aiLimit, oneAtATime, async (req, res): Promise<void> => {
+router.post("/practice", requireStudent, aiLimit, oneAtATime, async (req, res): Promise<void> => {
   const parsed = StartPracticeBody.safeParse(req.body);
   const course = parsed.success ? findCourse(parsed.data.courseId) : undefined;
   if (!parsed.success || !course) { res.status(400).json({ error: "Choose a course and answer language." }); return; }
@@ -77,7 +77,7 @@ router.post("/practice", requireLearner, aiLimit, oneAtATime, async (req, res): 
     res.status(502).json({ error: "We couldn't prepare a reliable question set right now. Please try again." });
   }
 });
-router.post("/practice/:id/submit", requireLearner, async (req, res): Promise<void> => {
+router.post("/practice/:id/submit", requireStudent, async (req, res): Promise<void> => {
   const params = SubmitPracticeParams.safeParse(req.params);
   const parsed = SubmitPracticeBody.safeParse(req.body);
   if (!params.success || !parsed.success) { res.status(400).json({ error: "Answer all five questions before submitting." }); return; }

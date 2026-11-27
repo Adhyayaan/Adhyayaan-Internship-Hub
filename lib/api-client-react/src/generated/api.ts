@@ -26,6 +26,10 @@ import type {
 
 import type {
   AdminDirectory,
+  AdminGuide,
+  AdminGuideInput,
+  AdminGuidePool,
+  AdminGuideUpdate,
   AdminLearnerDetail,
   AiInput,
   AiMessage,
@@ -39,6 +43,8 @@ import type {
   Enrollment,
   EnrollmentInput,
   EnrollmentUpdate,
+  GetGuideDashboardParams,
+  GuideDashboard,
   HealthStatus,
   LearningReport,
   ListAdminLearnersParams,
@@ -782,6 +788,539 @@ export function useGetAdminLearningReport<TData = Awaited<ReturnType<typeof getA
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminLearningReportQueryOptions(id,reportId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListAdminGuidesUrl = () => {
+
+
+
+
+  return `/api/admin/guides`
+}
+
+export const listAdminGuides = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminGuidePool> => {
+
+  return customFetch<AdminGuidePool>(getListAdminGuidesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminGuidesQueryKey = () => {
+    return [
+    `/api/admin/guides`
+    ] as const;
+    }
+
+
+export const getListAdminGuidesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminGuides>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminGuidesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminGuides>>> = ({ signal }) => listAdminGuides({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAdminGuidesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminGuides>>>
+export type ListAdminGuidesQueryError = ErrorType<void>
+
+
+export function useListAdminGuides<TData = Awaited<ReturnType<typeof listAdminGuides>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminGuides>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminGuides>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminGuides<TData = Awaited<ReturnType<typeof listAdminGuides>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminGuides>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminGuides>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminGuides<TData = Awaited<ReturnType<typeof listAdminGuides>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListAdminGuides<TData = Awaited<ReturnType<typeof listAdminGuides>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminGuides>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAdminGuidesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getProvisionAdminGuideUrl = () => {
+
+
+
+
+  return `/api/admin/guides`
+}
+
+export const provisionAdminGuide = async (adminGuideInput: AdminGuideInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminGuide> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminGuide>(getProvisionAdminGuideUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminGuideInput)
+  }
+);}
+
+
+
+
+
+export const getProvisionAdminGuideMutationKey = () => ['provisionAdminGuide'] as const;
+
+export const getProvisionAdminGuideMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof provisionAdminGuide>>, TError,ProvisionAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof provisionAdminGuide>>, TError,ProvisionAdminGuideMutationVariables, TContext> => {
+
+const mutationKey = getProvisionAdminGuideMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof provisionAdminGuide>>, ProvisionAdminGuideMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  provisionAdminGuide(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProvisionAdminGuideMutationResult = NonNullable<Awaited<ReturnType<typeof provisionAdminGuide>>>
+    export type ProvisionAdminGuideMutationBody = BodyType<AdminGuideInput>
+    export type ProvisionAdminGuideMutationError = ErrorType<void>
+    export type ProvisionAdminGuideMutationVariables = {data: BodyType<AdminGuideInput>}
+
+    export const useProvisionAdminGuide = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof provisionAdminGuide>>, TError,ProvisionAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof provisionAdminGuide>>,
+        TError,
+        ProvisionAdminGuideMutationVariables,
+        TContext
+      > => {
+      return useMutation(getProvisionAdminGuideMutationOptions(options), queryClient);
+    }
+
+export const getUpdateAdminGuideUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/guides/${id}`
+}
+
+export const updateAdminGuide = async (id: string,
+    adminGuideUpdate: AdminGuideUpdate, options?: Parameters<typeof customFetch>[1]): Promise<AdminGuide> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminGuide>(getUpdateAdminGuideUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminGuideUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminGuideMutationKey = () => ['updateAdminGuide'] as const;
+
+export const getUpdateAdminGuideMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminGuide>>, TError,UpdateAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminGuide>>, TError,UpdateAdminGuideMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminGuideMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminGuide>>, UpdateAdminGuideMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateAdminGuide(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminGuideMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminGuide>>>
+    export type UpdateAdminGuideMutationBody = BodyType<AdminGuideUpdate>
+    export type UpdateAdminGuideMutationError = ErrorType<void>
+    export type UpdateAdminGuideMutationVariables = {id: string;data: BodyType<AdminGuideUpdate>}
+
+    export const useUpdateAdminGuide = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminGuide>>, TError,UpdateAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminGuide>>,
+        TError,
+        UpdateAdminGuideMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminGuideMutationOptions(options), queryClient);
+    }
+
+export const getAssignAdminGuideUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/enrollments/${id}/assign-guide`
+}
+
+export const assignAdminGuide = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Enrollment> => {
+
+  return customFetch<Enrollment>(getAssignAdminGuideUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAssignAdminGuideMutationKey = () => ['assignAdminGuide'] as const;
+
+export const getAssignAdminGuideMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignAdminGuide>>, TError,AssignAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignAdminGuide>>, TError,AssignAdminGuideMutationVariables, TContext> => {
+
+const mutationKey = getAssignAdminGuideMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignAdminGuide>>, AssignAdminGuideMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  assignAdminGuide(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignAdminGuideMutationResult = NonNullable<Awaited<ReturnType<typeof assignAdminGuide>>>
+
+    export type AssignAdminGuideMutationError = ErrorType<void>
+    export type AssignAdminGuideMutationVariables = {id: string}
+
+    export const useAssignAdminGuide = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignAdminGuide>>, TError,AssignAdminGuideMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof assignAdminGuide>>,
+        TError,
+        AssignAdminGuideMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAssignAdminGuideMutationOptions(options), queryClient);
+    }
+
+export const getGetGuideDashboardUrl = (params?: GetGuideDashboardParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/guide/dashboard?${stringifiedParams}` : `/api/guide/dashboard`
+}
+
+export const getGuideDashboard = async (params?: GetGuideDashboardParams, options?: Parameters<typeof customFetch>[1]): Promise<GuideDashboard> => {
+
+  return customFetch<GuideDashboard>(getGetGuideDashboardUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGuideDashboardQueryKey = (params?: GetGuideDashboardParams,) => {
+    return [
+    `/api/guide/dashboard`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetGuideDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getGuideDashboard>>, TError = ErrorType<void>>(params?: GetGuideDashboardParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGuideDashboardQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGuideDashboard>>> = ({ signal }) => getGuideDashboard(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGuideDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getGuideDashboard>>>
+export type GetGuideDashboardQueryError = ErrorType<void>
+
+
+export function useGetGuideDashboard<TData = Awaited<ReturnType<typeof getGuideDashboard>>, TError = ErrorType<void>>(
+ params: undefined |  GetGuideDashboardParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideDashboard>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideDashboard<TData = Awaited<ReturnType<typeof getGuideDashboard>>, TError = ErrorType<void>>(
+ params?: GetGuideDashboardParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideDashboard>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideDashboard<TData = Awaited<ReturnType<typeof getGuideDashboard>>, TError = ErrorType<void>>(
+ params?: GetGuideDashboardParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetGuideDashboard<TData = Awaited<ReturnType<typeof getGuideDashboard>>, TError = ErrorType<void>>(
+ params?: GetGuideDashboardParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideDashboard>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGuideDashboardQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGuideLearningReportUrl = (learnerId: string,
+    reportId: string,) => {
+
+
+
+
+  return `/api/guide/learners/${learnerId}/reports/${reportId}`
+}
+
+export const getGuideLearningReport = async (learnerId: string,
+    reportId: string, options?: Parameters<typeof customFetch>[1]): Promise<LearningReport> => {
+
+  return customFetch<LearningReport>(getGetGuideLearningReportUrl(learnerId,reportId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGuideLearningReportQueryKey = (learnerId: string,
+    reportId: string,) => {
+    return [
+    `/api/guide/learners/${learnerId}/reports/${reportId}`
+    ] as const;
+    }
+
+
+export const getGetGuideLearningReportQueryOptions = <TData = Awaited<ReturnType<typeof getGuideLearningReport>>, TError = ErrorType<void>>(learnerId: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGuideLearningReportQueryKey(learnerId,reportId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGuideLearningReport>>> = ({ signal }) => getGuideLearningReport(learnerId,reportId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: learnerId !== null && learnerId !== undefined && reportId !== null && reportId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetGuideLearningReportQueryResult = NonNullable<Awaited<ReturnType<typeof getGuideLearningReport>>>
+export type GetGuideLearningReportQueryError = ErrorType<void>
+
+
+export function useGetGuideLearningReport<TData = Awaited<ReturnType<typeof getGuideLearningReport>>, TError = ErrorType<void>>(
+ learnerId: string,
+    reportId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideLearningReport<TData = Awaited<ReturnType<typeof getGuideLearningReport>>, TError = ErrorType<void>>(
+ learnerId: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getGuideLearningReport>>,
+          TError,
+          Awaited<ReturnType<typeof getGuideLearningReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetGuideLearningReport<TData = Awaited<ReturnType<typeof getGuideLearningReport>>, TError = ErrorType<void>>(
+ learnerId: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetGuideLearningReport<TData = Awaited<ReturnType<typeof getGuideLearningReport>>, TError = ErrorType<void>>(
+ learnerId: string,
+    reportId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getGuideLearningReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetGuideLearningReportQueryOptions(learnerId,reportId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

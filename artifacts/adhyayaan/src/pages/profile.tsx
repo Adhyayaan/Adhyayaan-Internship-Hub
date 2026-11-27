@@ -12,7 +12,8 @@ export default function Profile() {
   useTitle('Profile');
   const { user, isLoading } = useAuth();
   const logout = useLogout();
-  const assessment = useGetAssessment({ query: { enabled: !!user, queryKey: getGetAssessmentQueryKey() } });
+  const isStudent = !!user && !user.isGuide && !user.isAdmin;
+  const assessment = useGetAssessment({ query: { enabled: isStudent, queryKey: getGetAssessmentQueryKey() } });
   const wait = assessment.data?.nextRetakeAt;
   const reset = useResetForSession();
   const [, nav] = useLocation();
@@ -37,7 +38,7 @@ export default function Profile() {
           {logout.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogOut className="mr-2 h-4 w-4" />}Sign out
         </Button>
       </div>
-      <section id="learning-reports" aria-labelledby="profile-learning-reports" className="ink-card mt-6 max-w-2xl scroll-mt-20 p-5 sm:p-8">
+      {isStudent ? <section id="learning-reports" aria-labelledby="profile-learning-reports" className="ink-card mt-6 max-w-2xl scroll-mt-20 p-5 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 id="profile-learning-reports" className="text-2xl font-semibold text-primary">Learning reports</h2>
@@ -61,7 +62,17 @@ export default function Profile() {
             </ul>
           ) : <p className="mt-5 text-sm text-muted-foreground">No report yet. Complete the assessment to save one here.</p>}
         <Link href="/assessment/guide" className="mt-5 inline-block text-sm font-medium text-primary underline underline-offset-2">How we use your answers</Link>
-      </section>
+      </section> : (
+        <section className="ink-card mt-6 max-w-2xl p-5 sm:p-8">
+          <h2 className="text-xl font-semibold text-primary">{user.isGuide ? 'Internship Guide account' : 'Administrator account'}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {user.isGuide
+              ? 'Your guide access is separate from student learning records. Open your dashboard to support learners assigned to you.'
+              : 'Your admin workspace is separate from student learning records.'}
+          </p>
+          {user.isGuide && <Button asChild className="mt-4"><Link href="/guide">Open guide dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>}
+        </section>
+      )}
     </div>
   );
 }

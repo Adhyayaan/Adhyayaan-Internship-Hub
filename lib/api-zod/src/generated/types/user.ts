@@ -16,4 +16,5 @@ export interface User {
   /** @nullable */
   assessmentCompletedAt: string | null;
   isAdmin: boolean;
+  isGuide: boolean;
 }

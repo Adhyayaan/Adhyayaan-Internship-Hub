@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck } from 'lucide-react';
+import { Brain, BookOpenText, Compass, FolderGit2, LayoutGrid, NotebookPen, Sparkles, UserRound, LogIn, MoreHorizontal, ShieldCheck, UsersRound } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { authHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
@@ -15,6 +15,14 @@ const NAV = [
   { href: '/projects', label: 'Projects', icon: FolderGit2 },
   { href: '/logbook', label: 'Logbook', icon: NotebookPen },
   { href: '/ai', label: 'AI studio', icon: Sparkles },
+];
+const GUIDE_NAV = [
+  { href: '/guide', label: 'Guide dashboard', icon: UsersRound },
+  { href: '/profile', label: 'Account', icon: UserRound },
+];
+const ADMIN_NAV = [
+  { href: '/admin', label: 'Admin', icon: ShieldCheck },
+  { href: '/profile', label: 'Account', icon: UserRound },
 ];
 
 function Logo({ light }: { light?: boolean }) {
@@ -40,7 +48,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [mobileFormFocused, setMobileFormFocused] = useState(false);
   const lastScrollY = useRef(0);
   const { user } = useAuth();
-  const navigation = user?.isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: ShieldCheck }] : NAV;
+  const navigation = user?.isGuide ? GUIDE_NAV : user?.isAdmin ? ADMIN_NAV : NAV;
   const active = (h: string) => (h === '/' ? loc === '/' : loc.startsWith(h) || (h === '/explore' && loc.startsWith('/courses')));
   const here = useHere();
   const initials = user?.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
@@ -128,9 +136,9 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
 
-      {user && !loc.startsWith('/admin') && !loc.startsWith('/profile/reports/') && <AdhyaGuide />}
+      {user && !user.isGuide && !user.isAdmin && !loc.startsWith('/admin') && !loc.startsWith('/profile/reports/') && <AdhyaGuide />}
 
-      <nav aria-label="Main navigation" aria-hidden={!showMobileNav} className={`mobile-bottom-nav fixed inset-x-2 bottom-0 z-40 grid grid-cols-5 gap-0.5 rounded-t-2xl bg-sidebar px-1.5 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 shadow-2xl md:hidden ${showMobileNav ? '' : 'mobile-bottom-nav-hidden'}`}>
+      <nav aria-label="Main navigation" aria-hidden={!showMobileNav} style={{ gridTemplateColumns: `repeat(${navigation.length > 4 ? 5 : Math.max(1, navigation.length)}, minmax(0, 1fr))` }} className={`mobile-bottom-nav fixed inset-x-2 bottom-0 z-40 grid gap-0.5 rounded-t-2xl bg-sidebar px-1.5 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 shadow-2xl md:hidden ${showMobileNav ? '' : 'mobile-bottom-nav-hidden'}`}>
         {navigation.slice(0, 4).map((n) => (
           <Link key={n.href} href={n.href} data-testid={`link-mnav-${n.href.slice(1) || 'home'}`}
             tabIndex={showMobileNav ? 0 : -1}
@@ -139,7 +147,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span>{n.label === 'My learning' ? 'Learning' : n.label}</span>
           </Link>
         ))}
-        <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        {navigation.length > 4 && <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
           <SheetTrigger asChild>
             <button type="button" aria-label="More destinations" aria-expanded={moreOpen} tabIndex={showMobileNav ? 0 : -1} data-testid="button-mobile-more"
               className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] font-medium leading-tight text-sidebar-foreground/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${navigation.slice(4).some((n) => active(n.href)) ? 'bg-sidebar-foreground text-sidebar' : ''}`}>
@@ -160,7 +168,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </Link>
             </nav>
           </SheetContent>
-        </Sheet>
+        </Sheet>}
       </nav>
     </div>
   );

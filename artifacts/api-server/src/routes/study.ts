@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db, studyProgress, studyTeaching } from "@workspace/db";
 import { GetStudyBookParams, GetStudyBookResponse, GetStudyBookBengaliParams, GetStudyBookBengaliResponse, SaveStudyProgressParams, SaveStudyProgressBody, SaveStudyProgressResponse, TeachStudyParams, TeachStudyBody, TeachStudyResponse } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { requireLearner } from "../lib/auth";
+import { requireStudent } from "../lib/auth";
 import { aiLimit, oneAtATime } from "../lib/ai-guard";
 import { getStudyContent } from "../lib/study-content";
 import { teachingSignals } from "../lib/assessment";
@@ -13,6 +13,7 @@ import { plainLanguage } from "../lib/plain-language";
 
 const router: IRouter = Router();
 router.get("/study/:courseId", async (req, res): Promise<void> => {
+  if (req.learner && req.learner.role !== "student") { res.status(403).json({ error: "Student access is required for personal study progress." }); return; }
   const params = GetStudyBookParams.safeParse(req.params);
   const book = params.success ? getStudyContent(params.data.courseId, "en") : undefined;
   if (!book) { res.status(404).json({ error: "The study book for this course has not been authored yet. Its course plan remains available." }); return; }
@@ -26,6 +27,7 @@ router.get("/study/:courseId", async (req, res): Promise<void> => {
 });
 
 router.get("/study/:courseId/bn", async (req, res): Promise<void> => {
+  if (req.learner && req.learner.role !== "student") { res.status(403).json({ error: "Student access is required for personal study progress." }); return; }
   const params = GetStudyBookBengaliParams.safeParse(req.params);
   const book = params.success ? getStudyContent(params.data.courseId, "bn") : undefined;
   if (!book) { res.status(404).json({ error: "এই কোর্সের বাংলা পাঠ এখনও তৈরি হয়নি।" }); return; }
@@ -38,7 +40,7 @@ router.get("/study/:courseId/bn", async (req, res): Promise<void> => {
   res.json(GetStudyBookBengaliResponse.parse({ ...book, progress: progress.map(x => ({ ...x, updatedAt: x.updatedAt.toISOString() })), teaching: teaching.map(x => ({ ...x, createdAt: x.createdAt.toISOString() })) }));
 });
 
-router.patch("/study/:courseId/progress", requireLearner, async (req, res): Promise<void> => {
+router.patch("/study/:courseId/progress", requireStudent, async (req, res): Promise<void> => {
   const params = SaveStudyProgressParams.safeParse(req.params);
   const input = SaveStudyProgressBody.safeParse(req.body);
   const book = params.success ? getStudyContent(params.data.courseId, "en") : undefined;
@@ -56,7 +58,7 @@ const feedbackSchema = z.object({
   nextPrompt: z.string().min(10).max(1500),
 }).strict();
 const levels = ["understand", "apply", "analyze"] as const;
-router.post("/study/:courseId/teach", requireLearner, aiLimit, oneAtATime, async (req, res): Promise<void> => {
+router.post("/study/:courseId/teach", requireStudent, aiLimit, oneAtATime, async (req, res): Promise<void> => {
   const params = TeachStudyParams.safeParse(req.params);
   const input = TeachStudyBody.safeParse(req.body);
   const book = params.success ? getStudyContent(params.data.courseId, input.success ? input.data.language : "en") : undefined;

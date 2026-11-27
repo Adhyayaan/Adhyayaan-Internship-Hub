@@ -127,6 +127,99 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Administrator access required }
         "404": { description: Report not found }
+  /admin/guides:
+    get:
+      operationId: listAdminGuides
+      responses:
+        "200":
+          description: Guide pool and enrolments that need guide follow-up
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminGuidePool" }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+    post:
+      operationId: provisionAdminGuide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminGuideInput" }
+      responses:
+        "201":
+          description: Existing account granted guide access and added to the guide pool
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminGuide" }
+        "400": { description: Invalid guide details or course coverage }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+        "404": { description: No account matches that email }
+        "409": { description: An administrator cannot be changed to a guide }
+  /admin/guides/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updateAdminGuide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminGuideUpdate" }
+      responses:
+        "200":
+          description: Updated guide coverage or availability
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminGuide" }
+        "400": { description: Invalid guide settings }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+        "404": { description: Guide not found }
+  /admin/enrollments/{id}/assign-guide:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: assignAdminGuide
+      responses:
+        "200":
+          description: Unassigned enrolment assigned to the least-loaded eligible guide
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Enrollment" }
+        "401": { description: Sign in first }
+        "403": { description: Administrator access required }
+        "404": { description: Enrolment not found }
+        "409": { description: A guide is already assigned or no eligible guide is available }
+  /guide/dashboard:
+    get:
+      operationId: getGuideDashboard
+      parameters:
+        - { name: courseId, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Assigned learners across the guide's supported courses
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GuideDashboard" }
+        "400": { description: Course is not in this guide's coverage }
+        "401": { description: Sign in first }
+        "403": { description: Internship Guide access required }
+  /guide/learners/{learnerId}/reports/{reportId}:
+    parameters:
+      - { name: learnerId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: reportId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: getGuideLearningReport
+      responses:
+        "200":
+          description: Saved report for an assigned learner; access is recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearningReport" }
+        "401": { description: Sign in first }
+        "403": { description: Internship Guide access required }
+        "404": { description: Report or assigned learner not found }
   /study-media/01/{file}:
     parameters:
       - { name: file, in: path, required: true, schema: { type: string, pattern: '^(01-[0-9]{1,2}\.(svg|mp4)|consent-pilot\.(mp4|vtt|jpg))$' } }
@@ -632,6 +725,121 @@ components:
         student: { $ref: "#/components/schemas/AdminLearnerRow" }
         courses: { type: array, items: { $ref: "#/components/schemas/AdminCourseProgress" } }
         reports: { type: array, items: { $ref: "#/components/schemas/LearningReportSummary" } }
+    GuidePublic:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+    AdminGuide:
+      type: object
+      required: [id, name, email, supportedCourseIds, availableForAssignments, activeLearners]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        supportedCourseIds: { type: array, items: { type: string } }
+        availableForAssignments: { type: boolean }
+        activeLearners: { type: integer }
+    AdminUnassignedEnrollment:
+      type: object
+      required: [id, learnerId, learnerName, learnerEmail, courseId, courseTitle, hours, status, createdAt]
+      properties:
+        id: { type: string }
+        learnerId: { type: string }
+        learnerName: { type: string }
+        learnerEmail: { type: string, format: email }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        hours: { type: integer, enum: [60, 120] }
+        status: { type: string }
+        createdAt: { type: string }
+    AdminGuidePool:
+      type: object
+      required: [guides, unassignedEnrollments]
+      properties:
+        guides: { type: array, items: { $ref: "#/components/schemas/AdminGuide" } }
+        unassignedEnrollments: { type: array, items: { $ref: "#/components/schemas/AdminUnassignedEnrollment" } }
+    AdminGuideInput:
+      type: object
+      required: [email, supportedCourseIds]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        supportedCourseIds:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { type: string }
+        availableForAssignments: { type: boolean, default: true }
+    AdminGuideUpdate:
+      type: object
+      properties:
+        supportedCourseIds:
+          type: array
+          maxItems: 30
+          items: { type: string }
+        availableForAssignments: { type: boolean }
+    GuideCourse:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string }
+        title: { type: string }
+    GuideReportSummary:
+      type: object
+      required: [id, version, completedAt]
+      properties:
+        id: { type: string }
+        version: { type: integer }
+        completedAt: { type: string }
+    GuidePracticalLog:
+      type: object
+      required: [id, date, hours, activity, learning]
+      properties:
+        id: { type: string }
+        date: { type: string, format: date }
+        hours: { type: number }
+        activity: { type: string }
+        learning: { type: string }
+    GuideCourseProgress:
+      type: object
+      required: [enrollmentId, courseId, courseTitle, hours, completedModules, totalModules, loggedHours, status, pacing, practiceCount, practiceAverage, lessonsRead, studyChecks, secureChecks, practicalLogs]
+      properties:
+        enrollmentId: { type: string }
+        courseId: { type: string }
+        courseTitle: { type: string }
+        hours: { type: integer, enum: [60, 120] }
+        completedModules: { type: integer }
+        totalModules: { type: integer }
+        loggedHours: { type: number }
+        status: { type: string }
+        pacing: { $ref: "#/components/schemas/EnrollmentPacing" }
+        practiceCount: { type: integer }
+        practiceAverage: { type: ["number", "null"] }
+        lessonsRead: { type: integer }
+        studyChecks: { type: integer }
+        secureChecks: { type: integer }
+        practicalLogs: { type: array, items: { $ref: "#/components/schemas/GuidePracticalLog" } }
+    GuideLearner:
+      type: object
+      required: [id, name, email, college, discipline, reports, courses]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        college: { type: string }
+        discipline: { type: string }
+        reports: { type: array, items: { $ref: "#/components/schemas/GuideReportSummary" } }
+        courses: { type: array, items: { $ref: "#/components/schemas/GuideCourseProgress" } }
+    GuideDashboard:
+      type: object
+      required: [supportedCourses, selectedCourseId, learnerCount, learners]
+      properties:
+        supportedCourses: { type: array, items: { $ref: "#/components/schemas/GuideCourse" } }
+        selectedCourseId: { type: ["string", "null"] }
+        learnerCount: { type: integer }
+        learners: { type: array, items: { $ref: "#/components/schemas/GuideLearner" } }
     StudySection:
       type: object
       required: [heading, body]
@@ -770,7 +978,7 @@ components:
         success: { type: boolean }
     User:
       type: object
-      required: [id, name, email, college, discipline, assessmentRequired, assessmentCompletedAt, isAdmin]
+      required: [id, name, email, college, discipline, assessmentRequired, assessmentCompletedAt, isAdmin, isGuide]
       properties:
         id: { type: string }
         name: { type: string }
@@ -780,6 +988,7 @@ components:
         assessmentRequired: { type: boolean }
         assessmentCompletedAt: { type: ["string", "null"] }
         isAdmin: { type: boolean }
+        isGuide: { type: boolean }
     Session:
       type: object
       required: [user]
@@ -879,7 +1088,7 @@ components:
           items: { $ref: "#/components/schemas/PacingModule" }
     Enrollment:
       type: object
-      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt, pacing]
+      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt, pacing, assignedGuide]
       properties:
         id: { type: string }
         course: { $ref: "#/components/schemas/Course" }
@@ -893,6 +1102,10 @@ components:
         status: { type: string }
         createdAt: { type: string }
         pacing: { $ref: "#/components/schemas/EnrollmentPacing" }
+        assignedGuide:
+          anyOf:
+            - { $ref: "#/components/schemas/GuidePublic" }
+            - { type: "null" }
     LogInput:
       type: object
       required: [enrollmentId, date, hours, activity, learning]

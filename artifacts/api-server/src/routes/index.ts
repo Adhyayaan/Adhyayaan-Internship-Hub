@@ -7,6 +7,7 @@ import studyRouter from "./study";
 import studyMediaRouter from "./study-media";
 import assessmentRouter from "./assessment";
 import adminRouter from "./admin";
+import guideRouter from "./guide";
 import { checkAssessment } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -15,6 +16,7 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(assessmentRouter);
 router.use(adminRouter);
+router.use(guideRouter);
 router.use(["/dashboard", "/enrollments", "/logs", "/ai", "/practice", "/study"], checkAssessment);
 router.use(learningRouter);
 router.use(aiRouter);

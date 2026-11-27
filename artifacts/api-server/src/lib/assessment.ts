@@ -1,6 +1,6 @@
 import { GetLearningReportResponse } from "@workspace/api-zod";
 import { assessmentAttempts, db, type AssessmentAttempt } from "@workspace/db";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import { assessmentPath } from "./assessment-path";
 import { scoreAssessment } from "./assessment-score";
 
@@ -40,6 +40,19 @@ export async function reportSummaries(userId: string) {
     .where(and(eq(assessmentAttempts.userId, userId), isNotNull(assessmentAttempts.completedAt)))
     .orderBy(desc(assessmentAttempts.completedAt));
   return rows.map(x => ({ ...x, completedAt: x.completedAt!.toISOString() }));
+}
+
+export async function reportSummariesForUsers(userIds: string[]) {
+  if (!userIds.length) return [];
+  const rows = await db.select({
+    userId: assessmentAttempts.userId,
+    id: assessmentAttempts.id,
+    version: assessmentAttempts.version,
+    completedAt: assessmentAttempts.completedAt,
+  }).from(assessmentAttempts)
+    .where(and(inArray(assessmentAttempts.userId, userIds), isNotNull(assessmentAttempts.completedAt)))
+    .orderBy(desc(assessmentAttempts.completedAt));
+  return rows.map((row) => ({ ...row, completedAt: row.completedAt!.toISOString() }));
 }
 
 export async function savedReport(userId: string, id?: string) {

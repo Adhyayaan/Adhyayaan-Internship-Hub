@@ -193,6 +193,191 @@ export interface AdminLearnerDetail {
   reports: LearningReportSummary[];
 }
 
+export interface GuidePublic {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AdminGuide {
+  id: string;
+  name: string;
+  email: string;
+  supportedCourseIds: string[];
+  availableForAssignments: boolean;
+  activeLearners: number;
+}
+
+export type AdminUnassignedEnrollmentHours = typeof AdminUnassignedEnrollmentHours[keyof typeof AdminUnassignedEnrollmentHours];
+
+
+export const AdminUnassignedEnrollmentHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export interface AdminUnassignedEnrollment {
+  id: string;
+  learnerId: string;
+  learnerName: string;
+  learnerEmail: string;
+  courseId: string;
+  courseTitle: string;
+  hours: AdminUnassignedEnrollmentHours;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminGuidePool {
+  guides: AdminGuide[];
+  unassignedEnrollments: AdminUnassignedEnrollment[];
+}
+
+export interface AdminGuideInput {
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minItems 1
+     * @maxItems 30
+     */
+  supportedCourseIds: string[];
+  availableForAssignments?: boolean;
+}
+
+export interface AdminGuideUpdate {
+  /** @maxItems 30 */
+  supportedCourseIds?: string[];
+  availableForAssignments?: boolean;
+}
+
+export interface GuideCourse {
+  id: string;
+  title: string;
+}
+
+export interface GuideReportSummary {
+  id: string;
+  version: number;
+  completedAt: string;
+}
+
+export interface GuidePracticalLog {
+  id: string;
+  date: string;
+  hours: number;
+  activity: string;
+  learning: string;
+}
+
+export type GuideCourseProgressHours = typeof GuideCourseProgressHours[keyof typeof GuideCourseProgressHours];
+
+
+export const GuideCourseProgressHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export type EnrollmentPacingTotalHours = typeof EnrollmentPacingTotalHours[keyof typeof EnrollmentPacingTotalHours];
+
+
+export const EnrollmentPacingTotalHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export type EnrollmentPacingDurationWeeks = typeof EnrollmentPacingDurationWeeks[keyof typeof EnrollmentPacingDurationWeeks];
+
+
+export const EnrollmentPacingDurationWeeks = {
+  NUMBER_8: 8,
+  NUMBER_16: 16,
+} as const;
+
+export type EnrollmentPacingStatus = typeof EnrollmentPacingStatus[keyof typeof EnrollmentPacingStatus];
+
+
+export const EnrollmentPacingStatus = {
+  ahead: 'ahead',
+  on_track: 'on_track',
+  behind: 'behind',
+  complete: 'complete',
+} as const;
+
+export interface PacingModule {
+  moduleId: string;
+  estimatedHours: number;
+  startWeek: number;
+  endWeek: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface EnrollmentPacing {
+  totalHours: EnrollmentPacingTotalHours;
+  durationWeeks: EnrollmentPacingDurationWeeks;
+  startDate: string;
+  targetDate: string;
+  completedHours: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  completedPercent: number;
+  expectedHours: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  expectedPercent: number;
+  deltaHours: number;
+  deltaDays: number;
+  status: EnrollmentPacingStatus;
+  /**
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  cohortPercentile: number | null;
+  moduleSchedule: PacingModule[];
+}
+
+export interface GuideCourseProgress {
+  enrollmentId: string;
+  courseId: string;
+  courseTitle: string;
+  hours: GuideCourseProgressHours;
+  completedModules: number;
+  totalModules: number;
+  loggedHours: number;
+  status: string;
+  pacing: EnrollmentPacing;
+  practiceCount: number;
+  /** @nullable */
+  practiceAverage: number | null;
+  lessonsRead: number;
+  studyChecks: number;
+  secureChecks: number;
+  practicalLogs: GuidePracticalLog[];
+}
+
+export interface GuideLearner {
+  id: string;
+  name: string;
+  email: string;
+  college: string;
+  discipline: string;
+  reports: GuideReportSummary[];
+  courses: GuideCourseProgress[];
+}
+
+export interface GuideDashboard {
+  supportedCourses: GuideCourse[];
+  /** @nullable */
+  selectedCourseId: string | null;
+  learnerCount: number;
+  learners: GuideLearner[];
+}
+
 export interface StudySection {
   heading: string;
   body: string;
@@ -379,6 +564,7 @@ export interface User {
   /** @nullable */
   assessmentCompletedAt: string | null;
   isAdmin: boolean;
+  isGuide: boolean;
 }
 
 export interface Session {
@@ -460,70 +646,6 @@ export interface EnrollmentUpdate {
   submit?: boolean;
 }
 
-export interface PacingModule {
-  moduleId: string;
-  estimatedHours: number;
-  startWeek: number;
-  endWeek: number;
-  startDate: string;
-  endDate: string;
-}
-
-export type EnrollmentPacingTotalHours = typeof EnrollmentPacingTotalHours[keyof typeof EnrollmentPacingTotalHours];
-
-
-export const EnrollmentPacingTotalHours = {
-  NUMBER_60: 60,
-  NUMBER_120: 120,
-} as const;
-
-export type EnrollmentPacingDurationWeeks = typeof EnrollmentPacingDurationWeeks[keyof typeof EnrollmentPacingDurationWeeks];
-
-
-export const EnrollmentPacingDurationWeeks = {
-  NUMBER_8: 8,
-  NUMBER_16: 16,
-} as const;
-
-export type EnrollmentPacingStatus = typeof EnrollmentPacingStatus[keyof typeof EnrollmentPacingStatus];
-
-
-export const EnrollmentPacingStatus = {
-  ahead: 'ahead',
-  on_track: 'on_track',
-  behind: 'behind',
-  complete: 'complete',
-} as const;
-
-export interface EnrollmentPacing {
-  totalHours: EnrollmentPacingTotalHours;
-  durationWeeks: EnrollmentPacingDurationWeeks;
-  startDate: string;
-  targetDate: string;
-  completedHours: number;
-  /**
-     * @minimum 0
-     * @maximum 100
-     */
-  completedPercent: number;
-  expectedHours: number;
-  /**
-     * @minimum 0
-     * @maximum 100
-     */
-  expectedPercent: number;
-  deltaHours: number;
-  deltaDays: number;
-  status: EnrollmentPacingStatus;
-  /**
-     * @minimum 0
-     * @maximum 100
-     * @nullable
-     */
-  cohortPercentile: number | null;
-  moduleSchedule: PacingModule[];
-}
-
 export interface Enrollment {
   id: string;
   course: Course;
@@ -535,6 +657,7 @@ export interface Enrollment {
   status: string;
   createdAt: string;
   pacing: EnrollmentPacing;
+  assignedGuide: GuidePublic | null;
 }
 
 export interface LogInput {
@@ -725,4 +848,8 @@ export const ListAdminLearnersAssessment = {
   completed: 'completed',
   pending: 'pending',
 } as const;
+
+export type GetGuideDashboardParams = {
+courseId?: string;
+};
 

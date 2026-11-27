@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, BookOpenText, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, BookOpenText, Check, Loader2, UserRound } from 'lucide-react';
 import { Coach, CoachToggle, MODULE_MOVES, moduleContext } from '@/components/app/coach';
 import { useListEnrollments, useUpdateEnrollment, getListEnrollmentsQueryKey, type Enrollment } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,15 @@ function Pathway({ e }: { e: Enrollment }) {
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">{e.course.category} · {e.hours}-hour pathway · {statusLabel(e.status)}</p>
           <Link href={`/courses/${e.course.id}`} className="mt-1 block font-display text-2xl font-semibold text-primary hover:text-accent" data-testid={`link-course-${e.id}`}>{e.course.title}</Link>
           <p className="mt-1 text-xs text-muted-foreground">Started {formatIndiaDate(e.pacing.startDate, true)}</p>
+          <div className="mt-3 flex min-w-0 items-start gap-2 text-sm" data-testid={`assigned-guide-${e.id}`}>
+            <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            {e.assignedGuide ? (
+              <p className="min-w-0">
+                <span className="font-semibold text-primary">Your Internship Guide: {e.assignedGuide.name}</span>
+                <span className="block break-all text-xs text-muted-foreground">{e.assignedGuide.email}</span>
+              </p>
+            ) : <p className="text-muted-foreground">A guide has not been assigned yet. The programme team can match one when available.</p>}
+          </div>
           {e.course.id === '01' && (
             <div className="mt-5 rounded-2xl border border-[hsl(var(--ledger))]/25 bg-[hsl(var(--ledger-soft))] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5" data-testid={`card-study-action-${e.id}`}>
               <div className="flex min-w-0 items-center gap-3">

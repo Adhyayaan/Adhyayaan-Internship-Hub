@@ -6,7 +6,7 @@ import {
   GetAssessmentResponse, GetLearningReportParams, GetLearningReportResponse, SaveAssessmentAnswerBody,
   SaveAssessmentAnswerParams, SaveAssessmentAnswerResponse, StartAssessmentResponse, SubmitAssessmentParams, SubmitAssessmentResponse,
 } from "@workspace/api-zod";
-import { requireLearner } from "../lib/auth";
+import { requireStudent } from "../lib/auth";
 import { assessmentPath, assessmentSize, currentVersion, knownQuestion, validOption } from "../lib/assessment-path";
 import { scoreAssessment } from "../lib/assessment-score";
 import { draftView, latestCompletion, reportSummaries, retakeWait, savedReport } from "../lib/assessment";
@@ -15,7 +15,7 @@ const router: IRouter = Router();
 const openDraft = (userId: string) => and(eq(assessmentAttempts.userId, userId), isNull(assessmentAttempts.completedAt));
 const owned = (userId: string, id: string) => and(eq(assessmentAttempts.userId, userId), eq(assessmentAttempts.id, id));
 
-router.use("/assessment", requireLearner);
+router.use("/assessment", requireStudent);
 
 router.get("/assessment", async (req, res): Promise<void> => {
   const userId = req.learner!.id;

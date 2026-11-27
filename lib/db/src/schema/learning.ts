@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, doublePrecision, jsonb, uniqueIndex, date, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, doublePrecision, jsonb, uniqueIndex, index, date, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const learners = pgTable("learners", {
@@ -10,7 +10,7 @@ export const learners = pgTable("learners", {
   discipline: text("discipline").notNull().default(""),
   assessmentRequired: boolean("assessment_required").notNull().default(false),
   assessmentCompletedAt: timestamp("assessment_completed_at", { withTimezone: true }),
-  role: text("role", { enum: ["student", "admin"] }).notNull().default("student"),
+  role: text("role", { enum: ["student", "admin", "guide"] }).notNull().default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 export const learnerSessions = pgTable("learner_sessions", {
@@ -27,8 +27,12 @@ export const enrollments = pgTable("learning_enrollments", {
   projectUrl: text("project_url").notNull().default(""),
   reflection: text("reflection").notNull().default(""),
   status: text("status").notNull().default("in_progress"),
+  guideId: text("guide_id").references(() => learners.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [uniqueIndex("learning_enrollment_user_course").on(t.userId, t.courseId)]);
+}, (t) => [
+  uniqueIndex("learning_enrollment_user_course").on(t.userId, t.courseId),
+  index("learning_enrollment_guide").on(t.guideId),
+]);
 export const workLogs = pgTable("learning_work_logs", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => learners.id, { onDelete: "cascade" }),

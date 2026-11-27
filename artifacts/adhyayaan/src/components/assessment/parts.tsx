@@ -123,7 +123,7 @@ function Bullets({ items, tone }: { items: string[]; tone: 'ledger' | 'accent' |
   );
 }
 
-export function ReportView({ report, audience = 'self' }: { report: LearningReport; audience?: 'self' | 'admin' }) {
+export function ReportView({ report, audience = 'self' }: { report: LearningReport; audience?: 'self' | 'admin' | 'guide' }) {
   const you = audience === 'self';
   const reasoning = report.dimensions.find(d => d.id === 'reasoning');
   const selfRatings = report.dimensions.filter(d => d.id !== 'reasoning');

@@ -346,6 +346,283 @@ export const GetAdminLearningReportResponse = zod.object({
 })
 
 
+export const ListAdminGuidesResponse = zod.object({
+  "guides": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "supportedCourseIds": zod.array(zod.string()),
+  "availableForAssignments": zod.boolean(),
+  "activeLearners": zod.number().int()
+})),
+  "unassignedEnrollments": zod.array(zod.object({
+  "id": zod.string(),
+  "learnerId": zod.string(),
+  "learnerName": zod.string(),
+  "learnerEmail": zod.string().email(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "hours": zod.union([zod.literal(60),zod.literal(120)]),
+  "status": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+export const provisionAdminGuideBodyEmailMax = 254;
+
+export const provisionAdminGuideBodySupportedCourseIdsMax = 30;
+
+export const provisionAdminGuideBodyAvailableForAssignmentsDefault = true;
+
+export const ProvisionAdminGuideBody = zod.object({
+  "email": zod.string().email().max(provisionAdminGuideBodyEmailMax),
+  "supportedCourseIds": zod.array(zod.string()).min(1).max(provisionAdminGuideBodySupportedCourseIdsMax),
+  "availableForAssignments": zod.boolean().default(provisionAdminGuideBodyAvailableForAssignmentsDefault)
+})
+
+export const ProvisionAdminGuideResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "supportedCourseIds": zod.array(zod.string()),
+  "availableForAssignments": zod.boolean(),
+  "activeLearners": zod.number().int()
+})
+
+
+export const UpdateAdminGuideParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const updateAdminGuideBodySupportedCourseIdsMax = 30;
+
+
+
+export const UpdateAdminGuideBody = zod.object({
+  "supportedCourseIds": zod.array(zod.string()).max(updateAdminGuideBodySupportedCourseIdsMax).optional(),
+  "availableForAssignments": zod.boolean().optional()
+})
+
+export const UpdateAdminGuideResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "supportedCourseIds": zod.array(zod.string()),
+  "availableForAssignments": zod.boolean(),
+  "activeLearners": zod.number().int()
+})
+
+
+export const AssignAdminGuideParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const assignAdminGuideResponsePacingCompletedPercentMin = 0;
+export const assignAdminGuideResponsePacingCompletedPercentMax = 100;
+
+export const assignAdminGuideResponsePacingExpectedPercentMin = 0;
+export const assignAdminGuideResponsePacingExpectedPercentMax = 100;
+
+export const assignAdminGuideResponsePacingCohortPercentileMin = 0;
+export const assignAdminGuideResponsePacingCohortPercentileMax = 100;
+
+
+
+export const AssignAdminGuideResponse = zod.object({
+  "id": zod.string(),
+  "course": zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "hours": zod.number().int(),
+  "price": zod.number().int(),
+  "mode": zod.string(),
+  "disciplines": zod.array(zod.string()),
+  "modules": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "type": zod.string(),
+  "hours60": zod.number(),
+  "hours120": zod.number(),
+  "content": zod.string()
+})),
+  "deliverable": zod.string(),
+  "draft": zod.boolean(),
+  "extendedDraft": zod.boolean()
+}),
+  "hours": zod.number().int(),
+  "completedModules": zod.array(zod.string()),
+  "loggedHours": zod.number(),
+  "projectUrl": zod.string(),
+  "reflection": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(assignAdminGuideResponsePacingCompletedPercentMin).max(assignAdminGuideResponsePacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(assignAdminGuideResponsePacingExpectedPercentMin).max(assignAdminGuideResponsePacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(assignAdminGuideResponsePacingCohortPercentileMin).max(assignAdminGuideResponsePacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+}),
+  "assignedGuide": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email()
+}),zod.null()])
+})
+
+
+export const GetGuideDashboardQueryParams = zod.object({
+  "courseId": zod.coerce.string().optional()
+})
+
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingCompletedPercentMin = 0;
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingCompletedPercentMax = 100;
+
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingExpectedPercentMin = 0;
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingExpectedPercentMax = 100;
+
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingCohortPercentileMin = 0;
+export const getGuideDashboardResponseLearnersItemCoursesItemPacingCohortPercentileMax = 100;
+
+
+
+export const GetGuideDashboardResponse = zod.object({
+  "supportedCourses": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string()
+})),
+  "selectedCourseId": zod.string().nullable(),
+  "learnerCount": zod.number().int(),
+  "learners": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "college": zod.string(),
+  "discipline": zod.string(),
+  "reports": zod.array(zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string()
+})),
+  "courses": zod.array(zod.object({
+  "enrollmentId": zod.string(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "hours": zod.union([zod.literal(60),zod.literal(120)]),
+  "completedModules": zod.number().int(),
+  "totalModules": zod.number().int(),
+  "loggedHours": zod.number(),
+  "status": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(getGuideDashboardResponseLearnersItemCoursesItemPacingCompletedPercentMin).max(getGuideDashboardResponseLearnersItemCoursesItemPacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(getGuideDashboardResponseLearnersItemCoursesItemPacingExpectedPercentMin).max(getGuideDashboardResponseLearnersItemCoursesItemPacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(getGuideDashboardResponseLearnersItemCoursesItemPacingCohortPercentileMin).max(getGuideDashboardResponseLearnersItemCoursesItemPacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+}),
+  "practiceCount": zod.number().int(),
+  "practiceAverage": zod.number().nullable(),
+  "lessonsRead": zod.number().int(),
+  "studyChecks": zod.number().int(),
+  "secureChecks": zod.number().int(),
+  "practicalLogs": zod.array(zod.object({
+  "id": zod.string(),
+  "date": zod.coerce.date(),
+  "hours": zod.number(),
+  "activity": zod.string(),
+  "learning": zod.string()
+}))
+}))
+}))
+})
+
+
+export const GetGuideLearningReportParams = zod.object({
+  "learnerId": zod.coerce.string().uuid(),
+  "reportId": zod.coerce.string().uuid()
+})
+
+export const getGuideLearningReportResponseCareersItemInterestScoreMin = 0;
+
+
+
+
+export const GetGuideLearningReportResponse = zod.object({
+  "id": zod.string(),
+  "version": zod.number().int(),
+  "completedAt": zod.string(),
+  "dimensions": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "score": zod.number().int(),
+  "maxScore": zod.number().int(),
+  "interpretation": zod.string(),
+  "suggestion": zod.string(),
+  "evidence": zod.array(zod.object({
+  "prompt": zod.string(),
+  "response": zod.string()
+})).optional()
+})),
+  "reasoning": zod.array(zod.object({
+  "questionId": zod.string(),
+  "prompt": zod.string(),
+  "selected": zod.string(),
+  "correctAnswer": zod.string(),
+  "correct": zod.boolean(),
+  "explanation": zod.string(),
+  "skill": zod.string().optional()
+})),
+  "strengths": zod.array(zod.string()),
+  "growthAreas": zod.array(zod.string()),
+  "nextSteps": zod.array(zod.string()),
+  "careers": zod.array(zod.object({
+  "title": zod.string(),
+  "reason": zod.string(),
+  "skills": zod.array(zod.string()),
+  "project": zod.string(),
+  "counsellorQuestion": zod.string(),
+  "interestScore": zod.number().int().min(getGuideLearningReportResponseCareersItemInterestScoreMin).optional(),
+  "interestMax": zod.number().int().min(1).optional()
+})),
+  "teachingPlan": zod.array(zod.string()),
+  "methodology": zod.string(),
+  "scenarioInsights": zod.array(zod.string()).optional()
+})
+
+
 export const getStudyMediaPathFileRegExp = new RegExp('^(01-[0-9]{1,2}\\.(svg|mp4)|consent-pilot\\.(mp4|vtt|jpg))$');
 
 
@@ -615,7 +892,8 @@ export const GetSessionResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean()
 }),zod.null()])
 })
 
@@ -651,7 +929,8 @@ export const RegisterResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean()
 }),zod.null()])
 })
 
@@ -677,7 +956,8 @@ export const LoginResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean()
 }),zod.null()])
 })
 
@@ -759,7 +1039,8 @@ export const GetDashboardResponse = zod.object({
   "discipline": zod.string(),
   "assessmentRequired": zod.boolean(),
   "assessmentCompletedAt": zod.string().nullable(),
-  "isAdmin": zod.boolean()
+  "isAdmin": zod.boolean(),
+  "isGuide": zod.boolean()
 }),zod.null()]),
   "stats": zod.object({
   "activeInternships": zod.number().int(),
@@ -818,7 +1099,12 @@ export const GetDashboardResponse = zod.object({
   "startDate": zod.coerce.date(),
   "endDate": zod.coerce.date()
 }))
-})
+}),
+  "assignedGuide": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email()
+}),zod.null()])
 })),
   "recommendations": zod.array(zod.object({
   "id": zod.string(),
@@ -912,7 +1198,12 @@ export const ListEnrollmentsResponseItem = zod.object({
   "startDate": zod.coerce.date(),
   "endDate": zod.coerce.date()
 }))
-})
+}),
+  "assignedGuide": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email()
+}),zod.null()])
 })
 export const ListEnrollmentsResponse = zod.array(ListEnrollmentsResponseItem)
 
@@ -984,7 +1275,12 @@ export const EnrollResponse = zod.object({
   "startDate": zod.coerce.date(),
   "endDate": zod.coerce.date()
 }))
-})
+}),
+  "assignedGuide": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email()
+}),zod.null()])
 })
 
 
@@ -1067,7 +1363,12 @@ export const UpdateEnrollmentResponse = zod.object({
   "startDate": zod.coerce.date(),
   "endDate": zod.coerce.date()
 }))
-})
+}),
+  "assignedGuide": zod.union([zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().email()
+}),zod.null()])
 })
 
 

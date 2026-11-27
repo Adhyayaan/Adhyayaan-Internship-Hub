@@ -8,7 +8,8 @@ import {
   ListLogsResponse, CreateLogBody, CreateLogResponse, DeleteLogParams,
 } from "@workspace/api-zod";
 import { courses, findCourse } from "../lib/catalog";
-import { requireLearner, publicUser } from "../lib/auth";
+import { requireStudent, publicUser } from "../lib/auth";
+import { assignNextGuide, lockGuideAssignmentPool } from "../lib/guide-assignment";
 import { userEnrollments, userLogs, enrollmentViewWithPacing } from "../lib/learning";
 import { pathwayModuleWeights } from "../lib/pacing";
 
@@ -20,7 +21,7 @@ router.get("/courses/:id", (req, res): void => {
   if (!course) { res.status(404).json({ error: "Internship not found." }); return; }
   res.json(GetCourseResponse.parse(course));
 });
-router.get("/dashboard", requireLearner, async (req, res): Promise<void> => {
+router.get("/dashboard", requireStudent, async (req, res): Promise<void> => {
   const user = req.learner!;
   const [items, logs] = await Promise.all([userEnrollments(user.id), userLogs(user.id)]);
   const relevant = courses.filter((c) => !items.some((e) => e.course.id === c.id))
@@ -35,17 +36,28 @@ router.get("/dashboard", requireLearner, async (req, res): Promise<void> => {
     enrollments: items, recommendations: relevant, activity,
   }));
 });
-router.get("/enrollments", requireLearner, async (req, res): Promise<void> => {
+router.get("/enrollments", requireStudent, async (req, res): Promise<void> => {
   res.json(ListEnrollmentsResponse.parse(await userEnrollments(req.learner!.id)));
 });
-router.post("/enrollments", requireLearner, async (req, res): Promise<void> => {
+router.post("/enrollments", requireStudent, async (req, res): Promise<void> => {
   const parsed = EnrollBody.safeParse(req.body);
   if (!parsed.success || !findCourse(parsed.data.courseId)) { res.status(400).json({ error: "Choose an available internship and a 60- or 120-hour pathway." }); return; }
-  const [created] = await db.insert(enrollments).values({ id: randomUUID(), userId: req.learner!.id, ...parsed.data }).onConflictDoNothing().returning();
-  if (!created) { res.status(409).json({ error: "You already have a pathway for this internship. Open My learning to continue." }); return; }
+  let created: typeof enrollments.$inferSelect | undefined;
+  let alreadyEnrolled = false;
+  await db.transaction(async (tx) => {
+    await lockGuideAssignmentPool(tx);
+    const [existing] = await tx.select().from(enrollments)
+      .where(and(eq(enrollments.userId, req.learner!.id), eq(enrollments.courseId, parsed.data.courseId))).limit(1);
+    if (existing) { alreadyEnrolled = true; return; }
+    const guideId = await assignNextGuide(tx, parsed.data.courseId, true);
+    [created] = await tx.insert(enrollments)
+      .values({ id: randomUUID(), userId: req.learner!.id, ...parsed.data, guideId })
+      .onConflictDoNothing().returning();
+  });
+  if (alreadyEnrolled || !created) { res.status(409).json({ error: "You already have a pathway for this internship. Open My learning to continue." }); return; }
   res.status(201).json(EnrollResponse.parse(await enrollmentViewWithPacing(created, [])));
 });
-router.patch("/enrollments/:id", requireLearner, async (req, res): Promise<void> => {
+router.patch("/enrollments/:id", requireStudent, async (req, res): Promise<void> => {
   const params = UpdateEnrollmentParams.safeParse(req.params);
   const parsed = UpdateEnrollmentBody.safeParse(req.body);
   if (!params.success || !parsed.success) { res.status(400).json({ error: "Invalid progress update." }); return; }
@@ -76,10 +88,10 @@ router.patch("/enrollments/:id", requireLearner, async (req, res): Promise<void>
   const [updated] = await db.update(enrollments).set({ projectUrl, reflection, completedModules, status: data.submit ? "submitted" : "in_progress" }).where(owner).returning();
   res.json(UpdateEnrollmentResponse.parse(await enrollmentViewWithPacing(updated!, logs)));
 });
-router.get("/logs", requireLearner, async (req, res): Promise<void> => {
+router.get("/logs", requireStudent, async (req, res): Promise<void> => {
   res.json(ListLogsResponse.parse(await userLogs(req.learner!.id)));
 });
-router.post("/logs", requireLearner, async (req, res): Promise<void> => {
+router.post("/logs", requireStudent, async (req, res): Promise<void> => {
   const parsed = CreateLogBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Enter a date, 0.25–12 hours, and activity and learning notes of at least 5 characters each." }); return; }
   const data = parsed.data;
@@ -100,7 +112,7 @@ router.post("/logs", requireLearner, async (req, res): Promise<void> => {
   if (!created) { res.status(400).json({ error: failure }); return; }
   res.status(201).json(CreateLogResponse.parse(created));
 });
-router.delete("/logs/:id", requireLearner, async (req, res): Promise<void> => {
+router.delete("/logs/:id", requireStudent, async (req, res): Promise<void> => {
   const params = DeleteLogParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid log." }); return; }
   await db.transaction(async (tx) => {

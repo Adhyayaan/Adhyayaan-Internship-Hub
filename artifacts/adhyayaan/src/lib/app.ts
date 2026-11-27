@@ -48,7 +48,7 @@ export function useInvalidateAll() {
 export function useResetForSession() {
   const qc = useQueryClient();
   return (session: Session) => {
-    qc.removeQueries({ predicate: (q) => typeof q.queryKey[0] === 'string' && /^\/api\/(study\/|assessment(?:\/|$)|admin\/)/.test(q.queryKey[0]) });
+    qc.removeQueries({ predicate: (q) => typeof q.queryKey[0] === 'string' && /^\/api\/(study\/|assessment(?:\/|$)|admin\/|guide\/)/.test(q.queryKey[0]) });
     [getGetDashboardQueryKey(), getListEnrollmentsQueryKey(), getListLogsQueryKey(), getListAiMessagesQueryKey(), getListPracticeQueryKey()].forEach(
       (k) => qc.removeQueries({ queryKey: k }),
     );

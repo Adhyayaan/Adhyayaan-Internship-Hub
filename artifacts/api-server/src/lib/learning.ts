@@ -1,5 +1,5 @@
-import { db, enrollments, workLogs, type LearningEnrollment } from "@workspace/db";
-import { and, desc, eq, gte, lt } from "drizzle-orm";
+import { db, enrollments, learners, workLogs, type LearningEnrollment } from "@workspace/db";
+import { and, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import { findCourse } from "./catalog";
 import {
   calculatePacing,
@@ -12,13 +12,18 @@ import {
 export async function userLogs(userId: string) {
   return db.select().from(workLogs).where(eq(workLogs.userId, userId)).orderBy(desc(workLogs.date));
 }
-export function enrollmentView(row: LearningEnrollment, logs: { enrollmentId: string; hours: number }[]) {
+export function enrollmentView(
+  row: LearningEnrollment,
+  logs: { enrollmentId: string; hours: number }[],
+  assignedGuide: { id: string; name: string; email: string } | null = null,
+) {
   const course = findCourse(row.courseId);
   if (!course) throw new Error("Enrollment refers to an unknown course.");
   return {
     id: row.id, course, hours: row.hours, completedModules: row.completedModules,
     loggedHours: logs.filter((l) => l.enrollmentId === row.id).reduce((sum, l) => sum + l.hours, 0),
     projectUrl: row.projectUrl, reflection: row.reflection, status: row.status, createdAt: row.createdAt.toISOString(),
+    assignedGuide,
   };
 }
 
@@ -28,9 +33,15 @@ function cohortKey(row: EnrollmentRow) {
   return `${row.courseId}:${row.hours}:${indiaCalendarDate(row.createdAt)}`;
 }
 
-async function enrollmentViews(rows: EnrollmentRow[], logs: { enrollmentId: string; hours: number }[]) {
+export async function enrollmentViews(rows: EnrollmentRow[], logs: { enrollmentId: string; hours: number }[]) {
   const now = new Date();
-  const baseViews = rows.map((row) => enrollmentView(row, logs));
+  const guideIds = [...new Set(rows.map((row) => row.guideId).filter((id): id is string => !!id))];
+  const guides = guideIds.length
+    ? await db.select({ id: learners.id, name: learners.name, email: learners.email })
+      .from(learners).where(inArray(learners.id, guideIds))
+    : [];
+  const guidesById = new Map(guides.map((guide) => [guide.id, guide]));
+  const baseViews = rows.map((row) => enrollmentView(row, logs, row.guideId ? guidesById.get(row.guideId) ?? null : null));
   const cohortRows = new Map<string, { course: PacingCourse; scores: number[] }>();
 
   await Promise.all([...new Map(rows.map((row) => [cohortKey(row), row])).entries()].map(async ([key, row]) => {

@@ -18,7 +18,7 @@ export function publicUser(user: Learner) {
   return {
     id: user.id, name: user.name, email: user.email, college: user.college, discipline: user.discipline,
     assessmentRequired: user.assessmentRequired, assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
-    isAdmin: user.role === "admin",
+    isAdmin: user.role === "admin", isGuide: user.role === "guide",
   };
 }
 
@@ -72,8 +72,22 @@ export function requireLearner(req: Request, res: Response, next: NextFunction) 
   next();
 }
 
+export function requireStudent(req: Request, res: Response, next: NextFunction) {
+  requireLearner(req, res, () => {
+    if (req.learner?.role !== "student") { res.status(403).json({ error: "Student access is required for this learning area." }); return; }
+    next();
+  });
+}
+
+export function requireGuide(req: Request, res: Response, next: NextFunction) {
+  requireLearner(req, res, () => {
+    if (req.learner?.role !== "guide") { res.status(403).json({ error: "Internship Guide access is required." }); return; }
+    next();
+  });
+}
+
 export function checkAssessment(req: Request, res: Response, next: NextFunction) {
-  if (req.learner?.assessmentRequired && !req.learner.assessmentCompletedAt) {
+  if (req.learner?.role === "student" && req.learner.assessmentRequired && !req.learner.assessmentCompletedAt) {
     res.status(403).json({ error: "Complete your learning assessment first.", code: "ASSESSMENT_REQUIRED" });
     return;
   }

@@ -7,6 +7,7 @@
  */
 import type { Course } from './course';
 import type { EnrollmentPacing } from './enrollmentPacing';
+import type { GuidePublic } from './guidePublic';
 
 export interface Enrollment {
   id: string;
@@ -19,4 +20,5 @@ export interface Enrollment {
   status: string;
   createdAt: string;
   pacing: EnrollmentPacing;
+  assignedGuide: GuidePublic | null;
 }

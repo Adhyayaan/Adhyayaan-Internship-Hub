@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { authHref, errMsg, useAuth, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton, ReportHeading, ReportHistory, ReportView, SkeletonBlock, fmtDate } from '@/components/assessment/parts';
+import { AdminGuidesPanel } from '@/pages/admin-guides';
 
 function useAdminGate(path: string) {
   const { user, isLoading } = useAuth();
@@ -94,6 +95,8 @@ export function AdminDirectoryPage() {
           <Stat n={d.enrollmentCount} label="enrolments" testid="text-enrollment-count" />
         </>) : [0, 1, 2, 3].map((i) => <SkeletonBlock key={i} className="h-20" />)}
       </div>
+
+      <AdminGuidesPanel />
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <label className="relative block md:w-80">

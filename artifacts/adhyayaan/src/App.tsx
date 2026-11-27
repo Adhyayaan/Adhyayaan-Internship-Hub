@@ -21,6 +21,8 @@ import { assessmentHref, useAuth } from '@/lib/app';
 import { useHere } from '@/lib/use-here';
 import Assessment, { AssessmentGuide, LearningReportPage } from '@/pages/assessment';
 import { AdminDirectoryPage, AdminLearnerPage, AdminLearningReportPage } from '@/pages/admin';
+import { AdminGuidesPanel } from '@/pages/admin-guides';
+import { GuideDashboardPage, GuideLearningReportPage } from '@/pages/guide';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
@@ -39,6 +41,9 @@ function Router() {
     );
   }
   if (loc === '/assessment' || loc === '/assessment/guide') {
+    if (isLoading) return <AuthSplash />;
+    if (user?.isGuide) return <Redirect to="/guide" replace />;
+    if (user?.isAdmin) return <Redirect to="/admin" replace />;
     return (
       <RoutedErrorBoundary>
         <Switch>
@@ -49,7 +54,9 @@ function Router() {
     );
   }
   if (isLoading) return <AuthSplash />;
-  if (user?.assessmentRequired && !user.assessmentCompletedAt && !(user.isAdmin && /^\/admin(?:\/|$)/.test(loc))) {
+  if (user?.isGuide && !loc.startsWith('/guide') && loc !== '/profile') return <Redirect to="/guide" replace />;
+  if (user?.isAdmin && !loc.startsWith('/admin') && loc !== '/profile') return <Redirect to="/admin" replace />;
+  if (user && !user.isGuide && !user.isAdmin && user.assessmentRequired && !user.assessmentCompletedAt) {
     return <Redirect to={assessmentHref(here)} replace />;
   }
   if (loc === '/') {
@@ -71,6 +78,8 @@ function Router() {
           <Route path="/ai" component={AiStudio} />
           <Route path="/profile/reports/:id" component={LearningReportPage} />
           <Route path="/profile" component={Profile} />
+          <Route path="/guide/learners/:learnerId/reports/:reportId" component={GuideLearningReportPage} />
+          <Route path="/guide" component={GuideDashboardPage} />
           <Route path="/admin/learners/:id/reports/:reportId" component={AdminLearningReportPage} />
           <Route path="/admin/learners/:id" component={AdminLearnerPage} />
           <Route path="/admin" component={AdminDirectoryPage} />
