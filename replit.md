@@ -6,6 +6,7 @@ An AI-supported, project-based internship learning platform for final-year colle
 
 - Support 60/120-hour pathways, practical projects, work logs, portfolio submission and evaluation preparation.
 - See `.agents/memory/` for the user's standing learning and visual-quality requirements.
+- Before any UI work, read and follow [`design.md`](design.md). Treat it as the shared visual, responsive, accessibility, and interaction standard for this project.
 
 ## Run & operate
 
