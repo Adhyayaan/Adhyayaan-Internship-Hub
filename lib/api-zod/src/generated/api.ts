@@ -738,6 +738,17 @@ export const GetCourseResponse = zod.object({
 })
 
 
+export const getDashboardResponseEnrollmentsItemPacingCompletedPercentMin = 0;
+export const getDashboardResponseEnrollmentsItemPacingCompletedPercentMax = 100;
+
+export const getDashboardResponseEnrollmentsItemPacingExpectedPercentMin = 0;
+export const getDashboardResponseEnrollmentsItemPacingExpectedPercentMax = 100;
+
+export const getDashboardResponseEnrollmentsItemPacingCohortPercentileMin = 0;
+export const getDashboardResponseEnrollmentsItemPacingCohortPercentileMax = 100;
+
+
+
 export const GetDashboardResponse = zod.object({
   "preview": zod.boolean(),
   "user": zod.union([zod.object({
@@ -785,7 +796,29 @@ export const GetDashboardResponse = zod.object({
   "projectUrl": zod.string(),
   "reflection": zod.string(),
   "status": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(getDashboardResponseEnrollmentsItemPacingCompletedPercentMin).max(getDashboardResponseEnrollmentsItemPacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(getDashboardResponseEnrollmentsItemPacingExpectedPercentMin).max(getDashboardResponseEnrollmentsItemPacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(getDashboardResponseEnrollmentsItemPacingCohortPercentileMin).max(getDashboardResponseEnrollmentsItemPacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+})
 })),
   "recommendations": zod.array(zod.object({
   "id": zod.string(),
@@ -817,6 +850,17 @@ export const GetDashboardResponse = zod.object({
 })
 
 
+export const listEnrollmentsResponsePacingCompletedPercentMin = 0;
+export const listEnrollmentsResponsePacingCompletedPercentMax = 100;
+
+export const listEnrollmentsResponsePacingExpectedPercentMin = 0;
+export const listEnrollmentsResponsePacingExpectedPercentMax = 100;
+
+export const listEnrollmentsResponsePacingCohortPercentileMin = 0;
+export const listEnrollmentsResponsePacingCohortPercentileMax = 100;
+
+
+
 export const ListEnrollmentsResponseItem = zod.object({
   "id": zod.string(),
   "course": zod.object({
@@ -846,7 +890,29 @@ export const ListEnrollmentsResponseItem = zod.object({
   "projectUrl": zod.string(),
   "reflection": zod.string(),
   "status": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(listEnrollmentsResponsePacingCompletedPercentMin).max(listEnrollmentsResponsePacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(listEnrollmentsResponsePacingExpectedPercentMin).max(listEnrollmentsResponsePacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(listEnrollmentsResponsePacingCohortPercentileMin).max(listEnrollmentsResponsePacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+})
 })
 export const ListEnrollmentsResponse = zod.array(ListEnrollmentsResponseItem)
 
@@ -855,6 +921,17 @@ export const EnrollBody = zod.object({
   "courseId": zod.string(),
   "hours": zod.union([zod.literal(60),zod.literal(120)])
 })
+
+export const enrollResponsePacingCompletedPercentMin = 0;
+export const enrollResponsePacingCompletedPercentMax = 100;
+
+export const enrollResponsePacingExpectedPercentMin = 0;
+export const enrollResponsePacingExpectedPercentMax = 100;
+
+export const enrollResponsePacingCohortPercentileMin = 0;
+export const enrollResponsePacingCohortPercentileMax = 100;
+
+
 
 export const EnrollResponse = zod.object({
   "id": zod.string(),
@@ -885,7 +962,29 @@ export const EnrollResponse = zod.object({
   "projectUrl": zod.string(),
   "reflection": zod.string(),
   "status": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(enrollResponsePacingCompletedPercentMin).max(enrollResponsePacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(enrollResponsePacingExpectedPercentMin).max(enrollResponsePacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(enrollResponsePacingCohortPercentileMin).max(enrollResponsePacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+})
 })
 
 
@@ -905,6 +1004,17 @@ export const UpdateEnrollmentBody = zod.object({
   "reflection": zod.string().max(updateEnrollmentBodyReflectionMax).optional(),
   "submit": zod.boolean().optional()
 })
+
+export const updateEnrollmentResponsePacingCompletedPercentMin = 0;
+export const updateEnrollmentResponsePacingCompletedPercentMax = 100;
+
+export const updateEnrollmentResponsePacingExpectedPercentMin = 0;
+export const updateEnrollmentResponsePacingExpectedPercentMax = 100;
+
+export const updateEnrollmentResponsePacingCohortPercentileMin = 0;
+export const updateEnrollmentResponsePacingCohortPercentileMax = 100;
+
+
 
 export const UpdateEnrollmentResponse = zod.object({
   "id": zod.string(),
@@ -935,7 +1045,29 @@ export const UpdateEnrollmentResponse = zod.object({
   "projectUrl": zod.string(),
   "reflection": zod.string(),
   "status": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "pacing": zod.object({
+  "totalHours": zod.union([zod.literal(60),zod.literal(120)]),
+  "durationWeeks": zod.union([zod.literal(8),zod.literal(16)]),
+  "startDate": zod.coerce.date(),
+  "targetDate": zod.coerce.date(),
+  "completedHours": zod.number(),
+  "completedPercent": zod.number().int().min(updateEnrollmentResponsePacingCompletedPercentMin).max(updateEnrollmentResponsePacingCompletedPercentMax),
+  "expectedHours": zod.number(),
+  "expectedPercent": zod.number().int().min(updateEnrollmentResponsePacingExpectedPercentMin).max(updateEnrollmentResponsePacingExpectedPercentMax),
+  "deltaHours": zod.number(),
+  "deltaDays": zod.number(),
+  "status": zod.enum(['ahead', 'on_track', 'behind', 'complete']),
+  "cohortPercentile": zod.number().int().min(updateEnrollmentResponsePacingCohortPercentileMin).max(updateEnrollmentResponsePacingCohortPercentileMax).nullable(),
+  "moduleSchedule": zod.array(zod.object({
+  "moduleId": zod.string(),
+  "estimatedHours": zod.number(),
+  "startWeek": zod.number().int(),
+  "endWeek": zod.number().int(),
+  "startDate": zod.coerce.date(),
+  "endDate": zod.coerce.date()
+}))
+})
 })
 
 

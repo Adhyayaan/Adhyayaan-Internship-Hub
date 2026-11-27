@@ -10,7 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel } from '@/components/app/bits';
 import { toneFor } from '@/components/app/course-card';
-import { authHref, errMsg, fmtINR, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
+import { authHref, errMsg, fmtINR, formatHours, pathwayModulePlan, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +28,7 @@ export default function CoursePage() {
   if (q.error || !q.data) return <ErrorPanel error={q.error} onRetry={() => q.refetch()} />;
   const c = q.data;
   const existing = enr.data?.find((e) => e.course.id === c.id);
-  const mods = c.modules.filter((m) => (hours === 60 ? m.hours60 > 0 : m.hours120 > 0 || m.hours60 > 0));
+  const mods = pathwayModulePlan(c, hours);
 
   const doEnroll = async () => {
     if (!user) return nav(authHref('login', `/courses/${c.id}`));
@@ -69,14 +69,14 @@ export default function CoursePage() {
           <h2 className="mb-1 font-display text-2xl font-semibold text-primary">Module blueprint</h2>
           <p className="mb-4 text-sm text-muted-foreground">{mods.length} modules apply to the {hours}-hour pathway.</p>
           <Accordion type="multiple" className="space-y-2">
-            {mods.map((m, i) => (
+            {mods.map(({ module: m, estimatedHours, startWeek, endWeek }, i) => (
               <AccordionItem key={m.id} value={m.id} className="ink-card border-none px-5" data-testid={`module-${m.id}`}>
                 <AccordionTrigger className="hover:no-underline">
                   <span className="flex items-center gap-4 text-left">
                     <span className="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</span>
                     <span>
                       <span className="block font-medium">{m.title}</span>
-                      <span className="block text-xs font-normal text-muted-foreground">{m.type} · {hours === 60 ? m.hours60 : m.hours120} hrs</span>
+                      <span className="block text-xs font-normal text-muted-foreground">{m.type} · {formatHours(estimatedHours)} planned hrs · Week {startWeek}{endWeek === startWeek ? '' : `–${endWeek}`}</span>
                     </span>
                   </span>
                 </AccordionTrigger>

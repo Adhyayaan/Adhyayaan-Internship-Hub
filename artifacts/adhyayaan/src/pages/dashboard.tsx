@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorPanel, Empty, Meter } from '@/components/app/bits';
 import { CourseCard } from '@/components/app/course-card';
-import { progressOf, statusLabel, useTitle } from '@/lib/app';
+import { formatIndiaDate, ordinal, pacingLabel, progressOf, statusLabel, useTitle } from '@/lib/app';
 
 export default function Dashboard() {
   useTitle('Today');
@@ -112,8 +112,29 @@ export default function Dashboard() {
                           <span className="rounded-full bg-secondary px-3 py-1 text-xs">{statusLabel(e.status)}</span>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Modules</span><span>{p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
+                          <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Module progress</span><span>{p.modulePct}% · {p.done}/{p.mods.length}</span></div><Meter value={p.modulePct} /></div>
                           <div><div className="mb-1 flex justify-between text-xs text-muted-foreground"><span>Hours</span><span>{e.loggedHours}/{e.hours}</span></div><Meter value={p.hourPct} tone="accent" /></div>
+                        </div>
+                        <div className="mt-4 rounded-xl border bg-secondary/35 p-4" data-testid={`pace-${e.id}`}>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="font-medium text-primary">Study schedule</p>
+                            <span className={`rounded-full px-2.5 py-1 text-xs ${e.pacing.status === 'behind' ? 'bg-destructive/10 text-destructive' : e.pacing.status === 'ahead' || e.pacing.status === 'complete' ? 'bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]' : 'bg-primary/5 text-primary'}`} data-testid={`pace-status-${e.id}`}>
+                              {pacingLabel(e.pacing.status, e.pacing.deltaDays)}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span>{e.pacing.completedPercent}% weighted module progress · expected {e.pacing.expectedPercent}%</span>
+                            <span>{e.pacing.durationWeeks} weeks · target {formatIndiaDate(e.pacing.targetDate)}</span>
+                          </div>
+                          <div className="mt-2"><Meter value={e.pacing.completedPercent} tone="accent" /></div>
+                          <p className="mt-2 text-xs text-muted-foreground" data-testid={`pace-hours-${e.id}`}>
+                            Completed module estimates: {e.pacing.completedHours} of {e.pacing.totalHours} hours. Logged practical hours are tracked separately above.
+                          </p>
+                          {e.pacing.cohortPercentile !== null && (
+                            <p className="mt-2 text-xs text-muted-foreground" data-testid={`cohort-percentile-${e.id}`}>
+                              Start-day group: around the {ordinal(e.pacing.cohortPercentile)} percentile for this course and pathway.
+                            </p>
+                          )}
                         </div>
                         {e.course.id === '01' && (
                           <Link href="/study/01" className="mr-4 mt-4 inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--ledger))] hover:text-accent" data-testid={`link-study-${e.id}`}>
@@ -174,6 +195,7 @@ function NextStep({ d }: { d: DashboardData }) {
   const e = d.enrollments.find((x) => x.id === focus) ?? d.enrollments[0];
   const p = e ? progressOf(e) : null;
   const remaining = p && e ? p.mods.filter((m) => !e.completedModules.includes(m.id)) : [];
+  const scheduledHours = new Map(e?.pacing.moduleSchedule.map((item) => [item.moduleId, item.estimatedHours]) ?? []);
   return (
     <section className="ink-card rise mt-6 overflow-hidden" data-testid="section-next-step">
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-4 sm:gap-4 sm:p-5 xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:items-center">
@@ -217,7 +239,7 @@ function NextStep({ d }: { d: DashboardData }) {
               `Internship: ${e.course.title} (${e.hours}-hour pathway, status ${statusLabel(e.status)})`,
               `Modules done ${p.done}/${p.mods.length}. Hours logged ${e.loggedHours}/${e.hours}.`,
               `Done: ${p.mods.filter((m) => e.completedModules.includes(m.id)).map((m) => m.title).join('; ') || 'none'}`,
-              `Remaining: ${remaining.map((m) => `${m.title} (${e.hours === 60 ? m.hours60 : m.hours120}h)`).join('; ') || 'none'}`,
+              `Remaining: ${remaining.map((m) => `${m.title} (${scheduledHours.get(m.id) ?? 0}h planned)`).join('; ') || 'none'}`,
               `Deliverable: ${e.course.deliverable}`,
               `Other pathways: ${d.enrollments.filter((x) => x.id !== e.id).map((x) => x.course.title).join('; ') || 'none'}`,
             ].join('\n') : `Student: ${d.user?.discipline ?? ''} at ${d.user?.college ?? ''}. No enrollments yet.`}

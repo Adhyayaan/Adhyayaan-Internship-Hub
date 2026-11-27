@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Course } from './course';
+import type { EnrollmentPacing } from './enrollmentPacing';
 
 export interface Enrollment {
   id: string;
@@ -17,4 +18,5 @@ export interface Enrollment {
   reflection: string;
   status: string;
   createdAt: string;
+  pacing: EnrollmentPacing;
 }

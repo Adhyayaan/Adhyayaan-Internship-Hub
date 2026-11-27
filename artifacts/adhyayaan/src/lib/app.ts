@@ -57,18 +57,83 @@ export function useResetForSession() {
 }
 
 export function applicableModules(course: Course, hours: number): Module[] {
-  return course.modules.filter((m) => (hours === 60 ? m.hours60 > 0 : m.hours120 > 0 || m.hours60 > 0));
+  return pathwayModulePlan(course, hours).map((item) => item.module);
+}
+
+export function pathwayModulePlan(course: Course, hours: number) {
+  const preferred = course.modules.map((module) => ({
+    module,
+    hours: hours === 120
+      ? (module.hours120 > 0 ? module.hours120 : module.hours60)
+      : module.hours60,
+  }));
+  const selected = preferred.filter((item) => item.hours > 0);
+  const source = selected.length ? selected : course.modules
+    .map((module) => ({ module, hours: hours === 60 ? module.hours120 : module.hours60 }))
+    .filter((item) => item.hours > 0);
+  const sourceTotal = source.reduce((sum, item) => sum + item.hours, 0);
+  if (!sourceTotal) return [];
+
+  const durationWeeks = hours === 60 ? 8 : 16;
+  const weeklyHours = hours / durationWeeks;
+  let assignedHours = 0;
+  let cumulativeHours = 0;
+  return source.map((item, index) => {
+    const estimatedHours = index === source.length - 1
+      ? Math.round((hours - assignedHours) * 100) / 100
+      : Math.round((item.hours / sourceTotal * hours) * 100) / 100;
+    assignedHours += estimatedHours;
+    const startWeek = Math.min(durationWeeks, Math.floor(cumulativeHours / weeklyHours) + 1);
+    cumulativeHours += estimatedHours;
+    const endWeek = Math.min(durationWeeks, Math.max(startWeek, Math.ceil(cumulativeHours / weeklyHours)));
+    return { module: item.module, estimatedHours, startWeek, endWeek };
+  });
 }
 
 export function progressOf(e: Enrollment) {
-  const mods = applicableModules(e.course, e.hours);
+  const schedule = new Set(e.pacing.moduleSchedule.map((item) => item.moduleId));
+  const mods = e.course.modules.filter((module) => schedule.has(module.id));
   const done = mods.filter((m) => e.completedModules.includes(m.id)).length;
   return {
     mods,
     done,
-    modulePct: mods.length ? Math.round((done / mods.length) * 100) : 0,
+    modulePct: e.pacing.completedPercent,
     hourPct: Math.min(100, Math.round((e.loggedHours / e.hours) * 100)),
   };
+}
+
+export function pacingLabel(status: string, deltaDays: number) {
+  if (status === 'complete') return 'All modules complete';
+  if (status === 'ahead') return `Ahead by ${Math.max(1, Math.round(Math.abs(deltaDays)))} ${Math.round(Math.abs(deltaDays)) === 1 ? 'day' : 'days'}`;
+  if (status === 'behind') return `Behind by ${Math.max(1, Math.round(Math.abs(deltaDays)))} ${Math.round(Math.abs(deltaDays)) === 1 ? 'day' : 'days'}`;
+  return 'On track';
+}
+
+export function ordinal(value: number) {
+  const remainder100 = value % 100;
+  const suffix = remainder100 >= 11 && remainder100 <= 13
+    ? 'th'
+    : value % 10 === 1
+      ? 'st'
+      : value % 10 === 2
+        ? 'nd'
+        : value % 10 === 3
+          ? 'rd'
+          : 'th';
+  return `${value}${suffix}`;
+}
+
+export function formatIndiaDate(date: string, includeYear = false) {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: 'numeric',
+    month: 'short',
+    ...(includeYear ? { year: 'numeric' } : {}),
+  }).format(new Date(`${date}T12:00:00+05:30`));
+}
+
+export function formatHours(hours: number) {
+  return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
 }
 
 export function statusLabel(s: string) {

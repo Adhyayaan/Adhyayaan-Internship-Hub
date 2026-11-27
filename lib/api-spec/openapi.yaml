@@ -848,9 +848,38 @@ components:
         projectUrl: { type: string, maxLength: 2000 }
         reflection: { type: string, maxLength: 12000 }
         submit: { type: boolean }
+    PacingModule:
+      type: object
+      required: [moduleId, estimatedHours, startWeek, endWeek, startDate, endDate]
+      properties:
+        moduleId: { type: string }
+        estimatedHours: { type: number }
+        startWeek: { type: integer }
+        endWeek: { type: integer }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    EnrollmentPacing:
+      type: object
+      required: [totalHours, durationWeeks, startDate, targetDate, completedHours, completedPercent, expectedHours, expectedPercent, deltaHours, deltaDays, status, cohortPercentile, moduleSchedule]
+      properties:
+        totalHours: { type: integer, enum: [60, 120] }
+        durationWeeks: { type: integer, enum: [8, 16] }
+        startDate: { type: string, format: date }
+        targetDate: { type: string, format: date }
+        completedHours: { type: number }
+        completedPercent: { type: integer, minimum: 0, maximum: 100 }
+        expectedHours: { type: number }
+        expectedPercent: { type: integer, minimum: 0, maximum: 100 }
+        deltaHours: { type: number }
+        deltaDays: { type: number }
+        status: { type: string, enum: [ahead, on_track, behind, complete] }
+        cohortPercentile: { type: ["integer", "null"], minimum: 0, maximum: 100 }
+        moduleSchedule:
+          type: array
+          items: { $ref: "#/components/schemas/PacingModule" }
     Enrollment:
       type: object
-      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt]
+      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt, pacing]
       properties:
         id: { type: string }
         course: { $ref: "#/components/schemas/Course" }
@@ -863,6 +892,7 @@ components:
         reflection: { type: string }
         status: { type: string }
         createdAt: { type: string }
+        pacing: { $ref: "#/components/schemas/EnrollmentPacing" }
     LogInput:
       type: object
       required: [enrollmentId, date, hours, activity, learning]

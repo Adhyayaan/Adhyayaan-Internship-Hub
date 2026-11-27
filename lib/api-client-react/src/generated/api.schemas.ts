@@ -460,6 +460,70 @@ export interface EnrollmentUpdate {
   submit?: boolean;
 }
 
+export interface PacingModule {
+  moduleId: string;
+  estimatedHours: number;
+  startWeek: number;
+  endWeek: number;
+  startDate: string;
+  endDate: string;
+}
+
+export type EnrollmentPacingTotalHours = typeof EnrollmentPacingTotalHours[keyof typeof EnrollmentPacingTotalHours];
+
+
+export const EnrollmentPacingTotalHours = {
+  NUMBER_60: 60,
+  NUMBER_120: 120,
+} as const;
+
+export type EnrollmentPacingDurationWeeks = typeof EnrollmentPacingDurationWeeks[keyof typeof EnrollmentPacingDurationWeeks];
+
+
+export const EnrollmentPacingDurationWeeks = {
+  NUMBER_8: 8,
+  NUMBER_16: 16,
+} as const;
+
+export type EnrollmentPacingStatus = typeof EnrollmentPacingStatus[keyof typeof EnrollmentPacingStatus];
+
+
+export const EnrollmentPacingStatus = {
+  ahead: 'ahead',
+  on_track: 'on_track',
+  behind: 'behind',
+  complete: 'complete',
+} as const;
+
+export interface EnrollmentPacing {
+  totalHours: EnrollmentPacingTotalHours;
+  durationWeeks: EnrollmentPacingDurationWeeks;
+  startDate: string;
+  targetDate: string;
+  completedHours: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  completedPercent: number;
+  expectedHours: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  expectedPercent: number;
+  deltaHours: number;
+  deltaDays: number;
+  status: EnrollmentPacingStatus;
+  /**
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  cohortPercentile: number | null;
+  moduleSchedule: PacingModule[];
+}
+
 export interface Enrollment {
   id: string;
   course: Course;
@@ -470,6 +534,7 @@ export interface Enrollment {
   reflection: string;
   status: string;
   createdAt: string;
+  pacing: EnrollmentPacing;
 }
 
 export interface LogInput {

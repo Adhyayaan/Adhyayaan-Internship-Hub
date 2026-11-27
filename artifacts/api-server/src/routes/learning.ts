@@ -9,7 +9,8 @@ import {
 } from "@workspace/api-zod";
 import { courses, findCourse } from "../lib/catalog";
 import { requireLearner, publicUser } from "../lib/auth";
-import { userEnrollments, userLogs, enrollmentView } from "../lib/learning";
+import { userEnrollments, userLogs, enrollmentViewWithPacing } from "../lib/learning";
+import { pathwayModuleWeights } from "../lib/pacing";
 
 const router: IRouter = Router();
 router.get("/courses", (_req, res) => { res.json(ListCoursesResponse.parse(courses)); });
@@ -42,7 +43,7 @@ router.post("/enrollments", requireLearner, async (req, res): Promise<void> => {
   if (!parsed.success || !findCourse(parsed.data.courseId)) { res.status(400).json({ error: "Choose an available internship and a 60- or 120-hour pathway." }); return; }
   const [created] = await db.insert(enrollments).values({ id: randomUUID(), userId: req.learner!.id, ...parsed.data }).onConflictDoNothing().returning();
   if (!created) { res.status(409).json({ error: "You already have a pathway for this internship. Open My learning to continue." }); return; }
-  res.status(201).json(EnrollResponse.parse(enrollmentView(created, [])));
+  res.status(201).json(EnrollResponse.parse(await enrollmentViewWithPacing(created, [])));
 });
 router.patch("/enrollments/:id", requireLearner, async (req, res): Promise<void> => {
   const params = UpdateEnrollmentParams.safeParse(req.params);
@@ -52,8 +53,9 @@ router.patch("/enrollments/:id", requireLearner, async (req, res): Promise<void>
   const [existing] = await db.select().from(enrollments).where(owner).limit(1);
   if (!existing) { res.status(404).json({ error: "Learning pathway not found." }); return; }
   const data = parsed.data;
-  const modules = findCourse(existing.courseId)!.modules.filter((m) => existing.hours === 120 ? m.hours120 > 0 || m.hours60 > 0 : m.hours60 > 0);
-  if (data.completedModules && (new Set(data.completedModules).size !== data.completedModules.length || data.completedModules.some((id) => !modules.some((m) => m.id === id)))) {
+  const course = findCourse(existing.courseId)!;
+  const applicableModules = pathwayModuleWeights(course, existing.hours).map(({ module }) => module);
+  if (data.completedModules && (new Set(data.completedModules).size !== data.completedModules.length || data.completedModules.some((id) => !applicableModules.some((m) => m.id === id)))) {
     res.status(400).json({ error: "Choose valid modules for your selected pathway." }); return;
   }
   const projectUrl = data.projectUrl ?? existing.projectUrl;
@@ -66,13 +68,13 @@ router.patch("/enrollments/:id", requireLearner, async (req, res): Promise<void>
   const completedModules = data.completedModules ?? existing.completedModules;
   if (data.submit) {
     const hours = logs.filter((l) => l.enrollmentId === existing.id).reduce((s, l) => s + l.hours, 0);
-    if (!projectUrl || reflection.trim().length < 30 || hours < existing.hours || !modules.every((m) => completedModules.includes(m.id))) {
+    if (!projectUrl || reflection.trim().length < 30 || hours < existing.hours || !applicableModules.every((m) => completedModules.includes(m.id))) {
       res.status(400).json({ error: `Before submitting, complete all pathway modules, record ${existing.hours} practical hours, add a project link and a reflection of at least 30 characters. You can save a draft at any time.` }); return;
     }
   }
   // Any edit invalidates an earlier submission and requires the learner to resubmit.
   const [updated] = await db.update(enrollments).set({ projectUrl, reflection, completedModules, status: data.submit ? "submitted" : "in_progress" }).where(owner).returning();
-  res.json(UpdateEnrollmentResponse.parse(enrollmentView(updated!, logs)));
+  res.json(UpdateEnrollmentResponse.parse(await enrollmentViewWithPacing(updated!, logs)));
 });
 router.get("/logs", requireLearner, async (req, res): Promise<void> => {
   res.json(ListLogsResponse.parse(await userLogs(req.learner!.id)));
