@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ErrorPanel } from '@/components/app/bits';
 import { toneFor } from '@/components/app/course-card';
 import { authHref, errMsg, fmtINR, formatHours, pathwayModulePlan, useAuth, useInvalidateAll, useTitle } from '@/lib/app';
+import { estimateIndiaTargetDate, formatIndiaDate } from '@/lib/date-format';
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,7 @@ export default function CoursePage() {
   const c = q.data;
   const existing = enr.data?.find((e) => e.course.id === c.id);
   const mods = pathwayModulePlan(c, hours);
+  const estimatedDeadline = existing?.pacing.targetDate ?? estimateIndiaTargetDate(hours);
 
   const doEnroll = async () => {
     if (!user) return nav(authHref('login', `/courses/${c.id}`));
@@ -104,6 +106,17 @@ export default function CoursePage() {
                   <span className="text-xs text-muted-foreground">hours · {fmtINR(h === 60 ? 500 : 1000)} indicative</span>
                 </button>
               ))}
+            </div>
+            <div className="mt-4 rounded-xl border border-primary/10 bg-secondary/40 p-4" data-testid="track-estimated-deadline">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">Estimated deadline</p>
+              <p className="mt-1 font-display text-xl font-semibold text-primary" data-testid="text-track-deadline">
+                {formatIndiaDate(estimatedDeadline, true)}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {existing
+                  ? `Your enrolled ${existing.hours}-hour track · ${existing.pacing.durationWeeks} weeks from your start date.`
+                  : `For the ${hours}-hour track, if you start today · ${hours === 60 ? 8 : 16} weeks.`}
+              </p>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">Recommended: {c.hours} hrs. Listed fees are indicative programme fees only. Nothing is charged here, and enrolling is not institutional approval.</p>
             {existing ? (
