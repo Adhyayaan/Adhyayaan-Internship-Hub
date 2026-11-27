@@ -14,6 +14,7 @@ import {
   useGetSuperadminAnalytics,
   useListCourses,
   useListSuperadminAccounts,
+  useResetSuperadminGuidePassword,
   useUpdateSuperadminAccountRole,
   type SuperadminAccount,
 } from '@workspace/api-client-react';
@@ -91,6 +92,10 @@ export default function SuperadminPage() {
   const [page, setPage] = useState(1);
   const [notice, setNotice] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [resettingGuideId, setResettingGuideId] = useState<string | null>(null);
+  const [resetCredential, setResetCredential] = useState<{ name: string; email: string; password: string } | null>(null);
+  const [resetError, setResetError] = useState('');
+  const [resetPasswordCopied, setResetPasswordCopied] = useState(false);
   const guideForm = useForm<GuideFormValues>({
     resolver: zodResolver(guideFormSchema),
     defaultValues: { name: '', email: '', supportedCourseIds: [], availableForAssignments: true },
@@ -105,6 +110,7 @@ export default function SuperadminPage() {
   const courses = useListCourses({ query: { enabled: allowed, queryKey: getListCoursesQueryKey() } });
   const updateRole = useUpdateSuperadminAccountRole();
   const createGuide = useCreateSuperadminGuide();
+  const resetGuidePassword = useResetSuperadminGuidePassword();
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const onSearch = (value: string) => {
@@ -172,6 +178,35 @@ export default function SuperadminPage() {
     setPasswordCopied(false);
     setGuideFormError('');
     createGuide.reset();
+  };
+  const issueGuideTemporaryPassword = async (account: SuperadminAccount) => {
+    const confirmed = window.confirm(
+      `Issue a new temporary password for ${account.name}? Their current password will stop working, all active sessions will be signed out, and they must change the new password at next sign-in.`,
+    );
+    if (!confirmed) return;
+
+    setResetCredential(null);
+    setResetPasswordCopied(false);
+    setResetError('');
+    setResettingGuideId(account.id);
+    try {
+      const result = await resetGuidePassword.mutateAsync({ id: account.id });
+      setResetCredential({ name: account.name, email: account.email, password: result.temporaryPassword });
+    } catch (error) {
+      setResetError(`A new temporary password could not be issued. ${errMsg(error)}`);
+    } finally {
+      setResettingGuideId(null);
+    }
+  };
+  const copyResetPassword = async () => {
+    if (!resetCredential) return;
+    try {
+      await navigator.clipboard.writeText(resetCredential.password);
+      setResetPasswordCopied(true);
+    } catch {
+      setResetPasswordCopied(false);
+      setResetError('Copy was not available in this browser. Select the temporary password and copy it manually.');
+    }
   };
 
   if (sessionLoading) return <Gate loading isSuperadmin={false} />;
@@ -268,6 +303,22 @@ export default function SuperadminPage() {
         <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground"><ShieldCheck className="mr-1.5 inline h-4 w-4 text-accent" />Role changes are recorded</div>
       </div>
       {notice && <p role="status" className={`rounded-xl border px-4 py-3 text-sm ${notice.startsWith('Role could not') ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-[hsl(var(--ledger)/.25)] bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]'}`} data-testid="status-role-change">{notice}</p>}
+      {resetError && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" data-testid="text-guide-password-reset-error">{resetError}</p>}
+      {resetCredential && <section className="ink-card space-y-4 border-accent/30 p-4 sm:p-5" aria-label="New guide temporary password" data-testid="panel-guide-password-reset">
+        <div className="flex items-start gap-3 rounded-xl border border-[hsl(var(--ledger)/.25)] bg-[hsl(var(--ledger-soft))] p-4">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[hsl(var(--ledger))]" />
+          <div className="min-w-0"><p className="font-bold text-primary">New temporary password issued for {resetCredential.name}</p><p className="mt-1 break-all text-sm text-muted-foreground">{resetCredential.email}</p></div>
+        </div>
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
+          <p className="flex items-center gap-2 text-sm font-bold text-primary"><ShieldAlert className="h-4 w-4 text-accent" />Temporary password — show once</p>
+          <p className="mt-1 text-sm text-muted-foreground">The old password no longer works. The guide must change this password at next sign-in. Share it through a secure channel.</p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <code className="flex min-h-11 min-w-0 flex-1 select-all items-center break-all rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm text-primary" data-testid="text-reset-guide-temporary-password">{resetCredential.password}</code>
+            <Button type="button" variant="outline" onClick={copyResetPassword} className="min-h-11 shrink-0" data-testid="button-copy-reset-guide-password">{resetPasswordCopied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}{resetPasswordCopied ? 'Copied' : 'Copy password'}</Button>
+          </div>
+        </div>
+        <Button type="button" variant="outline" onClick={() => { setResetCredential(null); setResetPasswordCopied(false); }} className="min-h-11" data-testid="button-dismiss-reset-guide-password"><X className="mr-2 h-4 w-4" />Dismiss and clear password</Button>
+      </section>}
       <section className="ink-card overflow-hidden" aria-labelledby="create-guide-heading" data-testid="panel-create-guide">
         <div className="flex items-start gap-3 border-b border-border bg-secondary/40 p-4 sm:p-5">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><UserRoundCheck className="h-5 w-5" /></span>
@@ -324,7 +375,7 @@ export default function SuperadminPage() {
               <div className={`ink-card overflow-hidden transition-opacity ${directory.isFetching ? 'opacity-60' : ''}`}>
                 <div className="hidden overflow-x-auto sm:block">
                   <table className="w-full min-w-[760px] text-sm">
-                    <thead className="bg-secondary/70 text-left text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="px-5 py-3">Account</th><th className="px-4 py-3">College / discipline</th><th className="px-4 py-3">Enrolments</th><th className="px-4 py-3">Joined</th><th className="px-4 py-3">Role access</th></tr></thead>
+                    <thead className="bg-secondary/70 text-left text-xs uppercase tracking-wider text-muted-foreground"><tr><th className="px-5 py-3">Account</th><th className="px-4 py-3">College / discipline</th><th className="px-4 py-3">Enrolments</th><th className="px-4 py-3">Joined</th><th className="px-4 py-3">Role access</th><th className="px-4 py-3">Guide access</th></tr></thead>
                     <tbody className="divide-y divide-border">
                       {d.accounts.map((account) => <tr key={account.id} className="transition-colors hover:bg-secondary/30" data-testid={`row-account-${account.id}`}>
                         <td className="max-w-[240px] px-5 py-3"><p className="truncate font-bold text-primary" data-testid={`text-account-name-${account.id}`}>{account.name}</p><p className="truncate text-xs text-muted-foreground">{account.email}</p></td>
@@ -337,6 +388,7 @@ export default function SuperadminPage() {
                             {(['student', 'admin', 'superadmin'] as EditableRole[]).map((item) => <option key={item} value={item}>{roleLabel(item)}</option>)}
                           </select>
                         </div></td>
+                        <td className="px-4 py-3">{account.role === 'guide' && <Button type="button" variant="outline" size="sm" disabled={!!resettingGuideId || savingId === account.id} onClick={() => issueGuideTemporaryPassword(account)} data-testid={`button-reset-guide-password-${account.id}`}>{resettingGuideId === account.id ? 'Issuing…' : 'Issue new password'}</Button>}</td>
                       </tr>)}
                     </tbody>
                   </table>
@@ -346,6 +398,7 @@ export default function SuperadminPage() {
                      <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-bold text-primary">{account.name}</p><p className="break-all text-xs text-muted-foreground">{account.email}</p></div><RoleBadge role={account.role} testId={`badge-role-mobile-${account.id}`} /></div>
                     <p className="text-xs text-muted-foreground">{account.college || '—'} · {account.discipline || '—'}<br />{formatCount(account.enrollmentCount)} enrolments · joined {formatDate(account.createdAt)}</p>
                       <label className="flex items-center justify-between gap-3 text-sm font-semibold"><span>Role access</span><select aria-label={`Change role for ${account.name}`} value={account.role} disabled={account.id === user?.id || savingId === account.id} onChange={(event) => changeRole(account, event.target.value as EditableRole)} className="h-10 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50" data-testid={`select-role-mobile-${account.id}`}>{account.role === 'guide' && <option value="guide" disabled>Guide</option>}{(['student', 'admin', 'superadmin'] as EditableRole[]).map((item) => <option key={item} value={item}>{roleLabel(item)}</option>)}</select></label>
+                    {account.role === 'guide' && <Button type="button" variant="outline" className="min-h-11 w-full" disabled={!!resettingGuideId || savingId === account.id} onClick={() => issueGuideTemporaryPassword(account)} data-testid={`button-reset-guide-password-mobile-${account.id}`}>{resettingGuideId === account.id ? 'Issuing temporary password…' : 'Issue new temporary password'}</Button>}
                   </article>)}
                 </div>
               </div>

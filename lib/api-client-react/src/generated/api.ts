@@ -73,6 +73,7 @@ import type {
   SuperadminAccountDirectory,
   SuperadminAnalytics,
   SuperadminGuideInput,
+  SuperadminGuidePasswordReset,
   SuperadminGuideProvision,
   SuperadminRoleUpdateInput,
   WorkLog
@@ -1317,6 +1318,74 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCreateSuperadminGuideMutationOptions(options), queryClient);
+    }
+
+export const getResetSuperadminGuidePasswordUrl = (id: string,) => {
+
+
+
+
+  return `/api/superadmin/guides/${id}/temporary-password`
+}
+
+export const resetSuperadminGuidePassword = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<SuperadminGuidePasswordReset> => {
+
+  return customFetch<SuperadminGuidePasswordReset>(getResetSuperadminGuidePasswordUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getResetSuperadminGuidePasswordMutationKey = () => ['resetSuperadminGuidePassword'] as const;
+
+export const getResetSuperadminGuidePasswordMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetSuperadminGuidePassword>>, TError,ResetSuperadminGuidePasswordMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resetSuperadminGuidePassword>>, TError,ResetSuperadminGuidePasswordMutationVariables, TContext> => {
+
+const mutationKey = getResetSuperadminGuidePasswordMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetSuperadminGuidePassword>>, ResetSuperadminGuidePasswordMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  resetSuperadminGuidePassword(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResetSuperadminGuidePasswordMutationResult = NonNullable<Awaited<ReturnType<typeof resetSuperadminGuidePassword>>>
+
+    export type ResetSuperadminGuidePasswordMutationError = ErrorType<void>
+    export type ResetSuperadminGuidePasswordMutationVariables = {id: string}
+
+    export const useResetSuperadminGuidePassword = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resetSuperadminGuidePassword>>, TError,ResetSuperadminGuidePasswordMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof resetSuperadminGuidePassword>>,
+        TError,
+        ResetSuperadminGuidePasswordMutationVariables,
+        TContext
+      > => {
+      return useMutation(getResetSuperadminGuidePasswordMutationOptions(options), queryClient);
     }
 
 export const getListSuperadminAccountsUrl = (params?: ListSuperadminAccountsParams,) => {

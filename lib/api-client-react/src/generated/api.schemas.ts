@@ -370,6 +370,12 @@ export interface SuperadminGuideProvision {
   mustChangePassword: true;
 }
 
+export interface SuperadminGuidePasswordReset {
+  /** @minLength 10 */
+  temporaryPassword: string;
+  mustChangePassword: true;
+}
+
 export interface InitialPasswordChangeInput {
   /**
      * @minLength 10

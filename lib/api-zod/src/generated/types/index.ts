@@ -112,6 +112,7 @@ export * from './superadminAccountRole';
 export * from './superadminAnalytics';
 export * from './superadminCourseTotal';
 export * from './superadminGuideInput';
+export * from './superadminGuidePasswordReset';
 export * from './superadminGuideProvision';
 export * from './superadminRoleAuditEntry';
 export * from './superadminRoleAuditEntryNewRole';

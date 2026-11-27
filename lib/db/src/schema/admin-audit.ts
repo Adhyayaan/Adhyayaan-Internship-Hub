@@ -28,9 +28,18 @@ export const superadminRoleAudit = pgTable("learning_superadmin_role_audit", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("learning_superadmin_role_audit_created_at").on(t.createdAt)]);
 
+export const superadminGuidePasswordAudit = pgTable("learning_superadmin_guide_password_audit", {
+  id: text("id").primaryKey(),
+  actorId: text("actor_id").references(() => learners.id, { onDelete: "set null" }),
+  targetId: text("target_id").references(() => learners.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("learning_superadmin_guide_password_audit_created_at").on(t.createdAt)]);
+
 export const insertAdminReportAccessSchema = createInsertSchema(adminReportAccess);
 export type AdminReportAccess = typeof adminReportAccess.$inferSelect;
 export const insertGuideReportAccessSchema = createInsertSchema(guideReportAccess);
 export type GuideReportAccess = typeof guideReportAccess.$inferSelect;
 export const insertSuperadminRoleAuditSchema = createInsertSchema(superadminRoleAudit);
 export type SuperadminRoleAudit = typeof superadminRoleAudit.$inferSelect;
+export const insertSuperadminGuidePasswordAuditSchema = createInsertSchema(superadminGuidePasswordAudit);
+export type SuperadminGuidePasswordAudit = typeof superadminGuidePasswordAudit.$inferSelect;

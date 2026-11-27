@@ -554,6 +554,20 @@ export const CreateSuperadminGuideResponse = zod.object({
 })
 
 
+export const ResetSuperadminGuidePasswordParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const resetSuperadminGuidePasswordResponseTemporaryPasswordMin = 10;
+
+
+
+export const ResetSuperadminGuidePasswordResponse = zod.object({
+  "temporaryPassword": zod.string().min(resetSuperadminGuidePasswordResponseTemporaryPasswordMin),
+  "mustChangePassword": zod.literal(true)
+})
+
+
 export const listSuperadminAccountsQuerySearchMax = 120;
 
 export const listSuperadminAccountsQueryPageMax = 100000;

@@ -220,6 +220,21 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Superadmin access required }
         "409": { description: An account with this email already exists }
+  /superadmin/guides/{id}/temporary-password:
+    post:
+      operationId: resetSuperadminGuidePassword
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: One-time temporary password for an existing guide
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuperadminGuidePasswordReset" }
+        "400": { description: Invalid guide account identifier }
+        "401": { description: Sign in first }
+        "403": { description: Superadmin access required }
+        "404": { description: Guide account not found }
   /superadmin/accounts:
     get:
       operationId: listSuperadminAccounts
@@ -1031,6 +1046,12 @@ components:
       required: [guide, temporaryPassword, mustChangePassword]
       properties:
         guide: { $ref: "#/components/schemas/AdminGuide" }
+        temporaryPassword: { type: string, minLength: 10 }
+        mustChangePassword: { type: boolean, const: true }
+    SuperadminGuidePasswordReset:
+      type: object
+      required: [temporaryPassword, mustChangePassword]
+      properties:
         temporaryPassword: { type: string, minLength: 10 }
         mustChangePassword: { type: boolean, const: true }
     InitialPasswordChangeInput:

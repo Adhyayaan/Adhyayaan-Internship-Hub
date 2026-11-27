@@ -3,11 +3,12 @@ import { Router, type IRouter } from "express";
 import { and, count, desc, eq, ilike, inArray, isNotNull, ne, or, sql, sum } from "drizzle-orm";
 import {
   adminReportAccess, assessmentAttempts, db, enrollments, guideReportAccess, internshipGuides,
-  learners, superadminRoleAudit, workLogs,
+  learnerSessions, learners, superadminGuidePasswordAudit, superadminRoleAudit, workLogs,
 } from "@workspace/db";
 import {
   CreateSuperadminGuideBody, CreateSuperadminGuideResponse, GetSuperadminAnalyticsResponse,
   ListSuperadminAccountsQueryParams, ListSuperadminAccountsResponse,
+  ResetSuperadminGuidePasswordParams, ResetSuperadminGuidePasswordResponse,
   UpdateSuperadminAccountRoleBody, UpdateSuperadminAccountRoleParams, UpdateSuperadminAccountRoleResponse,
 } from "@workspace/api-zod";
 import { hashPassword } from "../lib/auth";
@@ -156,6 +157,46 @@ router.post("/superadmin/guides", async (req, res): Promise<void> => {
       availableForAssignments: input.data.availableForAssignments ?? true,
       activeLearners: 0,
     },
+    temporaryPassword,
+    mustChangePassword: true,
+  }));
+});
+
+router.post("/superadmin/guides/:id/temporary-password", async (req, res): Promise<void> => {
+  const params = ResetSuperadminGuidePasswordParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Choose a valid guide account." });
+    return;
+  }
+
+  const temporaryPassword = randomBytes(24).toString("base64url");
+  const passwordHash = await hashPassword(temporaryPassword);
+  let guideFound = false;
+
+  await db.transaction(async (tx) => {
+    const [guide] = await tx.select({ id: learners.id })
+      .from(learners)
+      .where(and(eq(learners.id, params.data.id), eq(learners.role, "guide")))
+      .for("update")
+      .limit(1);
+    if (!guide) return;
+
+    guideFound = true;
+    await tx.update(learners).set({ passwordHash, mustChangePassword: true })
+      .where(eq(learners.id, guide.id));
+    await tx.delete(learnerSessions).where(eq(learnerSessions.userId, guide.id));
+    await tx.insert(superadminGuidePasswordAudit).values({
+      id: randomUUID(),
+      actorId: req.learner!.id,
+      targetId: guide.id,
+    });
+  });
+
+  if (!guideFound) {
+    res.status(404).json({ error: "Guide account not found." });
+    return;
+  }
+  res.json(ResetSuperadminGuidePasswordResponse.parse({
     temporaryPassword,
     mustChangePassword: true,
   }));
