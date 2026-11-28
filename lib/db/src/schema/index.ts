@@ -28,3 +28,4 @@ export * from "./admin-audit";
 export * from "./mentorship";
 export * from "./support-groups";
 export * from "./projects";
+export * from "./portfolio-files";

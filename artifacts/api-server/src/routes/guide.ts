@@ -90,6 +90,9 @@ router.get("/guide/dashboard", requireGuide, async (req, res): Promise<void> => 
       practiceCount: number; practiceAverage: number | null; lessonsRead: number;
       studyChecks: number; secureChecks: number;
       practicalLogs: { id: string; date: string; hours: number; activity: string; learning: string }[];
+      projectUrl: string;
+      reflection: string;
+      portfolioFiles: (typeof pacedAssignments)[number]["portfolioFiles"];
     }[],
   }]));
   for (const report of reportRows) learnerMap.get(report.userId)?.reports.push({
@@ -127,6 +130,9 @@ router.get("/guide/dashboard", requireGuide, async (req, res): Promise<void> => 
       practicalLogs: logs.filter((log) => log.enrollmentId === enrollment.id)
         .sort((a, b) => b.date.localeCompare(a.date))
         .map(({ id, date, hours, activity, learning }) => ({ id, date, hours, activity, learning })),
+      projectUrl: enrollment.projectUrl,
+      reflection: enrollment.reflection,
+      portfolioFiles: view.portfolioFiles,
     });
   }
 

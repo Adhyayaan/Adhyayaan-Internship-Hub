@@ -475,6 +475,15 @@ export interface EnrollmentPacing {
   moduleSchedule: PacingModule[];
 }
 
+export interface ProjectAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  downloadUrl: string;
+  isArchive: boolean;
+}
+
 export interface GuideCourseProgress {
   enrollmentId: string;
   courseId: string;
@@ -492,6 +501,9 @@ export interface GuideCourseProgress {
   studyChecks: number;
   secureChecks: number;
   practicalLogs: GuidePracticalLog[];
+  projectUrl: string;
+  reflection: string;
+  portfolioFiles: ProjectAttachment[];
 }
 
 export interface GuideLearner {
@@ -551,15 +563,6 @@ export interface ProjectLearnerOption {
   courseTitle: string;
   name: string;
   college: string;
-}
-
-export interface ProjectAttachment {
-  id: string;
-  fileName: string;
-  contentType: string;
-  size: number;
-  downloadUrl: string;
-  isArchive: boolean;
 }
 
 export interface ProjectAiCriterion {
@@ -1352,7 +1355,27 @@ export interface EnrollmentUpdate {
   projectUrl?: string;
   /** @maxLength 12000 */
   reflection?: string;
+  /**
+     * @maxItems 5
+     * @items.maxLength 4096
+     */
+  uploadTokens?: string[];
   submit?: boolean;
+}
+
+export interface PortfolioUploadInput {
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  fileName: string;
+  /** @maxLength 120 */
+  contentType: string;
+  /**
+     * @minimum 1
+     * @maximum 26214400
+     */
+  size: number;
 }
 
 export interface Enrollment {
@@ -1367,6 +1390,7 @@ export interface Enrollment {
   createdAt: string;
   pacing: EnrollmentPacing;
   assignedGuide: GuidePublic | null;
+  portfolioFiles: ProjectAttachment[];
 }
 
 export interface LogInput {

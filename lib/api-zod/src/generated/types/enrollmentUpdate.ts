@@ -12,5 +12,10 @@ export interface EnrollmentUpdate {
   projectUrl?: string;
   /** @maxLength 12000 */
   reflection?: string;
+  /**
+     * @maxItems 5
+     * @items.maxLength 4096
+     */
+  uploadTokens?: string[];
   submit?: boolean;
 }

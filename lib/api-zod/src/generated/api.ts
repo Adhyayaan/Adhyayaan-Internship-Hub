@@ -485,7 +485,15 @@ export const AssignAdminGuideResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email()
-}),zod.null()])
+}),zod.null()]),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
 })
 
 
@@ -692,6 +700,16 @@ export const GetGuideDashboardResponse = zod.object({
   "hours": zod.number(),
   "activity": zod.string(),
   "learning": zod.string()
+})),
+  "projectUrl": zod.string(),
+  "reflection": zod.string(),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
 }))
 }))
 }))
@@ -2073,7 +2091,15 @@ export const GetDashboardResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email()
-}),zod.null()])
+}),zod.null()]),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
 })),
   "recommendations": zod.array(zod.object({
   "id": zod.string(),
@@ -2172,7 +2198,15 @@ export const ListEnrollmentsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email()
-}),zod.null()])
+}),zod.null()]),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
 })
 export const ListEnrollmentsResponse = zod.array(ListEnrollmentsResponseItem)
 
@@ -2249,7 +2283,15 @@ export const EnrollResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email()
-}),zod.null()])
+}),zod.null()]),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
 })
 
 
@@ -2261,12 +2303,17 @@ export const updateEnrollmentBodyProjectUrlMax = 2000;
 
 export const updateEnrollmentBodyReflectionMax = 12000;
 
+export const updateEnrollmentBodyUploadTokensItemMax = 4096;
+
+export const updateEnrollmentBodyUploadTokensMax = 5;
+
 
 
 export const UpdateEnrollmentBody = zod.object({
   "completedModules": zod.array(zod.string()).optional(),
   "projectUrl": zod.string().max(updateEnrollmentBodyProjectUrlMax).optional(),
   "reflection": zod.string().max(updateEnrollmentBodyReflectionMax).optional(),
+  "uploadTokens": zod.array(zod.string().max(updateEnrollmentBodyUploadTokensItemMax)).max(updateEnrollmentBodyUploadTokensMax).optional(),
   "submit": zod.boolean().optional()
 })
 
@@ -2337,8 +2384,48 @@ export const UpdateEnrollmentResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email()
-}),zod.null()])
+}),zod.null()]),
+  "portfolioFiles": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
 })
+
+
+export const RequestPortfolioUploadParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const requestPortfolioUploadBodyFileNameMax = 160;
+
+export const requestPortfolioUploadBodyContentTypeMax = 120;
+
+export const requestPortfolioUploadBodySizeMax = 26214400;
+
+
+
+export const RequestPortfolioUploadBody = zod.object({
+  "fileName": zod.string().min(1).max(requestPortfolioUploadBodyFileNameMax),
+  "contentType": zod.string().max(requestPortfolioUploadBodyContentTypeMax),
+  "size": zod.number().int().min(1).max(requestPortfolioUploadBodySizeMax)
+})
+
+export const RequestPortfolioUploadResponse = zod.object({
+  "uploadUrl": zod.string().url(),
+  "uploadToken": zod.string(),
+  "expiresAt": zod.coerce.date()
+})
+
+
+export const DownloadPortfolioFileParams = zod.object({
+  "fileId": zod.coerce.string().uuid()
+})
+
+export const DownloadPortfolioFileResponse = zod.unknown()
 
 
 export const ListStudentProjectAssignmentsResponseItem = zod.object({

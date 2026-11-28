@@ -9,8 +9,11 @@ import {
 } from "./project-rules.ts";
 import {
   CreateGuideProjectAssignmentBody,
+  RequestPortfolioUploadBody,
   RequestStudentProjectUploadBody,
   SubmitStudentProjectBody,
+  UpdateEnrollmentBody,
+  UpdateEnrollmentResponse,
 } from "../../../../lib/api-zod/src/generated/api.ts";
 
 test("supported evidence types and bounded sizes are accepted", () => {
@@ -60,9 +63,44 @@ test("generated contracts bound recipients, uploads and submission tokens", () =
   assert.equal(RequestStudentProjectUploadBody.safeParse({
     fileName: "evidence.zip", contentType: "application/zip", size: 500,
   }).success, true);
+  assert.equal(RequestPortfolioUploadBody.safeParse({
+    fileName: "reflection.pdf", contentType: "application/pdf", size: 500,
+  }).success, true);
+  assert.equal(UpdateEnrollmentBody.safeParse({ uploadTokens: ["signed-portfolio-token"] }).success, true);
+  assert.equal(UpdateEnrollmentBody.safeParse({ uploadTokens: Array.from({ length: 6 }, () => "token") }).success, false);
   assert.equal(SubmitStudentProjectBody.safeParse({
     uploadTokens: ["signed-upload-token"],
     reflection: "I compared two sources and checked for missing responses.",
   }).success, true);
   assert.equal(SubmitStudentProjectBody.safeParse({ uploadTokens: [] }).success, false);
+  assert.equal(UpdateEnrollmentResponse.safeParse({
+    id: "enrollment-a",
+    course: {
+      id: "01", title: "Course", category: "Internship", description: "Course details",
+      hours: 60, price: 0, mode: "online", disciplines: [], modules: [],
+      deliverable: "Project", draft: false, extendedDraft: false,
+    },
+    hours: 60,
+    completedModules: [],
+    loggedHours: 0,
+    projectUrl: "",
+    reflection: "",
+    status: "in_progress",
+    createdAt: new Date().toISOString(),
+    assignedGuide: null,
+    portfolioFiles: [{
+      id: "22222222-2222-4222-8222-222222222222",
+      fileName: "reflection.pdf",
+      contentType: "application/pdf",
+      size: 500,
+      downloadUrl: "/api/projects/portfolio-files/22222222-2222-4222-8222-222222222222",
+      isArchive: false,
+    }],
+    pacing: {
+      totalHours: 60, durationWeeks: 8,
+      startDate: new Date(), targetDate: new Date(),
+      completedHours: 0, completedPercent: 0, expectedHours: 0, expectedPercent: 0,
+      deltaHours: 0, deltaDays: 0, status: "on_track", cohortPercentile: null, moduleSchedule: [],
+    },
+  }).success, true);
 });

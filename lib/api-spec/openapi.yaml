@@ -893,6 +893,39 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Enrollment" }
+  /enrollments/{id}/uploads:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: requestPortfolioUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PortfolioUploadInput" }
+      responses:
+        "201":
+          description: Short-lived private upload URL for a pathway reflection file
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectUploadResponse" }
+        "400": { description: Unsupported file type or size }
+        "401": { description: Sign in first }
+        "403": { description: The pathway is not owned by this student }
+  /projects/portfolio-files/{fileId}:
+    parameters:
+      - { name: fileId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: downloadPortfolioFile
+      responses:
+        "200":
+          description: Private portfolio file available to its student and currently assigned guide
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "401": { description: Sign in first }
+        "403": { description: Portfolio access required }
+        "404": { description: Portfolio file not found }
   /projects/assignments:
     get:
       operationId: listStudentProjectAssignments
@@ -1411,7 +1444,7 @@ components:
         learning: { type: string }
     GuideCourseProgress:
       type: object
-      required: [enrollmentId, courseId, courseTitle, hours, completedModules, totalModules, loggedHours, status, pacing, practiceCount, practiceAverage, lessonsRead, studyChecks, secureChecks, practicalLogs]
+      required: [enrollmentId, courseId, courseTitle, hours, completedModules, totalModules, loggedHours, status, pacing, practiceCount, practiceAverage, lessonsRead, studyChecks, secureChecks, practicalLogs, projectUrl, reflection, portfolioFiles]
       properties:
         enrollmentId: { type: string }
         courseId: { type: string }
@@ -1428,6 +1461,9 @@ components:
         studyChecks: { type: integer }
         secureChecks: { type: integer }
         practicalLogs: { type: array, items: { $ref: "#/components/schemas/GuidePracticalLog" } }
+        projectUrl: { type: string }
+        reflection: { type: string }
+        portfolioFiles: { type: array, items: { $ref: "#/components/schemas/ProjectAttachment" } }
     GuideLearner:
       type: object
       required: [id, name, email, college, discipline, reports, courses]
@@ -2083,7 +2119,18 @@ components:
           items: { type: string }
         projectUrl: { type: string, maxLength: 2000 }
         reflection: { type: string, maxLength: 12000 }
+        uploadTokens:
+          type: array
+          maxItems: 5
+          items: { type: string, maxLength: 4096 }
         submit: { type: boolean }
+    PortfolioUploadInput:
+      type: object
+      required: [fileName, contentType, size]
+      properties:
+        fileName: { type: string, minLength: 1, maxLength: 160 }
+        contentType: { type: string, maxLength: 120 }
+        size: { type: integer, minimum: 1, maximum: 26214400 }
     PacingModule:
       type: object
       required: [moduleId, estimatedHours, startWeek, endWeek, startDate, endDate]
@@ -2115,7 +2162,7 @@ components:
           items: { $ref: "#/components/schemas/PacingModule" }
     Enrollment:
       type: object
-      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt, pacing, assignedGuide]
+      required: [id, course, hours, completedModules, loggedHours, projectUrl, reflection, status, createdAt, pacing, assignedGuide, portfolioFiles]
       properties:
         id: { type: string }
         course: { $ref: "#/components/schemas/Course" }
@@ -2133,6 +2180,7 @@ components:
           anyOf:
             - { $ref: "#/components/schemas/GuidePublic" }
             - { type: "null" }
+        portfolioFiles: { type: array, items: { $ref: "#/components/schemas/ProjectAttachment" } }
     LogInput:
       type: object
       required: [enrollmentId, date, hours, activity, learning]

@@ -66,6 +66,7 @@ import type {
   MentorshipThread,
   MentorshipUploadInput,
   MentorshipUploadResponse,
+  PortfolioUploadInput,
   PracticeAnswers,
   PracticeAttempt,
   PracticeInput,
@@ -5439,6 +5440,184 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getUpdateEnrollmentMutationOptions(options), queryClient);
     }
+
+export const getRequestPortfolioUploadUrl = (id: string,) => {
+
+
+
+
+  return `/api/enrollments/${id}/uploads`
+}
+
+export const requestPortfolioUpload = async (id: string,
+    portfolioUploadInput: PortfolioUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<ProjectUploadResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProjectUploadResponse>(getRequestPortfolioUploadUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(portfolioUploadInput)
+  }
+);}
+
+
+
+
+
+export const getRequestPortfolioUploadMutationKey = () => ['requestPortfolioUpload'] as const;
+
+export const getRequestPortfolioUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestPortfolioUpload>>, TError,RequestPortfolioUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestPortfolioUpload>>, TError,RequestPortfolioUploadMutationVariables, TContext> => {
+
+const mutationKey = getRequestPortfolioUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestPortfolioUpload>>, RequestPortfolioUploadMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  requestPortfolioUpload(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestPortfolioUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestPortfolioUpload>>>
+    export type RequestPortfolioUploadMutationBody = BodyType<PortfolioUploadInput>
+    export type RequestPortfolioUploadMutationError = ErrorType<void>
+    export type RequestPortfolioUploadMutationVariables = {id: string;data: BodyType<PortfolioUploadInput>}
+
+    export const useRequestPortfolioUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestPortfolioUpload>>, TError,RequestPortfolioUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestPortfolioUpload>>,
+        TError,
+        RequestPortfolioUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestPortfolioUploadMutationOptions(options), queryClient);
+    }
+
+export const getDownloadPortfolioFileUrl = (fileId: string,) => {
+
+
+
+
+  return `/api/projects/portfolio-files/${fileId}`
+}
+
+export const downloadPortfolioFile = async (fileId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadPortfolioFileUrl(fileId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadPortfolioFileQueryKey = (fileId: string,) => {
+    return [
+    `/api/projects/portfolio-files/${fileId}`
+    ] as const;
+    }
+
+
+export const getDownloadPortfolioFileQueryOptions = <TData = Awaited<ReturnType<typeof downloadPortfolioFile>>, TError = ErrorType<void>>(fileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadPortfolioFileQueryKey(fileId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadPortfolioFile>>> = ({ signal }) => downloadPortfolioFile(fileId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: fileId !== null && fileId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadPortfolioFileQueryResult = NonNullable<Awaited<ReturnType<typeof downloadPortfolioFile>>>
+export type DownloadPortfolioFileQueryError = ErrorType<void>
+
+
+export function useDownloadPortfolioFile<TData = Awaited<ReturnType<typeof downloadPortfolioFile>>, TError = ErrorType<void>>(
+ fileId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadPortfolioFile>>,
+          TError,
+          Awaited<ReturnType<typeof downloadPortfolioFile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadPortfolioFile<TData = Awaited<ReturnType<typeof downloadPortfolioFile>>, TError = ErrorType<void>>(
+ fileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadPortfolioFile>>,
+          TError,
+          Awaited<ReturnType<typeof downloadPortfolioFile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadPortfolioFile<TData = Awaited<ReturnType<typeof downloadPortfolioFile>>, TError = ErrorType<void>>(
+ fileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDownloadPortfolioFile<TData = Awaited<ReturnType<typeof downloadPortfolioFile>>, TError = ErrorType<void>>(
+ fileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadPortfolioFile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDownloadPortfolioFileQueryOptions(fileId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListStudentProjectAssignmentsUrl = () => {
 

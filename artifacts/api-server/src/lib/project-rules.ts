@@ -1,6 +1,8 @@
 export const MAX_PROJECT_FILE_BYTES = 25 * 1024 * 1024;
 export const MAX_PROJECT_SUBMISSION_FILES = 5;
 export const MAX_PROJECT_SUBMISSION_BYTES = 40 * 1024 * 1024;
+export const MAX_PORTFOLIO_FILES = 10;
+export const MAX_PORTFOLIO_TOTAL_BYTES = 100 * 1024 * 1024;
 
 const TEXT_EXTENSIONS = new Set([
   ".txt", ".md", ".csv", ".json", ".html", ".htm", ".xml", ".yaml", ".yml",

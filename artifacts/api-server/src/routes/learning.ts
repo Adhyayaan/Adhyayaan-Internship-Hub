@@ -1,17 +1,32 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
-import { db, enrollments, workLogs } from "@workspace/db";
-import { and, eq, sql } from "drizzle-orm";
+import { db, enrollmentPortfolioFiles, enrollments, workLogs } from "@workspace/db";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   GetCourseParams, GetCourseResponse, ListCoursesResponse, GetDashboardResponse,
   EnrollBody, EnrollResponse, ListEnrollmentsResponse, UpdateEnrollmentParams, UpdateEnrollmentBody, UpdateEnrollmentResponse,
   ListLogsResponse, CreateLogBody, CreateLogResponse, DeleteLogParams,
+  RequestPortfolioUploadParams, RequestPortfolioUploadBody, RequestPortfolioUploadResponse, DownloadPortfolioFileParams,
 } from "@workspace/api-zod";
 import { courses, findCourse } from "../lib/catalog";
-import { requireStudent, publicUser } from "../lib/auth";
+import { requireLearner, requireStudent, publicUser } from "../lib/auth";
 import { assignNextGuide, lockGuideAssignmentPool } from "../lib/guide-assignment";
 import { userEnrollments, userLogs, enrollmentViewWithPacing } from "../lib/learning";
 import { pathwayModuleWeights } from "../lib/pacing";
+import {
+  MAX_PORTFOLIO_FILES,
+  MAX_PORTFOLIO_TOTAL_BYTES,
+  MAX_PROJECT_SUBMISSION_BYTES,
+  MAX_PROJECT_SUBMISSION_FILES,
+  getProjectFileExtension,
+  sanitizeProjectFileName,
+} from "../lib/project-rules";
+import {
+  createPortfolioUpload,
+  portfolioObjectFile,
+  verifyPortfolioUploadToken,
+  verifyUploadedPortfolioFile,
+} from "../lib/portfolio-storage";
 
 const router: IRouter = Router();
 router.get("/courses", (_req, res) => { res.json(ListCoursesResponse.parse(courses)); });
@@ -57,6 +72,28 @@ router.post("/enrollments", requireStudent, async (req, res): Promise<void> => {
   if (alreadyEnrolled || !created) { res.status(409).json({ error: "You already have a pathway for this internship. Open My learning to continue." }); return; }
   res.status(201).json(EnrollResponse.parse(await enrollmentViewWithPacing(created, [])));
 });
+
+router.post("/enrollments/:id/uploads", requireStudent, async (req, res): Promise<void> => {
+  const params = RequestPortfolioUploadParams.safeParse(req.params);
+  const body = RequestPortfolioUploadBody.safeParse(req.body);
+  if (!params.success || !body.success) { res.status(400).json({ error: "Choose a supported file for your pathway reflection." }); return; }
+  const [enrollment] = await db.select({ id: enrollments.id }).from(enrollments)
+    .where(and(eq(enrollments.id, params.data.id), eq(enrollments.userId, req.learner!.id)))
+    .limit(1);
+  if (!enrollment) { res.status(403).json({ error: "This pathway is not assigned to your account." }); return; }
+  try {
+    const result = await createPortfolioUpload({
+      enrollmentId: enrollment.id,
+      userId: req.learner!.id,
+      ...body.data,
+    });
+    res.status(201).json(RequestPortfolioUploadResponse.parse(result));
+  } catch (error) {
+    req.log.error({ err: error, enrollmentId: enrollment.id }, "Could not create portfolio upload");
+    res.status(400).json({ error: "This file type or size is not supported." });
+  }
+});
+
 router.patch("/enrollments/:id", requireStudent, async (req, res): Promise<void> => {
   const params = UpdateEnrollmentParams.safeParse(req.params);
   const parsed = UpdateEnrollmentBody.safeParse(req.body);
@@ -75,19 +112,100 @@ router.patch("/enrollments/:id", requireStudent, async (req, res): Promise<void>
     try { if (!["http:", "https:"].includes(new URL(projectUrl).protocol)) throw new Error(); }
     catch { res.status(400).json({ error: "Provide a valid http or https portfolio/repository link." }); return; }
   }
+  const rawClaims = (data.uploadTokens ?? []).map((token) => verifyPortfolioUploadToken(token, {
+    enrollmentId: existing.id,
+    userId: req.learner!.id,
+  }));
+  if (rawClaims.some((claim) => !claim)) {
+    res.status(400).json({ error: "One or more file upload links have expired. Choose and upload those files again." }); return;
+  }
+  const uploadClaims = rawClaims as NonNullable<(typeof rawClaims)[number]>[];
+  const incomingBytes = uploadClaims.reduce((total, claim) => total + claim.size, 0);
+  const containsArchive = uploadClaims.some((claim) => getProjectFileExtension(claim.fileName) === ".zip");
+  if (uploadClaims.length > MAX_PROJECT_SUBMISSION_FILES
+    || incomingBytes > MAX_PROJECT_SUBMISSION_BYTES
+    || (containsArchive && uploadClaims.length > 1)
+    || new Set(uploadClaims.map((claim) => claim.objectPath)).size !== uploadClaims.length) {
+    res.status(400).json({ error: "Add up to five files, or one ZIP archive, within the upload size limit." }); return;
+  }
+  const savedFiles = await db.select().from(enrollmentPortfolioFiles)
+    .where(eq(enrollmentPortfolioFiles.enrollmentId, existing.id))
+    .orderBy(desc(enrollmentPortfolioFiles.createdAt));
+  if (savedFiles.length + uploadClaims.length > MAX_PORTFOLIO_FILES
+    || savedFiles.reduce((sum, file) => sum + file.size, 0) + incomingBytes > MAX_PORTFOLIO_TOTAL_BYTES) {
+    res.status(400).json({ error: "This pathway has reached its file limit. Remove older uploads before adding more." }); return;
+  }
+  if (uploadClaims.some((claim) => savedFiles.some((file) => file.objectPath === claim.objectPath))) {
+    res.status(400).json({ error: "These upload links were already used. Upload the files again." }); return;
+  }
+  const verifiedUploads = await Promise.all(uploadClaims.map(verifyUploadedPortfolioFile));
+  if (verifiedUploads.some((verified) => !verified)) {
+    res.status(400).json({ error: "One or more files are still uploading or could not be checked. Please upload them again." }); return;
+  }
   const logs = await userLogs(req.learner!.id);
   const reflection = data.reflection ?? existing.reflection;
   const completedModules = data.completedModules ?? existing.completedModules;
   if (data.submit) {
     const hours = logs.filter((l) => l.enrollmentId === existing.id).reduce((s, l) => s + l.hours, 0);
-    if (!projectUrl || reflection.trim().length < 30 || hours < existing.hours || !applicableModules.every((m) => completedModules.includes(m.id))) {
-      res.status(400).json({ error: `Before submitting, complete all pathway modules, record ${existing.hours} practical hours, add a project link and a reflection of at least 30 characters. You can save a draft at any time.` }); return;
+    if ((!projectUrl && savedFiles.length + uploadClaims.length === 0) || reflection.trim().length < 30 || hours < existing.hours || !applicableModules.every((m) => completedModules.includes(m.id))) {
+      res.status(400).json({ error: `Before submitting, complete all pathway modules, record ${existing.hours} practical hours, add a project link or file, and write a reflection of at least 30 characters. You can save a draft at any time.` }); return;
     }
   }
   // Any edit invalidates an earlier submission and requires the learner to resubmit.
-  const [updated] = await db.update(enrollments).set({ projectUrl, reflection, completedModules, status: data.submit ? "submitted" : "in_progress" }).where(owner).returning();
+  const [updated] = await db.transaction(async (tx) => {
+    if (uploadClaims.length) {
+      await tx.insert(enrollmentPortfolioFiles).values(uploadClaims.map((claim) => ({
+        id: randomUUID(),
+        enrollmentId: existing.id,
+        userId: req.learner!.id,
+        objectPath: claim.objectPath,
+        fileName: claim.fileName,
+        contentType: claim.contentType,
+        size: claim.size,
+      })));
+    }
+    return tx.update(enrollments).set({
+      projectUrl,
+      reflection,
+      completedModules,
+      status: data.submit ? "submitted" : "in_progress",
+    }).where(owner).returning();
+  });
   res.json(UpdateEnrollmentResponse.parse(await enrollmentViewWithPacing(updated!, logs)));
 });
+
+router.get("/projects/portfolio-files/:fileId", requireLearner, async (req, res): Promise<void> => {
+  const params = DownloadPortfolioFileParams.safeParse(req.params);
+  if (!params.success) { res.status(404).json({ error: "Portfolio file not found." }); return; }
+  const [row] = await db.select({
+    file: enrollmentPortfolioFiles,
+    guideId: enrollments.guideId,
+  }).from(enrollmentPortfolioFiles)
+    .innerJoin(enrollments, eq(enrollments.id, enrollmentPortfolioFiles.enrollmentId))
+    .where(eq(enrollmentPortfolioFiles.id, params.data.fileId))
+    .limit(1);
+  if (!row) { res.status(404).json({ error: "Portfolio file not found." }); return; }
+  const allowed = req.learner!.role === "student"
+    ? row.file.userId === req.learner!.id
+    : req.learner!.role === "guide" && row.guideId === req.learner!.id;
+  if (!allowed) { res.status(403).json({ error: "You are not part of this pathway." }); return; }
+  const file = await portfolioObjectFile(row.file.objectPath);
+  if (!file) { res.status(404).json({ error: "Portfolio file is no longer available." }); return; }
+  const fileName = sanitizeProjectFileName(row.file.fileName);
+  res.set({
+    "Content-Type": row.file.contentType,
+    "Content-Length": String(row.file.size),
+    "Content-Disposition": `attachment; filename="portfolio-file"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  });
+  file.createReadStream().on("error", (error) => {
+    req.log.warn({ err: error, fileId: row.file.id }, "Could not stream portfolio file");
+    if (!res.headersSent) res.status(404).end();
+    else res.end();
+  }).pipe(res);
+});
+
 router.get("/logs", requireStudent, async (req, res): Promise<void> => {
   res.json(ListLogsResponse.parse(await userLogs(req.learner!.id)));
 });

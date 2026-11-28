@@ -8,6 +8,7 @@
 import type { Course } from './course';
 import type { EnrollmentPacing } from './enrollmentPacing';
 import type { GuidePublic } from './guidePublic';
+import type { ProjectAttachment } from './projectAttachment';
 
 export interface Enrollment {
   id: string;
@@ -21,4 +22,5 @@ export interface Enrollment {
   createdAt: string;
   pacing: EnrollmentPacing;
   assignedGuide: GuidePublic | null;
+  portfolioFiles: ProjectAttachment[];
 }

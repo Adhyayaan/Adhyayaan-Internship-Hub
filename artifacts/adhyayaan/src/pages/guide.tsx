@@ -30,8 +30,18 @@ function Meter({ label, value, percent, tone = 'primary' }: { label: string; val
   </div>;
 }
 
+function safeProjectUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? value : '';
+  } catch {
+    return '';
+  }
+}
+
 function PaceCard({ course }: { course: GuideCourseProgress }) {
   const p = course.pacing;
+  const projectUrl = safeProjectUrl(course.projectUrl);
   const hoursPct = course.hours > 0 ? (course.loggedHours / course.hours) * 100 : 0;
   const paceTone = p.status === 'behind' ? 'border-accent/40 bg-accent/5' : p.status === 'ahead' || p.status === 'complete' ? 'border-[hsl(var(--ledger))]/30 bg-[hsl(var(--ledger-soft))]/70' : 'border-border bg-secondary/30';
   return <article className="rounded-2xl border border-border bg-card p-4 sm:p-5" data-testid={`card-course-progress-${course.enrollmentId}`}>
@@ -62,6 +72,18 @@ function PaceCard({ course }: { course: GuideCourseProgress }) {
     <div className="mt-4 border-t border-border pt-4">
       <Button asChild size="sm" variant="outline" data-testid={`button-guide-mentorship-${course.enrollmentId}`}><Link href={`/mentorship/${course.enrollmentId}`}><MessagesSquare className="mr-2 h-4 w-4" />Open learner conversation</Link></Button>
     </div>
+    <section className="mt-4 border-t border-border pt-4" aria-label={`Pathway project submission for ${course.courseTitle}`}>
+      <h4 className="text-sm font-bold text-primary">Pathway reflection</h4>
+      {!course.projectUrl && !course.reflection && course.portfolioFiles.length === 0 ? (
+        <p className="mt-3 rounded-lg bg-secondary/35 px-3 py-3 text-sm text-muted-foreground">No project link, reflection, or files have been added yet.</p>
+      ) : (
+        <div className="mt-3 space-y-3">
+          {projectUrl && <a href={projectUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 max-w-full items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold text-primary underline underline-offset-4"><ArrowRight className="h-4 w-4 shrink-0" />Open project link</a>}
+          {course.reflection && <div className="rounded-lg bg-secondary/35 p-3"><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Student reflection</p><p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{course.reflection}</p></div>}
+          {course.portfolioFiles.length > 0 && <ul className="space-y-2">{course.portfolioFiles.map((file) => <li key={file.id}><a href={file.downloadUrl} className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-medium hover:bg-secondary" data-testid={`link-portfolio-file-${file.id}`}><FileText className="h-4 w-4 shrink-0 text-accent" /><span className="min-w-0 flex-1 truncate">{file.fileName}</span><span className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(file.size < 1024 * 1024 ? 2 : 1)} MB</span></a></li>)}</ul>}
+        </div>
+      )}
+    </section>
     <section className="mt-4 border-t border-border pt-4" aria-label={`Practical-hour log for ${course.courseTitle}`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <h4 className="text-sm font-bold text-primary">Practical-hour log <span className="font-normal text-muted-foreground">({course.practicalLogs.length} {course.practicalLogs.length === 1 ? 'entry' : 'entries'})</span></h4>

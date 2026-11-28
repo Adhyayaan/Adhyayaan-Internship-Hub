@@ -8,6 +8,7 @@
 import type { EnrollmentPacing } from './enrollmentPacing';
 import type { GuideCourseProgressHours } from './guideCourseProgressHours';
 import type { GuidePracticalLog } from './guidePracticalLog';
+import type { ProjectAttachment } from './projectAttachment';
 
 export interface GuideCourseProgress {
   enrollmentId: string;
@@ -26,4 +27,7 @@ export interface GuideCourseProgress {
   studyChecks: number;
   secureChecks: number;
   practicalLogs: GuidePracticalLog[];
+  projectUrl: string;
+  reflection: string;
+  portfolioFiles: ProjectAttachment[];
 }

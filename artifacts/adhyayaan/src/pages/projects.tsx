@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 import { AlertCircle, Archive, Check, Circle, Clock3, FileText, Loader2, Send, Sparkles, UploadCloud, X } from 'lucide-react';
 import {
   getListEnrollmentsQueryKey, getListStudentProjectAssignmentsQueryKey, useListEnrollments,
-  useListStudentProjectAssignments, useRequestStudentProjectUpload, useSubmitStudentProject,
+  useListStudentProjectAssignments, useRequestPortfolioUpload, useRequestStudentProjectUpload, useSubmitStudentProject,
   useUpdateEnrollment, type Enrollment, type StudentProjectAssignment,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import { useQueryClient } from '@tanstack/react-query';
 const validUrl = (s: string) => { try { const u = new URL(s); return u.protocol === 'https:' || u.protocol === 'http:'; } catch { return false; } };
 const maxFileBytes = 25 * 1024 * 1024;
 const maxTotalBytes = 40 * 1024 * 1024;
+const maxPortfolioFiles = 10;
+const maxPortfolioBytes = 100 * 1024 * 1024;
 const supportedExtensions = new Set([
   '.zip', '.pdf', '.txt', '.md', '.csv', '.json', '.html', '.htm', '.xml', '.yaml', '.yml',
   '.js', '.jsx', '.ts', '.tsx', '.py', '.java', '.c', '.h', '.cpp', '.hpp', '.cs', '.go', '.rs',
@@ -199,31 +201,86 @@ function ClipboardListIcon() {
 function ProjectCard({ e }: { e: Enrollment }) {
   const [url, setUrl] = useState(e.projectUrl);
   const [refl, setRefl] = useState(e.reflection);
+  const [files, setFiles] = useState<File[]>([]);
   const upd = useUpdateEnrollment();
+  const requestUpload = useRequestPortfolioUpload();
   const inval = useInvalidateAll();
   const { toast } = useToast();
   const [mode, setMode] = useState<'draft' | 'submit' | null>(null);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [fileError, setFileError] = useState('');
   const [coach, setCoach] = useState(false);
   const p = progressOf(e);
   const submitted = statusLabel(e.status) === 'Awaiting mentor review';
+  const savedFileBytes = e.portfolioFiles.reduce((total, file) => total + file.size, 0);
+  const urlIsValidOrEmpty = !url.trim() || validUrl(url.trim());
+  const hasProjectEvidence = (url.trim().length > 0 && validUrl(url.trim())) || files.length > 0 || e.portfolioFiles.length > 0;
   const checks = [
-    { ok: validUrl(url), l: 'A valid http(s) repository or project link' },
+    { ok: urlIsValidOrEmpty && hasProjectEvidence, l: 'A valid project link or at least one uploaded file' },
     { ok: refl.trim().length >= 30, l: `Reflection of at least 30 characters (${refl.trim().length})` },
     { ok: e.loggedHours >= e.hours, l: `Logged hours ${e.loggedHours}/${e.hours}` },
     { ok: p.done === p.mods.length && p.mods.length > 0, l: `All applicable modules done (${p.done}/${p.mods.length})` },
   ];
   const ready = checks.every((c) => c.ok);
 
+  const choosePortfolioFiles = (selected: FileList | null) => {
+    const next = [...(selected ?? [])];
+    setFileError('');
+    if (e.portfolioFiles.length + next.length > maxPortfolioFiles) {
+      setFileError(`This pathway has reached its ${maxPortfolioFiles}-file limit. You can still update the reflection or project link.`);
+      return;
+    }
+    if (next.length > 5) { setFileError('Choose up to five files, or one ZIP archive at a time.'); return; }
+    if (next.some((file) => file.size < 1 || file.size > maxFileBytes)) { setFileError('Each file must be smaller than 25 MB.'); return; }
+    if (savedFileBytes + next.reduce((total, file) => total + file.size, 0) > maxPortfolioBytes) {
+      setFileError('All files for this pathway must stay within 100 MB.');
+      return;
+    }
+    if (next.reduce((total, file) => total + file.size, 0) > maxTotalBytes) { setFileError('New uploads must stay within 40 MB per save.'); return; }
+    if (next.some((file) => !supportedExtensions.has(fileExtension(file.name)))) { setFileError('That file type is not supported.'); return; }
+    if (next.some((file) => fileExtension(file.name) === '.zip') && next.length > 1) { setFileError('Upload a ZIP archive by itself, or choose several individual files.'); return; }
+    setFiles(next);
+  };
+
   const save = async (submit: boolean) => {
+    setFileError('');
+    if (url.trim() && !validUrl(url.trim())) {
+      setFileError('Enter a valid http:// or https:// project link, or clear the field and upload files instead.');
+      return;
+    }
     setMode(submit ? 'submit' : 'draft');
     try {
-      await upd.mutateAsync({ id: e.id, data: { projectUrl: url.trim(), reflection: refl, submit } });
+      const uploadTokens: string[] = [];
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index]!;
+        const extension = fileExtension(file.name);
+        const contentType = (file.type || fileMimeFallback[extension] || 'application/octet-stream').toLowerCase();
+        setUploadProgress(`Uploading ${index + 1} of ${files.length}…`);
+        const upload = await requestUpload.mutateAsync({
+          id: e.id,
+          data: { fileName: file.name, contentType, size: file.size },
+        });
+        const response = await fetch(upload.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': contentType },
+          body: file,
+        });
+        if (!response.ok) throw new Error(`Could not upload ${file.name}. Please try again.`);
+        uploadTokens.push(upload.uploadToken);
+      }
+      setUploadProgress(submit ? 'Sending your work for review…' : 'Saving your reflection…');
+      await upd.mutateAsync({
+        id: e.id,
+        data: { projectUrl: url.trim(), reflection: refl, uploadTokens, submit },
+      });
       await inval();
+      setFiles([]);
       toast({ title: submit ? 'Sent for mentor review' : 'Draft saved', description: submit ? 'Your mentor will review it. This is not automatic grading or approval.' : undefined });
     } catch (err) {
       toast({ title: 'Could not save', description: errMsg(err), variant: 'destructive' });
     } finally {
       setMode(null);
+      setUploadProgress('');
     }
   };
 
@@ -242,6 +299,50 @@ function ProjectCard({ e }: { e: Enrollment }) {
         <div className="space-y-1.5">
           <Label htmlFor={`refl-${e.id}`}>Reflection</Label>
           <Textarea id={`refl-${e.id}`} value={refl} onChange={(ev) => setRefl(ev.target.value)} rows={7} maxLength={12000} disabled={submitted} placeholder="What did you build, what broke, what would you do differently? Bangla or English is fine." data-testid={`input-reflection-${e.id}`} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`portfolio-files-${e.id}`}>Project files <span className="font-normal text-muted-foreground">(optional)</span></Label>
+          <label htmlFor={`portfolio-files-${e.id}`} className={`flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-3 py-4 text-center transition-colors hover:border-primary/50 hover:bg-secondary/40 ${submitted ? 'pointer-events-none opacity-60' : ''}`}>
+            <UploadCloud className="h-6 w-6 text-accent" />
+            <span className="mt-1 text-sm font-semibold text-primary">Choose files or a ZIP archive</span>
+            <span className="mt-1 text-xs text-muted-foreground">Up to five files or one ZIP · 25 MB per file · 40 MB per save</span>
+          </label>
+          <input
+            id={`portfolio-files-${e.id}`}
+            type="file"
+            multiple
+            accept=".zip,.pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.yaml,.yml,.js,.jsx,.ts,.tsx,.py,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.php,.rb,.sh,.sql,.ipynb,.png,.jpg,.jpeg,.webp,.docx,.pptx,.xlsx"
+            className="sr-only"
+            onChange={(event) => { choosePortfolioFiles(event.currentTarget.files); event.currentTarget.value = ''; }}
+            disabled={submitted || !!mode}
+            data-testid={`input-portfolio-files-${e.id}`}
+          />
+          {e.portfolioFiles.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-xs font-semibold text-muted-foreground">Saved files · {e.portfolioFiles.length}/{maxPortfolioFiles}</p>
+              {e.portfolioFiles.map((file) => (
+                <a key={file.id} href={file.downloadUrl} className="flex min-h-10 items-center gap-2 rounded-lg bg-secondary/60 px-3 text-sm hover:bg-secondary" data-testid={`link-portfolio-file-${file.id}`}>
+                  {file.isArchive ? <Archive className="h-4 w-4 shrink-0 text-accent" /> : <FileText className="h-4 w-4 shrink-0 text-accent" />}
+                  <span className="min-w-0 flex-1 truncate">{file.fileName}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(file.size < 1024 * 1024 ? 2 : 1)} MB</span>
+                </a>
+              ))}
+            </div>
+          )}
+          {files.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              {files.map((file, index) => (
+                <div key={`${file.name}-${file.size}-${file.lastModified}`} className="flex min-h-10 items-center gap-2 rounded-lg border border-dashed border-border px-3 text-sm">
+                  {fileExtension(file.name) === '.zip' ? <Archive className="h-4 w-4 shrink-0 text-accent" /> : <FileText className="h-4 w-4 shrink-0 text-accent" />}
+                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(file.size < 1024 * 1024 ? 2 : 1)} MB</span>
+                  <button type="button" aria-label={`Remove ${file.name}`} className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setFiles((current) => current.filter((_, i) => i !== index))} disabled={!!mode} data-testid={`button-remove-portfolio-file-${e.id}-${index}`}><X className="h-4 w-4" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+          {fileError && <p role="alert" className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{fileError}</p>}
+          {uploadProgress && <p role="status" className="text-xs text-muted-foreground">{uploadProgress}</p>}
         </div>
       </div>
       <div className="rounded-2xl bg-secondary/60 p-5">
@@ -281,9 +382,10 @@ function ProjectCard({ e }: { e: Enrollment }) {
               `Deliverable: ${e.course.deliverable}`,
               `Status: ${statusLabel(e.status)}. Modules ${p.done}/${p.mods.length}. Hours ${e.loggedHours}/${e.hours}.`,
               `Project link entered (as text only; the coach has NOT opened it and must not claim to have seen its contents): ${url.trim() || '(none yet)'}`,
+              `Attached project files (file contents are NOT visible to this coach): ${[...e.portfolioFiles.map((file) => file.fileName), ...files.map((file) => file.name)].join(', ') || '(none)'}`,
               `Current reflection draft (may be unsaved):\n${refl.trim() || '(empty)'}`,
             ].join('\n')}
-            intro="The coach reads the reflection text currently in the box, including unsaved edits. It cannot open your link."
+            intro="The coach reads your reflection text, including unsaved edits. It cannot open project links or read attached file contents."
             onClose={() => setCoach(false)}
             testId={`coach-project-${e.id}`}
           />
@@ -306,7 +408,7 @@ export default function Projects() {
   });
   return (
     <div>
-      <PageHeader kicker="Projects" title="Show the work, then say what you learned" sub="Upload project files for a guide-assigned brief. AI can prepare review notes for your guide, but it does not give an official grade." />
+      <PageHeader kicker="Projects" title="Show the work, then say what you learned" sub="Upload files for a guide-assigned brief or your pathway reflection. AI review notes are for your guide and are not an official grade." />
       {isLoading ? <CardSkeletons n={1} h="h-80" /> : !user ? <SignInWall what="manage your projects" /> : q.isLoading ? <CardSkeletons n={1} h="h-80" /> : q.error ? <ErrorPanel error={q.error} onRetry={() => q.refetch()} /> : !q.data?.length ? (
         <Empty title="No project yet" body="Projects belong to a pathway. Enroll first, then return here." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
       ) : (

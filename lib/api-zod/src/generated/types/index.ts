@@ -94,6 +94,7 @@ export * from './module';
 export * from './pacingModule';
 export * from './pilotChapter';
 export * from './pilotVideo';
+export * from './portfolioUploadInput';
 export * from './practiceAnswer';
 export * from './practiceAnswers';
 export * from './practiceAttempt';
