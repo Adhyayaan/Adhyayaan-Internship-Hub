@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'wouter';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, ArrowUpRight, CalendarDays, Check, CheckCheck, ChevronRight, CircleAlert, FileText,
@@ -9,13 +9,14 @@ import {
   getDownloadSupportGroupAttachmentQueryKey, getGetGuideSupportReviewQueryKey,
   getListSupportGroupMessagesQueryKey, getListSupportGroupsQueryKey,
   useAnswerSupportGroupQuestion, useCreateGuideSupportGroup, useDownloadSupportGroupAttachment,
-  useDeleteSupportGroupMessage, useEditSupportGroupMessage, useToggleSupportGroupMessageReaction, useUpdateSupportGroupTyping,
+  useDeleteSupportGroupMessage, useEditSupportGroupMessage, useToggleSupportGroupMessageReaction,
   useGetGuideSupportReview, useListSupportGroupMessages, useListSupportGroups,
   useRequestSupportGroupUpload, useSendSupportGroupMessage,
   useUpdateGuideSupportGroupMembers, type GuideSupportLearner, type SupportGroup,
   type SupportGroupMessage, type SupportGroupMember,
   type AnswerSupportGroupQuestionMutationVariables, type CreateGuideSupportGroupMutationVariables,
   type RequestSupportGroupUploadMutationVariables, type SendSupportGroupMessageMutationVariables,
+  type SupportGroupMessagesResponse,
   type UpdateGuideSupportGroupMembersMutationVariables,
   type ChatReactionInputReaction,
 } from '@workspace/api-client-react';
@@ -25,6 +26,7 @@ import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/pa
 import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
 import { AudioNotePlayer, VoiceNoteRecorder } from '@/components/chat/voice-note';
 import { MAX_VOICE_NOTE_BYTES, VOICE_NOTE_TYPES } from '@/components/chat/voice-note-config';
+import { markChatRead, sendChatTyping, subscribeChatRealtime } from '@/lib/chat-realtime';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'text/plain', 'text/csv',
@@ -280,8 +282,14 @@ function QuestionThread({ question, messages, groupId }: { question: SupportGrou
     setError(''); setSaved(false);
     try {
       const variables: AnswerSupportGroupQuestionMutationVariables = { groupId, questionId: question.id, data: { response: clean } };
-      await answer.mutateAsync(variables);
-      await qc.invalidateQueries({ queryKey: getListSupportGroupMessagesQueryKey(groupId) });
+      const savedMessage = await answer.mutateAsync(variables);
+      qc.setQueryData<SupportGroupMessagesResponse>(getListSupportGroupMessagesQueryKey(groupId), (current) => {
+        if (!current) return current;
+        const updated = current.messages.filter((message) => message.id !== savedMessage.id);
+        updated.push(savedMessage);
+        updated.sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id));
+        return { ...current, messages: updated };
+      });
       setResponse(''); setChoice(''); setSaved(true);
     }
     catch (cause) { setError(errMsg(cause)); }
@@ -381,14 +389,12 @@ function MemberPanel({ group, members, onUpdate }: { group: SupportGroup; member
 function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }: {
   group: SupportGroup;
   canGuide: boolean;
-  afterSend: () => Promise<void>;
+  afterSend: (message: SupportGroupMessage) => void;
   replyingTo: SupportGroupMessage | null;
   onClearReply: () => void;
 }) {
-  const qc = useQueryClient();
   const send = useSendSupportGroupMessage();
   const upload = useRequestSupportGroupUpload();
-  const updateTyping = useUpdateSupportGroupTyping();
   const [mode, setMode] = useState<'text' | 'meeting' | 'question'>('text');
   const [body, setBody] = useState('');
   const [url, setUrl] = useState('');
@@ -409,7 +415,7 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
     if (typing) {
       const now = Date.now();
       if (!typingActive.current || now - lastTypingSent.current > 1200) {
-        updateTyping.mutate({ groupId: group.id, data: { typing: true } });
+        sendChatTyping({ kind: 'support-group', id: group.id }, true);
         lastTypingSent.current = now;
       }
       typingActive.current = true;
@@ -418,7 +424,7 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
     } else {
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
       typingTimeout.current = null;
-      if (typingActive.current) updateTyping.mutate({ groupId: group.id, data: { typing: false } });
+      if (typingActive.current) sendChatTyping({ kind: 'support-group', id: group.id }, false);
       typingActive.current = false;
     }
   }
@@ -451,12 +457,12 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
         : mode === 'meeting' ? { kind: 'meeting' as const, meetingUrl: url.trim(), ...(startsAt ? { meetingStartsAt: new Date(startsAt).toISOString() } : {}), ...(agenda.trim() ? { meetingAgenda: agenda.trim() } : {}) }
           : { kind: 'question' as const, body: body.trim(), question: { type: questionType, ...(questionType === 'multiple_choice' ? { options } : {}) } };
       const sendVariables: SendSupportGroupMessageMutationVariables = { groupId: group.id, data };
-      await send.mutateAsync(sendVariables);
+      const savedMessage = await send.mutateAsync(sendVariables);
+      afterSend(savedMessage);
       setTyping(false); onClearReply();
       setBody(''); setFiles([]); setVoiceNote(null); setUrl(''); setStartsAt(''); setAgenda(''); setOptionsText('');
       if (inputRef.current) inputRef.current.value = '';
       setNotice(mode === 'question' ? 'Question shared. It is for learning, not grading.' : 'Your message is shared with the group.');
-      await afterSend(); await qc.invalidateQueries({ queryKey: getListSupportGroupsQueryKey() });
     } catch (cause) { setError(errMsg(cause)); }
     finally { setBusy(false); }
   }
@@ -483,10 +489,11 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
 
 export function SupportGroupPage() {
   const { groupId = '' } = useParams<{ groupId: string }>();
+  const [, setLocation] = useLocation();
   const { user, isLoading: authLoading } = useAuth();
   const qc = useQueryClient();
   const messageKey = useMemo(() => getListSupportGroupMessagesQueryKey(groupId), [groupId]);
-  const groupsKey = getListSupportGroupsQueryKey();
+  const groupsKey = useMemo(() => getListSupportGroupsQueryKey(), []);
   const query = useListSupportGroupMessages(groupId, { query: { enabled: !!user && !!groupId, queryKey: messageKey } });
   const groupListQuery = useListSupportGroups({ query: { enabled: !!user, queryKey: groupsKey } });
   const manage = useUpdateGuideSupportGroupMembers();
@@ -494,6 +501,30 @@ export function SupportGroupPage() {
   const deleteMessage = useDeleteSupportGroupMessage();
   const toggleReaction = useToggleSupportGroupMessageReaction();
   const data = query.data;
+  const cacheIncomingMessage = useCallback((message: SupportGroupMessage) => {
+    if (!user) return;
+    let isNew = false;
+    qc.setQueryData<SupportGroupMessagesResponse>(messageKey, (current) => {
+      if (!current) return current;
+      isNew = !current.messages.some((item) => item.id === message.id);
+      const messages = current.messages.filter((item) => item.id !== message.id);
+      messages.push(message);
+      messages.sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id));
+      return { ...current, messages };
+    });
+    const preview = message.deletedAt ? 'Message deleted'
+      : message.kind === 'meeting' ? `Google Meet session${message.meetingAgenda ? ` · ${message.meetingAgenda}` : ''}`
+        : message.kind === 'question' ? `Learning question · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+          : message.kind === 'question_response' ? `Question response · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+            : message.body.trim().replace(/\s+/g, ' ').slice(0, 160) || 'Shared an attachment';
+    qc.setQueryData<SupportGroup[]>(groupsKey, (current) => current?.map((group) => group.id !== groupId ? group : ({
+      ...group,
+      messageCount: group.messageCount + (isNew ? 1 : 0),
+      unreadCount: group.unreadCount + (isNew && message.senderId !== user.id ? 1 : 0),
+      lastMessagePreview: preview,
+      lastMessageAt: message.createdAt,
+    })));
+  }, [groupId, groupsKey, messageKey, qc, user]);
   const endRef = useRef<HTMLDivElement>(null);
   const [messageSearchOpen, setMessageSearchOpen] = useState(false);
   const [messageSearch, setMessageSearch] = useState('');
@@ -508,66 +539,81 @@ export function SupportGroupPage() {
 
   useEffect(() => {
     if (!groupId || !user) return;
-    const source = new EventSource(`/api/support-groups/${encodeURIComponent(groupId)}/events`, { withCredentials: true });
-    const refresh = () => {
-      void qc.invalidateQueries({ queryKey: getListSupportGroupMessagesQueryKey(groupId) });
-      void qc.invalidateQueries({ queryKey: getListSupportGroupsQueryKey() });
-    };
-    const onTyping = (event: Event) => {
-      try {
-        const payload = JSON.parse((event as MessageEvent<string>).data) as { userId?: string; name?: string; typing?: boolean };
-        if (!payload.userId || !payload.name) return;
-        const key = payload.userId;
-        if (typingTimeouts.current.has(key)) clearTimeout(typingTimeouts.current.get(key)!);
-        if (payload.typing) {
-          setTypingPeers((current) => current.includes(payload.name!) ? current : [...current, payload.name!]);
-          typingTimeouts.current.set(key, setTimeout(() => {
-            setTypingPeers((current) => current.filter((name) => name !== payload.name));
-            typingTimeouts.current.delete(key);
+    const room = { kind: 'support-group' as const, id: groupId };
+    const unsubscribe = subscribeChatRealtime(user.id, (event) => {
+      if (event.type === 'connection' && event.reconnected) {
+        void qc.invalidateQueries({ queryKey: messageKey });
+        void qc.invalidateQueries({ queryKey: groupsKey });
+        return;
+      }
+      if (event.type === 'support-group.message' && event.groupId === groupId && event.message) {
+        const message = event.message as SupportGroupMessage;
+        cacheIncomingMessage(message);
+        if (message.senderId !== user.id && document.visibilityState === 'visible') markChatRead(room);
+        return;
+      }
+      if (event.type === 'support-group.read' && event.groupId === groupId && typeof event.userId === 'string') {
+        const readerId = event.userId;
+        qc.setQueryData<SupportGroupMessagesResponse>(messageKey, (current) => current ? ({
+          ...current,
+          messages: current.messages.map((message) => message.senderId === user.id && readerId !== user.id
+            ? { ...message, readByCount: message.readByCount + 1 }
+            : message),
+        }) : current);
+        return;
+      }
+      if (event.type === 'support-group.typing' && event.groupId === groupId && typeof event.userId === 'string' && typeof event.name === 'string') {
+        const typingUserId = event.userId;
+        if (typingTimeouts.current.has(typingUserId)) clearTimeout(typingTimeouts.current.get(typingUserId)!);
+        if (event.typing) {
+          setTypingPeers((current) => current.includes(event.name as string) ? current : [...current, event.name as string]);
+          typingTimeouts.current.set(typingUserId, setTimeout(() => {
+            setTypingPeers((current) => current.filter((name) => name !== event.name));
+            typingTimeouts.current.delete(typingUserId);
           }, 4500));
         } else {
-          setTypingPeers((current) => current.filter((name) => name !== payload.name));
-          typingTimeouts.current.delete(key);
+          setTypingPeers((current) => current.filter((name) => name !== event.name));
+          typingTimeouts.current.delete(typingUserId);
         }
-      } catch { /* ignore malformed ephemeral event */ }
-    };
-    const revoke = () => { source.close(); refresh(); };
-    source.addEventListener('support-group-message', refresh);
-    source.addEventListener('support-group-read', refresh);
-    source.addEventListener('support-group-typing', onTyping);
-    source.addEventListener('support-group-access-revoked', revoke);
-    source.onopen = refresh;
+        return;
+      }
+      if (event.type === 'support-group.access-revoked' && event.groupId === groupId) {
+        setChatActionError('Your access to this support group has changed.');
+        setLocation('/support-groups');
+      }
+    }, room);
     return () => {
-      source.removeEventListener('support-group-message', refresh);
-      source.removeEventListener('support-group-read', refresh);
-      source.removeEventListener('support-group-typing', onTyping);
-      source.removeEventListener('support-group-access-revoked', revoke);
-      source.close();
+      unsubscribe();
       for (const timeout of typingTimeouts.current.values()) clearTimeout(timeout);
       typingTimeouts.current.clear();
     };
-  }, [groupId, qc, user]);
+  }, [cacheIncomingMessage, groupId, groupsKey, messageKey, qc, setLocation, user]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [data?.messages.length]);
-  async function refreshAfterSend() { await Promise.all([qc.invalidateQueries({ queryKey: messageKey }), qc.invalidateQueries({ queryKey: groupsKey })]); }
   async function saveMessage(messageId: string, body: string) {
     setChatActionError('');
-    try { await editMessage.mutateAsync({ groupId, messageId, data: { body } }); await refreshAfterSend(); }
+    try { cacheIncomingMessage(await editMessage.mutateAsync({ groupId, messageId, data: { body } })); }
     catch (error) { setChatActionError(errMsg(error)); throw error; }
   }
   async function removeMessage(messageId: string) {
     setChatActionError('');
-    try { await deleteMessage.mutateAsync({ groupId, messageId }); await refreshAfterSend(); }
+    try { cacheIncomingMessage(await deleteMessage.mutateAsync({ groupId, messageId })); }
     catch (error) { setChatActionError(errMsg(error)); throw error; }
   }
   async function reactToMessage(messageId: string, reaction: ChatReactionInputReaction) {
     setChatActionError('');
-    try { await toggleReaction.mutateAsync({ groupId, messageId, data: { reaction } }); await refreshAfterSend(); }
+    try {
+      const result = await toggleReaction.mutateAsync({ groupId, messageId, data: { reaction } });
+      qc.setQueryData<SupportGroupMessagesResponse>(messageKey, (current) => current ? ({
+        ...current,
+        messages: current.messages.map((message) => message.id === messageId ? { ...message, reactions: result.reactions } : message),
+      }) : current);
+    }
     catch (error) { setChatActionError(errMsg(error)); }
   }
   async function updateMembers(addEnrollmentIds: string[], removeUserIds: string[]) {
     const variables: UpdateGuideSupportGroupMembersMutationVariables = { groupId, data: { ...(addEnrollmentIds.length ? { addEnrollmentIds } : {}), ...(removeUserIds.length ? { removeUserIds } : {}) } };
     await manage.mutateAsync(variables);
-    await refreshAfterSend();
+    await qc.invalidateQueries({ queryKey: groupsKey });
   }
   const visibleMessages = (data?.messages ?? []).filter((message) => message.kind !== 'question_response').filter((message) => {
     const term = messageSearch.trim().toLocaleLowerCase();
@@ -639,7 +685,7 @@ export function SupportGroupPage() {
                 {typingPeers.length > 0 && <div className="flex items-center gap-2 rounded-xl bg-card/80 px-3 py-2 text-xs font-medium text-muted-foreground" role="status" data-testid="status-group-typing"><span className="flex gap-1"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))] [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))] [animation-delay:240ms]" /></span>{typingPeers.length === 1 ? `${typingPeers[0]} is typing…` : `${typingPeers.length} people are typing…`}</div>}
                 <div ref={endRef} />
               </div>
-              <GroupComposer group={data.group} canGuide={!!user.isGuide && data.group.canManageMembers} afterSend={refreshAfterSend} replyingTo={replyingTo} onClearReply={() => setReplyingTo(null)} />
+              <GroupComposer group={data.group} canGuide={!!user.isGuide && data.group.canManageMembers} afterSend={cacheIncomingMessage} replyingTo={replyingTo} onClearReply={() => setReplyingTo(null)} />
             </section>
             <aside className="space-y-3">
               <section className="rounded-2xl border border-border bg-card p-4" aria-label="Group members"><h2 className="flex items-center gap-2 font-bold text-primary"><UsersRound className="h-4 w-4 text-[hsl(var(--support-moss))]" />Members</h2><ul className="mt-3 space-y-2">{data.members.map((member) => <li key={member.userId} className="flex min-w-0 items-center gap-2.5"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-secondary text-[11px] font-bold text-primary">{initials(member.name)}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{member.name}</span>{member.userId === data.group.guideId && <span className="text-[10px] font-bold text-[hsl(var(--support-moss))]">Guide</span>}</li>)}</ul></section>

@@ -1,4 +1,10 @@
 import type { Response } from "express";
+import {
+  publishSupportGroupRealtimeMessage,
+  publishSupportGroupRealtimeRead,
+  publishSupportGroupRealtimeTyping,
+  revokeSupportGroupRealtimeAccess,
+} from "./chat-realtime";
 
 type Subscriber = { userId: string; response: Response };
 const subscribers = new Map<string, Set<Subscriber>>();
@@ -15,6 +21,7 @@ export function subscribeToSupportGroup(groupId: string, userId: string, respons
 }
 
 export function publishSupportGroupMessage(groupId: string, messageId: string) {
+  publishSupportGroupRealtimeMessage(groupId, messageId, "");
   const group = subscribers.get(groupId);
   if (!group) return;
   const event = `event: support-group-message\ndata: ${JSON.stringify({ messageId })}\n\n`;
@@ -46,14 +53,17 @@ function publishGroupEvent(groupId: string, eventName: string, data: Record<stri
 }
 
 export function publishSupportGroupRead(groupId: string, userId: string) {
+  publishSupportGroupRealtimeRead(groupId, userId);
   publishGroupEvent(groupId, "support-group-read", { userId }, userId);
 }
 
 export function publishSupportGroupTyping(groupId: string, userId: string, name: string, typing: boolean) {
+  publishSupportGroupRealtimeTyping(groupId, userId, name, typing);
   publishGroupEvent(groupId, "support-group-typing", { userId, name, typing }, userId);
 }
 
 export function revokeSupportGroupMembers(groupId: string, userIds: string[]) {
+  revokeSupportGroupRealtimeAccess(groupId, userIds);
   const group = subscribers.get(groupId);
   if (!group || !userIds.length) return;
   const removed = new Set(userIds);

@@ -70,6 +70,15 @@ export async function loadLearner(req: Request, _res: Response, next: NextFuncti
   } catch (error) { next(error); }
 }
 
+export async function getLearnerForSessionToken(token: string): Promise<Learner | null> {
+  if (!token || token.length >= 128) return null;
+  const [row] = await db.select({ user: learners }).from(learnerSessions)
+    .innerJoin(learners, eq(learnerSessions.userId, learners.id))
+    .where(and(eq(learnerSessions.tokenHash, digest(token)), gt(learnerSessions.expiresAt, new Date())))
+    .limit(1);
+  return row?.user ?? null;
+}
+
 export function requireLearner(req: Request, res: Response, next: NextFunction) {
   if (!req.learner) { res.status(401).json({ error: "Please sign in to save your learning progress." }); return; }
   next();

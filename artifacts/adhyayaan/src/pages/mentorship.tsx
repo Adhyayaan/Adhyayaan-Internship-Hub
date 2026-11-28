@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,11 +12,11 @@ import {
   getDownloadMentorshipAttachmentQueryKey, getGetMentorshipNotificationPreferenceQueryKey,
   getListMentorshipMessagesQueryKey, getListMentorshipThreadsQueryKey,
   useAnswerMentorshipQuestion, useDownloadMentorshipAttachment, useListMentorshipMessages, useListMentorshipThreads,
-  useDeleteMentorshipMessage, useEditMentorshipMessage, useToggleMentorshipMessageReaction, useUpdateMentorshipTyping,
+  useDeleteMentorshipMessage, useEditMentorshipMessage, useToggleMentorshipMessageReaction,
   useGetMentorshipNotificationPreference, useRequestMentorshipUpload, useSendMentorshipMessage,
   useUpdateMentorshipNotificationPreference,
   type ChatReactionInputReaction,
-  type MentorshipAttachment, type MentorshipMessage, type MentorshipThread,
+  type MentorshipAttachment, type MentorshipMessage, type MentorshipMessagesResponse, type MentorshipThread,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -24,6 +24,7 @@ import { useAuth, errMsg, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/parts';
 import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
 import { AudioNotePlayer, VoiceNoteRecorder } from '@/components/chat/voice-note';
+import { markChatRead, sendChatTyping, subscribeChatRealtime } from '@/lib/chat-realtime';
 
 const ACCEPTED = [
   'image/jpeg',
@@ -302,11 +303,15 @@ function QuestionCard({ message, responses, isGuide, canAnswer, enrollmentId }: 
     setError('');
     setSavedNotice('');
     try {
-      await answer.mutateAsync({ enrollmentId, questionId: message.id, data: { response: clean } });
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: getListMentorshipMessagesQueryKey(enrollmentId) }),
-        qc.invalidateQueries({ queryKey: getListMentorshipThreadsQueryKey() }),
-      ]);
+      const saved = await answer.mutateAsync({ enrollmentId, questionId: message.id, data: { response: clean } });
+      const key = getListMentorshipMessagesQueryKey(enrollmentId);
+      qc.setQueryData<MentorshipMessagesResponse>(key, (current) => {
+        if (!current) return current;
+        const messages = current.messages.filter((item) => item.id !== saved.id);
+        messages.push(saved);
+        messages.sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id));
+        return { ...current, messages };
+      });
       responseForm.reset({ response: clean });
       setSavedNotice(latest ? 'Your response has been updated.' : 'Your response is saved.');
     } catch (cause) { setError(errMsg(cause)); }
@@ -432,7 +437,7 @@ export default function MentorshipThreadPage() {
   const { user, isLoading: authLoading } = useAuth();
   const qc = useQueryClient();
   const key = useMemo(() => getListMentorshipMessagesQueryKey(enrollmentId), [enrollmentId]);
-  const threadKey = getListMentorshipThreadsQueryKey();
+  const threadKey = useMemo(() => getListMentorshipThreadsQueryKey(), []);
   const q = useListMentorshipMessages(enrollmentId, { query: { queryKey: key, enabled: !!user && !!enrollmentId } });
   const threadsQuery = useListMentorshipThreads({ query: { queryKey: threadKey, enabled: !!user } });
   const send = useSendMentorshipMessage();
@@ -440,7 +445,6 @@ export default function MentorshipThreadPage() {
   const editMessage = useEditMentorshipMessage();
   const deleteMessage = useDeleteMentorshipMessage();
   const toggleReaction = useToggleMentorshipMessageReaction();
-  const updateTyping = useUpdateMentorshipTyping();
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [messageSearchOpen, setMessageSearchOpen] = useState(false);
@@ -476,12 +480,40 @@ export default function MentorshipThreadPage() {
 
   useTitle(thread ? `${thread.courseTitle} conversation` : 'Mentorship conversation');
 
+  const cacheIncomingMessage = useCallback((message: MentorshipMessage) => {
+    if (!user) return;
+    let isNew = false;
+    qc.setQueryData<MentorshipMessagesResponse>(key, (current) => {
+      if (!current) return current;
+      isNew = !current.messages.some((item) => item.id === message.id);
+      const messages = current.messages.filter((item) => item.id !== message.id);
+      messages.push(message);
+      messages.sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id));
+      return { ...current, messages };
+    });
+    qc.setQueryData<MentorshipThread[]>(threadKey, (current) => current?.map((item) => {
+      if (item.enrollmentId !== enrollmentId) return item;
+      const messageIsLatest = !item.lastMessageAt || message.createdAt >= item.lastMessageAt;
+      const preview = message.deletedAt ? 'Message deleted'
+        : message.kind === 'meeting' ? `Google Meet session${message.meetingAgenda ? ` · ${message.meetingAgenda}` : ''}`
+          : message.kind === 'question' ? `Learning question · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+            : message.kind === 'question_response' ? `Question response · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+              : message.body.trim().replace(/\s+/g, ' ').slice(0, 160) || 'Shared an attachment';
+      return {
+        ...item,
+        ...(messageIsLatest ? { lastMessagePreview: preview, lastMessageAt: message.createdAt } : {}),
+        messageCount: item.messageCount + (isNew ? 1 : 0),
+        unreadCount: item.unreadCount + (isNew && message.senderId !== user.id ? 1 : 0),
+      };
+    }));
+  }, [enrollmentId, key, qc, threadKey, user]);
+
   function setTyping(typing: boolean) {
     if (!enrollmentId || !canSend) return;
     if (typing) {
       const now = Date.now();
       if (!typingActive.current || now - lastTypingSent.current > 1200) {
-        updateTyping.mutate({ enrollmentId, data: { typing: true } });
+        sendChatTyping({ kind: 'mentorship', id: enrollmentId }, true);
         lastTypingSent.current = now;
       }
       typingActive.current = true;
@@ -490,23 +522,46 @@ export default function MentorshipThreadPage() {
     } else {
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
       typingTimeout.current = null;
-      if (typingActive.current) updateTyping.mutate({ enrollmentId, data: { typing: false } });
+      if (typingActive.current) sendChatTyping({ kind: 'mentorship', id: enrollmentId }, false);
       typingActive.current = false;
     }
   }
 
   useEffect(() => {
     if (!enrollmentId || !user) return;
-    const source = new EventSource(`/api/mentorship/threads/${encodeURIComponent(enrollmentId)}/events`, { withCredentials: true });
-    const refresh = () => {
-      void qc.invalidateQueries({ queryKey: key });
-      void qc.invalidateQueries({ queryKey: threadKey });
-    };
-    const onTyping = (event: Event) => {
-      try {
-        const payload = JSON.parse((event as MessageEvent<string>).data) as { name?: string; typing?: boolean };
-        if (payload.typing && payload.name) {
-          setTypingPeer(payload.name);
+    const room = { kind: 'mentorship' as const, id: enrollmentId };
+    const unsubscribe = subscribeChatRealtime(user.id, (event) => {
+      if (event.type === 'connection' && event.reconnected) {
+        void qc.invalidateQueries({ queryKey: key });
+        void qc.invalidateQueries({ queryKey: threadKey });
+        return;
+      }
+      if (event.type === 'mentorship.message' && event.enrollmentId === enrollmentId && event.message) {
+        const message = event.message as MentorshipMessage;
+        cacheIncomingMessage(message);
+        if (message.senderId !== user.id && document.visibilityState === 'visible') markChatRead(room);
+        return;
+      }
+      if (event.type === 'mentorship.notification' && event.enrollmentId === enrollmentId && event.message) {
+        cacheIncomingMessage(event.message as MentorshipMessage);
+        return;
+      }
+      if (event.type === 'mentorship.read' && event.enrollmentId === enrollmentId && typeof event.userId === 'string') {
+        const readerId = event.userId;
+        qc.setQueryData<MentorshipMessagesResponse>(key, (current) => current ? ({
+          ...current,
+          messages: current.messages.map((message) => message.senderId === user.id && readerId !== user.id
+            ? { ...message, readByCount: 1 }
+            : message),
+        }) : current);
+        if (readerId === user.id) {
+          qc.setQueryData<MentorshipThread[]>(threadKey, (current) => current?.map((item) => item.enrollmentId === enrollmentId ? { ...item, unreadCount: 0 } : item));
+        }
+        return;
+      }
+      if (event.type === 'mentorship.typing' && event.enrollmentId === enrollmentId && typeof event.name === 'string') {
+        if (event.typing) {
+          setTypingPeer(event.name);
           if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
           peerTypingTimeout.current = setTimeout(() => setTypingPeer(''), 4500);
         } else {
@@ -514,34 +569,20 @@ export default function MentorshipThreadPage() {
           if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
           peerTypingTimeout.current = null;
         }
-      } catch { /* ignore malformed ephemeral event */ }
-    };
-    source.addEventListener('message', refresh);
-    source.addEventListener('read', refresh);
-    source.addEventListener('typing', onTyping);
-    source.onopen = refresh;
+      }
+    }, room);
     return () => {
-      source.removeEventListener('message', refresh);
-      source.removeEventListener('read', refresh);
-      source.removeEventListener('typing', onTyping);
-      source.close();
+      unsubscribe();
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
       if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
     };
-  }, [enrollmentId, key, qc, threadKey, user]);
-
-  useEffect(() => {
-    if (q.data) void qc.invalidateQueries({ queryKey: threadKey });
-  }, [q.data, qc, threadKey]);
+  }, [cacheIncomingMessage, enrollmentId, key, qc, threadKey, user]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [data?.messages.length]);
   useEffect(() => () => { if (preview?.url) URL.revokeObjectURL(preview.url); }, [preview]);
 
-  async function refreshAfterSend() {
-    await Promise.all([qc.invalidateQueries({ queryKey: key }), qc.invalidateQueries({ queryKey: threadKey })]);
-  }
   function startReply(message: MentorshipMessage) {
     setReplyingTo(message);
     window.setTimeout(() => messageInput.current?.focus(), 0);
@@ -549,22 +590,25 @@ export default function MentorshipThreadPage() {
   async function saveMessage(messageId: string, body: string) {
     setSendError('');
     try {
-      await editMessage.mutateAsync({ enrollmentId, messageId, data: { body } });
-      await refreshAfterSend();
+      const message = await editMessage.mutateAsync({ enrollmentId, messageId, data: { body } });
+      cacheIncomingMessage(message);
     } catch (error) { setSendError(errMsg(error)); throw error; }
   }
   async function removeMessage(messageId: string) {
     setSendError('');
     try {
-      await deleteMessage.mutateAsync({ enrollmentId, messageId });
-      await refreshAfterSend();
+      const message = await deleteMessage.mutateAsync({ enrollmentId, messageId });
+      cacheIncomingMessage(message);
     } catch (error) { setSendError(errMsg(error)); throw error; }
   }
   async function reactToMessage(messageId: string, reaction: ChatReactionInputReaction) {
     setSendError('');
     try {
-      await toggleReaction.mutateAsync({ enrollmentId, messageId, data: { reaction } });
-      await refreshAfterSend();
+      const result = await toggleReaction.mutateAsync({ enrollmentId, messageId, data: { reaction } });
+      qc.setQueryData<MentorshipMessagesResponse>(key, (current) => current ? ({
+        ...current,
+        messages: current.messages.map((message) => message.id === messageId ? { ...message, reactions: result.reactions } : message),
+      }) : current);
     } catch (error) { setSendError(errMsg(error)); }
   }
   async function submitText(values: z.infer<typeof messageSchema>) {
@@ -587,16 +631,18 @@ export default function MentorshipThreadPage() {
         if (!result.ok) throw new Error('Voice note upload failed. Please try again.');
         uploadTokens.push(signed.uploadToken);
       }
-      await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(uploadTokens.length ? { uploadTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) } });
-      messageForm.reset({ body: '' }); setReplyingTo(null); setPendingTokens([]); setPendingFileNames([]); setVoiceNote(null); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
+      const saved = await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(uploadTokens.length ? { uploadTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) } });
+      cacheIncomingMessage(saved);
+      messageForm.reset({ body: '' }); setReplyingTo(null); setPendingTokens([]); setPendingFileNames([]); setVoiceNote(null); setUploadStatus(''); setUploadFailed(false);
     } catch (error) { setSendError(errMsg(error)); }
     finally { setUploading(false); }
   }
   async function submitMeeting(values: z.infer<typeof meetingSchema>) {
     if (!canSend) return;
     try {
-      await send.mutateAsync({ enrollmentId, data: { kind: 'meeting', meetingUrl: values.url.trim(), ...(values.startsAt ? { meetingStartsAt: new Date(values.startsAt).toISOString() } : {}), ...(values.agenda.trim() ? { meetingAgenda: values.agenda.trim() } : {}) } });
-      meetingForm.reset({ url: '', startsAt: '', agenda: '' }); setMeetingOpen(false); setSendError(''); await refreshAfterSend();
+      const saved = await send.mutateAsync({ enrollmentId, data: { kind: 'meeting', meetingUrl: values.url.trim(), ...(values.startsAt ? { meetingStartsAt: new Date(values.startsAt).toISOString() } : {}), ...(values.agenda.trim() ? { meetingAgenda: values.agenda.trim() } : {}) } });
+      cacheIncomingMessage(saved);
+      meetingForm.reset({ url: '', startsAt: '', agenda: '' }); setMeetingOpen(false); setSendError('');
     } catch (error) { setSendError(errMsg(error)); }
   }
   async function submitQuestion(values: z.infer<typeof guideQuestionSchema>) {
@@ -604,7 +650,7 @@ export default function MentorshipThreadPage() {
     setQuestionError('');
     setSendError('');
     try {
-      await send.mutateAsync({
+      const saved = await send.mutateAsync({
         enrollmentId,
         data: {
           kind: 'question',
@@ -612,9 +658,9 @@ export default function MentorshipThreadPage() {
           question: { type: values.type, ...(values.type === 'multiple_choice' ? { options } : {}) },
         },
       });
+      cacheIncomingMessage(saved);
       questionForm.reset({ prompt: '', type: 'open_response', optionsText: '' });
       setQuestionOpen(false);
-      await refreshAfterSend();
     } catch (error) { setQuestionError(errMsg(error)); }
   }
   async function onFiles(files: FileList | null) {
@@ -637,7 +683,6 @@ export default function MentorshipThreadPage() {
         setUploadStatus(`${uploadedCount} ${uploadedCount === 1 ? 'file is' : 'files are'} ready. Uploading remaining files…`);
       }
       setUploadStatus(`${uploadedCount} ${uploadedCount === 1 ? 'file is' : 'files are'} ready to send.`);
-      await refreshAfterSend();
     } catch (error) {
       const detail = errMsg(error);
       setUploadFailed(true);

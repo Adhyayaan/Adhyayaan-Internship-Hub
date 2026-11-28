@@ -1,18 +1,14 @@
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import {
-  getGetMentorshipNotificationPreferenceQueryKey, getListMentorshipMessagesQueryKey,
-  getListMentorshipThreadsQueryKey, useGetMentorshipNotificationPreference,
+  getGetMentorshipNotificationPreferenceQueryKey, getListMentorshipThreadsQueryKey,
+  useGetMentorshipNotificationPreference, type MentorshipMessage, type MentorshipThread,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/app';
 import { toast } from '@/hooks/use-toast';
 import { getMentorshipAlertChannel } from '@/lib/mentorship-alerts';
-
-type MentorshipMessageEvent = {
-  enrollmentId: string;
-  messageId: string;
-};
+import { subscribeChatRealtime } from '@/lib/chat-realtime';
 
 export function MentorshipNotifications() {
   const { user } = useAuth();
@@ -30,17 +26,34 @@ export function MentorshipNotifications() {
 
   useEffect(() => {
     if (!canReceive || !user) return;
-    const source = new EventSource('/api/mentorship/events', { withCredentials: true });
-    const onMessage = (event: MessageEvent<string>) => {
-      let message: MentorshipMessageEvent;
-      try {
-        message = JSON.parse(event.data) as MentorshipMessageEvent;
-        if (!message.enrollmentId || !message.messageId) return;
-      } catch {
+    return subscribeChatRealtime(user.id, (event) => {
+      if (event.type === 'connection' && event.reconnected) {
+        void queryClient.invalidateQueries({ queryKey: getListMentorshipThreadsQueryKey() });
         return;
       }
-      void queryClient.invalidateQueries({ queryKey: getListMentorshipThreadsQueryKey() });
-      void queryClient.invalidateQueries({ queryKey: getListMentorshipMessagesQueryKey(message.enrollmentId) });
+      if (event.type !== 'mentorship.notification'
+        || typeof event.enrollmentId !== 'string'
+        || typeof event.messageId !== 'string'
+        || !event.message) return;
+      const message = { enrollmentId: event.enrollmentId, messageId: event.messageId };
+      if (location !== `/mentorship/${message.enrollmentId}`) {
+        const detail = event.message as MentorshipMessage;
+        const preview = detail.deletedAt ? 'Message deleted'
+          : detail.kind === 'meeting' ? `Google Meet session${detail.meetingAgenda ? ` · ${detail.meetingAgenda}` : ''}`
+            : detail.kind === 'question' ? `Learning question · ${detail.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+              : detail.kind === 'question_response' ? `Question response · ${detail.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
+                : detail.body.trim().replace(/\s+/g, ' ').slice(0, 160) || 'Shared an attachment';
+        queryClient.setQueryData<MentorshipThread[]>(getListMentorshipThreadsQueryKey(), (threads) => threads?.map((thread) => {
+          if (thread.enrollmentId !== message.enrollmentId) return thread;
+          const isLatest = !thread.lastMessageAt || detail.createdAt >= thread.lastMessageAt;
+          return {
+            ...thread,
+            ...(isLatest ? { lastMessagePreview: preview, lastMessageAt: detail.createdAt } : {}),
+            messageCount: thread.messageCount + 1,
+            unreadCount: thread.unreadCount + 1,
+          };
+        }));
+      }
       const channel = getMentorshipAlertChannel({
         notificationsEnabled: !!preference.data?.browserNotificationsEnabled,
         browserPermissionGranted: 'Notification' in window && Notification.permission === 'granted',
@@ -65,15 +78,7 @@ export function MentorshipNotifications() {
           notification.close();
         };
       }
-    };
-    source.onopen = () => {
-      void queryClient.invalidateQueries({ queryKey: getListMentorshipThreadsQueryKey() });
-    };
-    source.addEventListener('message', onMessage as EventListener);
-    return () => {
-      source.removeEventListener('message', onMessage as EventListener);
-      source.close();
-    };
+    });
   }, [canReceive, location, preference.data?.browserNotificationsEnabled, queryClient, setLocation, user]);
 
   return null;
