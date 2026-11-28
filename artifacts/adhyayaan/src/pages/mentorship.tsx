@@ -5,21 +5,24 @@ import { z } from 'zod';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, ArrowUpRight, Bell, CalendarDays, CheckCircle2, FileText, Image as ImageIcon,
+  ArrowLeft, ArrowUpRight, Bell, CalendarDays, CheckCheck, CheckCircle2, FileText, Image as ImageIcon,
   LockKeyhole, MessageCircle, Paperclip, Search, Send, ShieldCheck, Video, X,
 } from 'lucide-react';
 import {
   getDownloadMentorshipAttachmentQueryKey, getGetMentorshipNotificationPreferenceQueryKey,
   getListMentorshipMessagesQueryKey, getListMentorshipThreadsQueryKey,
   useAnswerMentorshipQuestion, useDownloadMentorshipAttachment, useListMentorshipMessages, useListMentorshipThreads,
+  useDeleteMentorshipMessage, useEditMentorshipMessage, useToggleMentorshipMessageReaction, useUpdateMentorshipTyping,
   useGetMentorshipNotificationPreference, useRequestMentorshipUpload, useSendMentorshipMessage,
   useUpdateMentorshipNotificationPreference,
+  type ChatReactionInputReaction,
   type MentorshipAttachment, type MentorshipMessage, type MentorshipThread,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth, errMsg, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/parts';
+import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
 
 const ACCEPTED = [
   'image/jpeg',
@@ -343,19 +346,68 @@ function QuestionCard({ message, responses, isGuide, canAnswer, enrollmentId }: 
   </article>;
 }
 
-function MessageCard({ message, own, onPreview }: { message: MentorshipMessage; own: boolean; onPreview: (url: string, name: string) => void }) {
-  return <div className={`flex w-full items-end gap-2.5 ${own ? 'justify-end' : 'justify-start'}`} data-testid={`message-row-${message.id}`}>
+function MessageCard({ message, own, replyPreview, onPreview, onReply, onSaveEdit, onDelete, onReact, busy }: {
+  message: MentorshipMessage;
+  own: boolean;
+  replyPreview?: MentorshipMessage;
+  onPreview: (url: string, name: string) => void;
+  onReply: () => void;
+  onSaveEdit: (body: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+  onReact: (reaction: ChatReactionInputReaction) => void;
+  busy: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(message.body);
+  useEffect(() => { if (!editing) setDraft(message.body); }, [editing, message.body]);
+  async function saveEdit() {
+    if (!draft.trim() || draft.trim() === message.body) { setEditing(false); return; }
+    try { await onSaveEdit(draft.trim()); setEditing(false); } catch { /* The thread shows the save error; keep the draft open. */ }
+  }
+  return <div className={`group flex w-full items-end gap-2.5 ${own ? 'justify-end' : 'justify-start'}`} data-testid={`message-row-${message.id}`}>
     {!own && <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground" aria-hidden="true">{initials(message.senderName)}</span>}
-    <article className={`w-fit max-w-[min(40rem,calc(100%-2.75rem))] min-w-0 rounded-2xl px-3.5 py-3 shadow-sm sm:px-4 ${own ? 'rounded-br-md border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/60' : 'rounded-bl-md border border-border/80 bg-card'}`} data-testid={`message-${message.id}`}>
+    <article className={`w-fit max-w-[min(40rem,calc(100%-2.75rem))] min-w-0 rounded-2xl px-3.5 py-3 shadow-sm transition-shadow group-hover:shadow-md sm:px-4 ${own ? 'rounded-br-md border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/60' : 'rounded-bl-md border border-border/80 bg-card'}`} data-testid={`message-${message.id}`}>
       <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <span className="text-xs font-bold text-primary">{own ? 'You' : message.senderName}</span>
-        <time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
+        <span className="flex items-center gap-2">
+          {message.editedAt && !message.deletedAt && <span className="text-[10px] text-muted-foreground">Edited</span>}
+          <time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
+        </span>
       </div>
-      {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--ledger))]/20 bg-background p-3.5" data-testid={`meeting-card-${message.id}`}>
-        <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
-        {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" data-testid={`link-join-meeting-${message.id}`} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--ledger))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Join session <ArrowUpRight className="h-4 w-4" /></a>}
-      </div> : message.body && <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
-      {message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
+      {message.replyToMessageId && <div className="mb-2 rounded-lg border-l-2 border-[hsl(var(--ledger))] bg-background/70 px-2.5 py-1.5 text-xs" data-testid={`quote-message-${message.id}`}>
+        <span className="font-bold text-[hsl(var(--ledger))]">{replyPreview?.senderName ?? 'Earlier message'}</span>
+        <p className="mt-0.5 max-w-full truncate text-muted-foreground">{replyPreview?.deletedAt ? 'This message was deleted.' : replyPreview?.body || 'Message'}</p>
+      </div>}
+      {message.deletedAt ? <p className="text-sm italic text-muted-foreground" data-testid={`text-deleted-message-${message.id}`}>This message was deleted.</p>
+        : editing ? <div className="space-y-2">
+          <textarea value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={5000} rows={3} autoFocus
+            className="min-h-20 w-full resize-y rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Edit message" data-testid={`input-edit-message-${message.id}`} />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => { setEditing(false); setDraft(message.body); }} disabled={busy} data-testid={`button-cancel-edit-${message.id}`}>Cancel</Button>
+            <Button type="button" size="sm" onClick={() => void saveEdit()} disabled={busy || !draft.trim()} data-testid={`button-save-edit-${message.id}`}>{busy ? 'Saving…' : 'Save'}</Button>
+          </div>
+        </div>
+        : message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--ledger))]/20 bg-background p-3.5" data-testid={`meeting-card-${message.id}`}>
+          <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
+          {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" data-testid={`link-join-meeting-${message.id}`} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--ledger))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Join session <ArrowUpRight className="h-4 w-4" /></a>}
+        </div> : message.body && <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
+      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
+      {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={onReact} disabled={busy} />}
+      {own && !message.deletedAt && <p className="mt-1.5 flex items-center justify-end gap-1 text-[10px] text-muted-foreground" data-testid={`status-read-${message.id}`}>
+        {message.readByCount > 0 ? <><CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--ledger))]" />Seen</> : <><CheckCircle2 className="h-3 w-3" />Sent</>}
+      </p>}
+      {!message.deletedAt && <MessageToolbar
+        messageId={message.id}
+        canReply={message.kind !== 'question_response'}
+        canEdit={own && message.kind === 'text'}
+        canDelete={own && message.kind === 'text'}
+        onReply={onReply}
+        onEdit={() => { setDraft(message.body); setEditing(true); }}
+        onDelete={onDelete}
+        onReact={onReact}
+        busy={busy}
+      />}
     </article>
   </div>;
 }
@@ -370,6 +422,10 @@ export default function MentorshipThreadPage() {
   const threadsQuery = useListMentorshipThreads({ query: { queryKey: threadKey, enabled: !!user } });
   const send = useSendMentorshipMessage();
   const uploadRequest = useRequestMentorshipUpload();
+  const editMessage = useEditMentorshipMessage();
+  const deleteMessage = useDeleteMentorshipMessage();
+  const toggleReaction = useToggleMentorshipMessageReaction();
+  const updateTyping = useUpdateMentorshipTyping();
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [messageSearchOpen, setMessageSearchOpen] = useState(false);
@@ -377,13 +433,20 @@ export default function MentorshipThreadPage() {
   const [questionError, setQuestionError] = useState('');
   const [pendingTokens, setPendingTokens] = useState<string[]>([]);
   const [pendingFileNames, setPendingFileNames] = useState<string[]>([]);
+  const [replyingTo, setReplyingTo] = useState<MentorshipMessage | null>(null);
+  const [typingPeer, setTypingPeer] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sendError, setSendError] = useState('');
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const messageInput = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerTypingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingActive = useRef(false);
+  const lastTypingSent = useRef(0);
   const messageForm = useForm<z.infer<typeof messageSchema>>({ resolver: zodResolver(messageSchema), defaultValues: { body: '' } });
   const questionForm = useForm<z.infer<typeof guideQuestionSchema>>({
     resolver: zodResolver(guideQuestionSchema),
@@ -393,8 +456,28 @@ export default function MentorshipThreadPage() {
   const data = q.data;
   const thread = data?.thread;
   const canSend = !!thread?.canSend && !!thread.guideId && !!user;
+  const messageActionsBusy = editMessage.isPending || deleteMessage.isPending || toggleReaction.isPending;
 
   useTitle(thread ? `${thread.courseTitle} conversation` : 'Mentorship conversation');
+
+  function setTyping(typing: boolean) {
+    if (!enrollmentId || !canSend) return;
+    if (typing) {
+      const now = Date.now();
+      if (!typingActive.current || now - lastTypingSent.current > 1200) {
+        updateTyping.mutate({ enrollmentId, data: { typing: true } });
+        lastTypingSent.current = now;
+      }
+      typingActive.current = true;
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = setTimeout(() => setTyping(false), 2200);
+    } else {
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = null;
+      if (typingActive.current) updateTyping.mutate({ enrollmentId, data: { typing: false } });
+      typingActive.current = false;
+    }
+  }
 
   useEffect(() => {
     if (!enrollmentId || !user) return;
@@ -403,11 +486,31 @@ export default function MentorshipThreadPage() {
       void qc.invalidateQueries({ queryKey: key });
       void qc.invalidateQueries({ queryKey: threadKey });
     };
+    const onTyping = (event: Event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent<string>).data) as { name?: string; typing?: boolean };
+        if (payload.typing && payload.name) {
+          setTypingPeer(payload.name);
+          if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
+          peerTypingTimeout.current = setTimeout(() => setTypingPeer(''), 4500);
+        } else {
+          setTypingPeer('');
+          if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
+          peerTypingTimeout.current = null;
+        }
+      } catch { /* ignore malformed ephemeral event */ }
+    };
     source.addEventListener('message', refresh);
+    source.addEventListener('read', refresh);
+    source.addEventListener('typing', onTyping);
     source.onopen = refresh;
     return () => {
       source.removeEventListener('message', refresh);
+      source.removeEventListener('read', refresh);
+      source.removeEventListener('typing', onTyping);
       source.close();
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      if (peerTypingTimeout.current) clearTimeout(peerTypingTimeout.current);
     };
   }, [enrollmentId, key, qc, threadKey, user]);
 
@@ -423,6 +526,31 @@ export default function MentorshipThreadPage() {
   async function refreshAfterSend() {
     await Promise.all([qc.invalidateQueries({ queryKey: key }), qc.invalidateQueries({ queryKey: threadKey })]);
   }
+  function startReply(message: MentorshipMessage) {
+    setReplyingTo(message);
+    window.setTimeout(() => messageInput.current?.focus(), 0);
+  }
+  async function saveMessage(messageId: string, body: string) {
+    setSendError('');
+    try {
+      await editMessage.mutateAsync({ enrollmentId, messageId, data: { body } });
+      await refreshAfterSend();
+    } catch (error) { setSendError(errMsg(error)); throw error; }
+  }
+  async function removeMessage(messageId: string) {
+    setSendError('');
+    try {
+      await deleteMessage.mutateAsync({ enrollmentId, messageId });
+      await refreshAfterSend();
+    } catch (error) { setSendError(errMsg(error)); throw error; }
+  }
+  async function reactToMessage(messageId: string, reaction: ChatReactionInputReaction) {
+    setSendError('');
+    try {
+      await toggleReaction.mutateAsync({ enrollmentId, messageId, data: { reaction } });
+      await refreshAfterSend();
+    } catch (error) { setSendError(errMsg(error)); }
+  }
   async function submitText(values: z.infer<typeof messageSchema>) {
     const clean = values.body.trim();
     if (!clean && pendingTokens.length === 0) {
@@ -432,8 +560,9 @@ export default function MentorshipThreadPage() {
     if (!canSend || send.isPending) return;
     setSendError('');
     try {
-      await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(pendingTokens.length ? { uploadTokens: pendingTokens } : {}) } });
-      messageForm.reset({ body: '' }); setPendingTokens([]); setPendingFileNames([]); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
+      setTyping(false);
+      await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(pendingTokens.length ? { uploadTokens: pendingTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) } });
+      messageForm.reset({ body: '' }); setReplyingTo(null); setPendingTokens([]); setPendingFileNames([]); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
     } catch (error) { setSendError(errMsg(error)); }
   }
   async function submitMeeting(values: z.infer<typeof meetingSchema>) {
@@ -520,6 +649,7 @@ export default function MentorshipThreadPage() {
     dayMessages.push(message);
     messageDays.set(day, dayMessages);
   }
+  const messagesById = new Map(messages.map((message) => [message.id, message]));
   const contactName = user?.isGuide ? thread.studentName : thread.guideName || 'Guide assignment pending';
   return <main className="mx-auto max-w-[1440px] min-w-0 space-y-3 p-3 pb-24 sm:space-y-4 sm:p-5 lg:p-6">
     <Link href="/mentorship" className="inline-flex min-h-10 items-center gap-2 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary lg:hidden" data-testid="link-back-mentorship"><ArrowLeft className="h-4 w-4" />All conversations</Link>
@@ -557,10 +687,15 @@ export default function MentorshipThreadPage() {
           : !visibleMessages.length ? <div className="m-auto py-12 text-center"><Search className="mx-auto h-6 w-6 text-muted-foreground" /><p className="mt-3 text-sm font-semibold text-primary">No messages found</p><p className="mt-1 text-xs text-muted-foreground">Try another word or file name.</p></div>
             : Array.from(messageDays.entries()).map(([day, dayMessages]) => <div key={day} className="space-y-3" data-testid={`message-day-${day.toLowerCase().replace(/\s+/g, '-')}`}>
               <div className="flex items-center gap-3 py-1"><span className="h-px flex-1 bg-border/70" /><span className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-semibold text-muted-foreground">{day}</span><span className="h-px flex-1 bg-border/70" /></div>
-              {dayMessages.map((message) => message.kind === 'question' && message.question
-                ? <QuestionCard key={message.id} message={message} responses={responsesByQuestion.get(message.id) ?? []} isGuide={!!user?.isGuide} canAnswer={user?.id === thread.studentId && thread.canSend} enrollmentId={enrollmentId} />
-                : <MessageCard key={message.id} message={message} own={message.senderId === user?.id} onPreview={openPreview} />)}
+               {dayMessages.map((message) => message.kind === 'question' && message.question
+                 ? <div key={message.id} className="w-full max-w-[min(46rem,96%)]">
+                   <QuestionCard message={message} responses={responsesByQuestion.get(message.id) ?? []} isGuide={!!user?.isGuide} canAnswer={user?.id === thread.studentId && thread.canSend} enrollmentId={enrollmentId} />
+                   {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={(reaction) => void reactToMessage(message.id, reaction)} disabled={messageActionsBusy} />}
+                   {!message.deletedAt && <MessageToolbar messageId={message.id} canReply onReply={() => startReply(message)} canEdit={false} canDelete={false} onEdit={() => {}} onDelete={async () => {}} onReact={(reaction) => void reactToMessage(message.id, reaction)} busy={messageActionsBusy} />}
+                 </div>
+                 : <MessageCard key={message.id} message={message} own={message.senderId === user?.id} replyPreview={message.replyToMessageId ? messagesById.get(message.replyToMessageId) : undefined} onPreview={openPreview} onReply={() => startReply(message)} onSaveEdit={(body) => saveMessage(message.id, body)} onDelete={() => removeMessage(message.id)} onReact={(reaction) => void reactToMessage(message.id, reaction)} busy={messageActionsBusy} />)}
             </div>)}
+         {typingPeer && <div className="flex items-center gap-2 rounded-xl bg-card/80 px-3 py-2 text-xs font-medium text-muted-foreground" role="status" data-testid="status-mentorship-typing"><span className="flex gap-1"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--ledger))]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--ledger))] [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--ledger))] [animation-delay:240ms]" /></span>{typingPeer} is typing…</div>}
         <div ref={endRef} />
       </div>
       {sendError && <p className="mx-3 mb-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive" role="alert" data-testid="status-send-error">{sendError}</p>}
@@ -600,8 +735,13 @@ export default function MentorshipThreadPage() {
           <Button type="submit" disabled={send.isPending} className="mt-3 min-h-11" data-testid="button-post-question">{send.isPending ? 'Posting…' : 'Post question'}</Button>
         </form></Form>}
         <Form {...messageForm}><form onSubmit={messageForm.handleSubmit(submitText)} className="space-y-2.5" data-testid="form-send-message">
+          {replyingTo && <div className="flex items-center gap-3 rounded-xl border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/45 px-3 py-2" data-testid="banner-reply-to-mentorship-message">
+            <span className="h-8 w-1 rounded-full bg-[hsl(var(--ledger))]" />
+            <div className="min-w-0 flex-1"><p className="text-xs font-bold text-[hsl(var(--ledger))]">Replying to {replyingTo.senderName}</p><p className="truncate text-xs text-muted-foreground">{replyingTo.deletedAt ? 'This message was deleted.' : replyingTo.body || 'Message'}</p></div>
+            <button type="button" onClick={() => setReplyingTo(null)} aria-label="Cancel reply" className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-card" data-testid="button-cancel-mentorship-reply"><X className="h-4 w-4" /></button>
+          </div>}
           <div className="rounded-2xl border border-border bg-background px-3 pt-2.5 focus-within:border-[hsl(var(--ledger))]/45 focus-within:ring-2 focus-within:ring-[hsl(var(--ledger))]/10 sm:px-4">
-            <FormField control={messageForm.control} name="body" render={({ field }) => <FormItem className="space-y-1"><FormLabel className="sr-only">Write a message</FormLabel><FormControl><textarea {...field} maxLength={5000} rows={2} placeholder="Write a message to your guide…" disabled={!canSend || uploading} className="max-h-36 min-h-12 w-full resize-y bg-transparent py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:ring-0 disabled:opacity-60" data-testid="input-message-body" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={messageForm.control} name="body" render={({ field }) => <FormItem className="space-y-1"><FormLabel className="sr-only">Write a message</FormLabel><FormControl><textarea {...field} ref={(element) => { field.ref(element); messageInput.current = element; }} onChange={(event) => { field.onChange(event); setTyping(true); }} onBlur={() => { field.onBlur(); setTyping(false); }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void messageForm.handleSubmit(submitText)(); } }} maxLength={5000} rows={2} placeholder="Write a message to your guide…" disabled={!canSend || uploading} className="max-h-36 min-h-12 w-full resize-y bg-transparent py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:ring-0 disabled:opacity-60" data-testid="input-message-body" /></FormControl><FormMessage /></FormItem>} />
             <div className="flex flex-wrap items-center gap-1 border-t border-border/70 py-1.5">
               <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading || pendingTokens.length >= MAX_FILES} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:opacity-50" data-testid="button-attach-file"><Paperclip className="h-4 w-4" />Attach file</button>
               {user?.isGuide && <button type="button" onClick={() => { setMeetingOpen((v) => !v); setQuestionOpen(false); }} disabled={send.isPending} aria-expanded={meetingOpen} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50 ${meetingOpen ? 'bg-secondary text-primary' : 'text-muted-foreground'}`} data-testid="button-open-meeting"><Video className="h-4 w-4" />Meet</button>}

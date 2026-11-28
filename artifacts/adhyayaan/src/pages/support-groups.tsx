@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, ArrowUpRight, CalendarDays, Check, ChevronRight, CircleAlert, FileText,
-  LockKeyhole, MessageCircle, Paperclip, Plus, Send, ShieldCheck, UsersRound, Video,
+  ArrowLeft, ArrowUpRight, CalendarDays, Check, CheckCheck, ChevronRight, CircleAlert, FileText,
+  Image as ImageIcon, LockKeyhole, MessageCircle, Paperclip, Plus, Search, Send, ShieldCheck, UsersRound, Video, X,
 } from 'lucide-react';
 import {
   getDownloadSupportGroupAttachmentQueryKey, getGetGuideSupportReviewQueryKey,
   getListSupportGroupMessagesQueryKey, getListSupportGroupsQueryKey,
   useAnswerSupportGroupQuestion, useCreateGuideSupportGroup, useDownloadSupportGroupAttachment,
+  useDeleteSupportGroupMessage, useEditSupportGroupMessage, useToggleSupportGroupMessageReaction, useUpdateSupportGroupTyping,
   useGetGuideSupportReview, useListSupportGroupMessages, useListSupportGroups,
   useRequestSupportGroupUpload, useSendSupportGroupMessage,
   useUpdateGuideSupportGroupMembers, type GuideSupportLearner, type SupportGroup,
@@ -16,10 +17,12 @@ import {
   type AnswerSupportGroupQuestionMutationVariables, type CreateGuideSupportGroupMutationVariables,
   type RequestSupportGroupUploadMutationVariables, type SendSupportGroupMessageMutationVariables,
   type UpdateGuideSupportGroupMembersMutationVariables,
+  type ChatReactionInputReaction,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { useAuth, errMsg, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/parts';
+import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'text/plain', 'text/csv',
@@ -31,7 +34,13 @@ const softButton = 'inline-flex min-h-11 items-center justify-center gap-2 round
 function stamp(date: string | null | undefined) {
   if (!date) return 'No messages yet';
   const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return 'Date unavailable';
   return `${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · ${d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`;
+}
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 function initials(name: string) { return name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
 function LoadingCards() { return <div className="grid gap-3 sm:grid-cols-2" aria-label="Loading support groups" aria-busy="true">{[0, 1, 2, 3].map((i) => <div key={i} className="h-44 animate-pulse rounded-2xl border border-border bg-card/70" />)}</div>; }
@@ -41,7 +50,7 @@ function GroupCard({ group }: { group: SupportGroup }) {
     className="support-enter group min-w-0 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-[hsl(var(--support-moss))]/45 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-5">
     <span className="flex min-w-0 items-start justify-between gap-3">
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[hsl(var(--support-wash))] text-[hsl(var(--support-moss))]"><UsersRound className="h-5 w-5" /></span>
-      <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">{group.memberCount} members <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
+       <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">{group.unreadCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[hsl(var(--support-moss))] px-1.5 text-[10px] text-white" data-testid={`status-support-group-unread-${group.id}`}>{group.unreadCount}</span>}{group.memberCount} members <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
     </span>
     <span className="mt-4 block text-[11px] font-bold uppercase tracking-[.12em] text-[hsl(var(--support-moss))]">{group.courseTitle}</span>
     <span className="mt-1 block break-words font-display text-lg font-black leading-snug text-primary">{group.name}</span>
@@ -64,7 +73,7 @@ function GroupConversationLink({ group, selected }: { group: SupportGroup; selec
       </span>
       <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{stamp(group.lastMessageAt)}</span>
     </span>
-    <span className="mt-2 block truncate text-xs text-muted-foreground">{group.lastMessagePreview || 'Start a group conversation'}</span>
+    <span className="mt-2 flex min-w-0 items-center justify-between gap-2"><span className="min-w-0 truncate text-xs text-muted-foreground">{group.lastMessagePreview || 'Start a group conversation'}</span>{group.unreadCount > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[hsl(var(--support-moss))] px-1.5 text-[10px] font-bold text-white" data-testid={`status-support-group-unread-${group.id}`}>{group.unreadCount}</span>}</span>
     <span className="mt-1 block text-[11px] text-muted-foreground">{group.memberCount} members</span>
   </Link>;
 }
@@ -72,7 +81,12 @@ function GroupConversationLink({ group, selected }: { group: SupportGroup; selec
 export function SupportGroupsPage() {
   useTitle('Support groups');
   const { user, isLoading: authLoading } = useAuth();
+  const [search, setSearch] = useState('');
   const query = useListSupportGroups({ query: { enabled: !!user, queryKey: getListSupportGroupsQueryKey() } });
+  const groups = (query.data ?? []).filter((group) => {
+    const term = search.trim().toLocaleLowerCase();
+    return !term || [group.name, group.courseTitle, group.purpose, group.lastMessagePreview].join(' ').toLocaleLowerCase().includes(term);
+  });
   if (authLoading) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></main>;
   if (!user) return <main className="mx-auto max-w-4xl p-4 sm:p-8"><EmptyPanel title="Sign in to view support groups" icon={<LockKeyhole className="h-6 w-6" />}><p>Groups are private. Sign in to see groups that you can access.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
   return <main className="mx-auto max-w-6xl space-y-6 p-3 pb-24 sm:space-y-8 sm:p-7">
@@ -86,11 +100,13 @@ export function SupportGroupsPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-xs font-semibold"><LockKeyhole className="h-4 w-4" /> Private to members and guide</span>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm sm:px-8"><span className="font-semibold text-primary">Your groups</span><span className="text-xs text-muted-foreground">{query.data ? `${query.data.length} ${query.data.length === 1 ? 'group' : 'groups'}` : 'Only invited groups appear here'}</span></div>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm sm:px-8"><span className="font-semibold text-primary">Your groups</span><span className="text-xs text-muted-foreground">{query.data ? `${groups.length} of ${query.data.length} ${query.data.length === 1 ? 'group' : 'groups'}` : 'Only invited groups appear here'}</span></div>
     </header>
     {query.isLoading ? <LoadingCards /> : query.isError ? <ErrorPanel title="Support groups did not load" message={errMsg(query.error)} onRetry={() => void query.refetch()} />
       : !query.data?.length ? <EmptyPanel title="No groups yet" icon={<MessageCircle className="h-6 w-6" />}><p>A guide will invite you to a course group when there is a shared reason to work together. Groups are never created automatically.</p></EmptyPanel>
-        : <section className="grid min-w-0 gap-3 sm:grid-cols-2" aria-label="Available support groups">{query.data.map((group) => <GroupCard key={group.id} group={group} />)}</section>}
+        : <><label className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-card px-3.5 shadow-sm focus-within:border-[hsl(var(--support-moss))]/40 focus-within:ring-2 focus-within:ring-[hsl(var(--support-moss))]/10 sm:max-w-md"><Search className="h-4 w-4 shrink-0 text-muted-foreground" /><span className="sr-only">Search your groups</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search groups, courses or messages" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" data-testid="input-search-my-support-groups" />{search && <button type="button" onClick={() => setSearch('')} aria-label="Clear search" className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary" data-testid="button-clear-my-support-group-search"><X className="h-4 w-4" /></button>}</label>
+          {groups.length ? <section className="grid min-w-0 gap-3 sm:grid-cols-2" aria-label="Available support groups">{groups.map((group) => <GroupCard key={group.id} group={group} />)}</section>
+            : <EmptyPanel title="No groups match" icon={<Search className="h-6 w-6" />}><p>Try a different group name, course or recent message.</p></EmptyPanel>}</>}
   </main>;
 }
 
@@ -221,19 +237,22 @@ export function GuideSupportPage() {
   </main>;
 }
 
-function GroupAttachment({ id, onError }: { id: string; onError: (message: string) => void }) {
-  const query = useDownloadSupportGroupAttachment(id, { query: { enabled: false, queryKey: getDownloadSupportGroupAttachmentQueryKey(id) } });
+function GroupAttachment({ attachment, onError, onPreview }: { attachment: SupportGroupMessage['attachments'][number]; onError: (message: string) => void; onPreview: (url: string, name: string) => void }) {
+  const query = useDownloadSupportGroupAttachment(attachment.id, { query: { enabled: false, queryKey: getDownloadSupportGroupAttachmentQueryKey(attachment.id) } });
   async function open() {
     onError('');
     try {
       const result = await query.refetch();
       if (!result.data) throw new Error('This file could not be opened. Try again.');
       const url = URL.createObjectURL(result.data);
-      const a = document.createElement('a'); a.href = url; a.download = 'shared-file'; a.rel = 'noopener'; a.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+      if (attachment.isImage) onPreview(url, attachment.fileName);
+      else {
+        const a = document.createElement('a'); a.href = url; a.download = attachment.fileName; a.rel = 'noopener'; a.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+      }
     } catch (error) { onError(errMsg(error)); }
   }
-  return <Button type="button" variant="outline" size="sm" onClick={() => void open()} disabled={query.isFetching} className="min-h-10 max-w-full justify-start" data-testid={`button-open-group-attachment-${id}`}><FileText className="mr-2 h-4 w-4 shrink-0" />{query.isFetching ? 'Opening file…' : 'Open attachment'}</Button>;
+  return <Button type="button" variant="outline" size="sm" onClick={() => void open()} disabled={query.isFetching} className="min-h-10 max-w-full justify-start" data-testid={`button-open-group-attachment-${attachment.id}`}>{attachment.isImage ? <ImageIcon className="mr-2 h-4 w-4 shrink-0" /> : <FileText className="mr-2 h-4 w-4 shrink-0" />}{query.isFetching ? 'Opening file…' : attachment.isImage ? 'View image' : `Open ${attachment.fileName}`}</Button>;
 }
 
 function QuestionThread({ question, messages, groupId }: { question: SupportGroupMessage; messages: SupportGroupMessage[]; groupId: string }) {
@@ -274,19 +293,57 @@ function QuestionThread({ question, messages, groupId }: { question: SupportGrou
   </article>;
 }
 
-function MessageItem({ message, own, groupId, messages }: { message: SupportGroupMessage; own: boolean; groupId: string; messages: SupportGroupMessage[] }) {
+function MessageItem({ message, own, groupId, messages, onReply, onSaveEdit, onDelete, onReact, onPreview, busy }: {
+  message: SupportGroupMessage;
+  own: boolean;
+  groupId: string;
+  messages: SupportGroupMessage[];
+  onReply: (message: SupportGroupMessage) => void;
+  onSaveEdit: (messageId: string, body: string) => Promise<void>;
+  onDelete: (messageId: string) => Promise<void>;
+  onReact: (messageId: string, reaction: ChatReactionInputReaction) => void;
+  onPreview: (url: string, name: string) => void;
+  busy: boolean;
+}) {
   const [attachmentError, setAttachmentError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(message.body);
+  useEffect(() => { if (!editing) setDraft(message.body); }, [editing, message.body]);
   if (message.kind === 'question_response') return null;
-  if (message.kind === 'question') return <QuestionThread question={message} messages={messages} groupId={groupId} />;
-  return <article className={`support-message w-fit max-w-[min(42rem,92%)] rounded-2xl px-3.5 py-2.5 shadow-[0_1px_2px_hsl(232_45%_16%/.08)] sm:px-4 ${own ? 'ml-auto rounded-br-md bg-[hsl(var(--support-wash))]' : 'mr-auto rounded-bl-md border border-border/75 bg-card'}`} data-testid={`support-message-${message.id}`}>
-    <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : message.senderRole === 'guide' ? ' · Guide' : ''}</span><time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{stamp(message.createdAt)}</time></div>
-    {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--support-moss))]/25 bg-background/80 p-3.5">
-      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--support-wash))] text-[hsl(var(--support-moss))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-bold text-primary">Group Meet</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{stamp(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
-      {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--support-moss))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-join-group-meet-${message.id}`}>Open Meet <ArrowUpRight className="h-4 w-4" /></a>}
-    </div> : <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
-    {message.attachments.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{message.attachments.map((file) => <span key={file.id} className="min-w-0"><GroupAttachment id={file.id} onError={setAttachmentError} /><span className="ml-2 break-all text-xs text-muted-foreground">{file.fileName}</span></span>)}</div>}
-    {attachmentError && <p role="alert" className="mt-2 text-xs text-destructive">{attachmentError}</p>}
-  </article>;
+  const replyPreview = messages.find((item) => item.id === message.replyToMessageId);
+  async function saveEdit() {
+    if (!draft.trim() || draft.trim() === message.body) { setEditing(false); return; }
+    try { await onSaveEdit(message.id, draft.trim()); setEditing(false); } catch { /* Keep the draft open; the chat shows the error. */ }
+  }
+  if (message.kind === 'question') return <div className="support-message w-full max-w-3xl">
+    <QuestionThread question={message} messages={messages} groupId={groupId} />
+    {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={(reaction) => onReact(message.id, reaction)} disabled={busy} />}
+    {!message.deletedAt && <MessageToolbar messageId={message.id} canReply onReply={() => onReply(message)} canEdit={false} canDelete={false} onEdit={() => {}} onDelete={async () => {}} onReact={(reaction) => onReact(message.id, reaction)} busy={busy} />}
+  </div>;
+  return <div className={`group flex w-full items-end gap-2.5 ${own ? 'justify-end' : 'justify-start'}`} data-testid={`support-message-row-${message.id}`}>
+    {!own && <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground" aria-hidden="true">{initials(message.senderName)}</span>}
+    <article className={`support-message w-fit max-w-[min(42rem,calc(100%-2.75rem))] min-w-0 rounded-2xl px-3.5 py-3 shadow-sm transition-shadow group-hover:shadow-md sm:px-4 ${own ? 'rounded-br-md border border-[hsl(var(--support-moss))]/15 bg-[hsl(var(--support-wash))]/70' : 'rounded-bl-md border border-border/75 bg-card'}`} data-testid={`support-message-${message.id}`}>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : message.senderRole === 'guide' ? ' · Guide' : ''}</span><span className="flex items-center gap-2">{message.editedAt && !message.deletedAt && <span className="text-[10px] text-muted-foreground">Edited</span>}<time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{stamp(message.createdAt)}</time></span></div>
+      {message.replyToMessageId && <div className="mb-2 rounded-lg border-l-2 border-[hsl(var(--support-moss))] bg-background/75 px-2.5 py-1.5 text-xs" data-testid={`quote-group-message-${message.id}`}>
+        <span className="font-bold text-[hsl(var(--support-moss))]">{replyPreview?.senderName ?? 'Earlier message'}</span>
+        <p className="mt-0.5 truncate text-muted-foreground">{replyPreview?.deletedAt ? 'This message was deleted.' : replyPreview?.body || 'Message'}</p>
+      </div>}
+      {message.deletedAt ? <p className="text-sm italic text-muted-foreground" data-testid={`text-group-deleted-${message.id}`}>This message was deleted.</p>
+        : editing ? <div className="space-y-2">
+          <textarea value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={5000} rows={3} autoFocus aria-label="Edit message" data-testid={`input-edit-group-message-${message.id}`} className="min-h-20 w-full resize-y rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          <div className="flex justify-end gap-2"><Button type="button" variant="ghost" size="sm" onClick={() => { setEditing(false); setDraft(message.body); }} disabled={busy} data-testid={`button-cancel-group-edit-${message.id}`}>Cancel</Button><Button type="button" size="sm" onClick={() => void saveEdit()} disabled={busy || !draft.trim()} data-testid={`button-save-group-edit-${message.id}`}>{busy ? 'Saving…' : 'Save'}</Button></div>
+        </div>
+        : message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--support-moss))]/25 bg-background/80 p-3.5">
+          <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--support-wash))] text-[hsl(var(--support-moss))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-bold text-primary">Group Meet</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{stamp(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
+          {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--support-moss))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-join-group-meet-${message.id}`}>Open Meet <ArrowUpRight className="h-4 w-4" /></a>}
+        </div> : <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
+      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{message.attachments.map((file) => <span key={file.id} className="min-w-0"><GroupAttachment attachment={file} onError={setAttachmentError} onPreview={onPreview} /><span className="ml-2 break-all text-xs text-muted-foreground">{file.fileName} · {formatBytes(file.size)}</span></span>)}</div>}
+      {attachmentError && <p role="alert" className="mt-2 text-xs text-destructive">{attachmentError}</p>}
+      {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={(reaction) => onReact(message.id, reaction)} disabled={busy} />}
+      {own && !message.deletedAt && <p className="mt-1.5 flex items-center justify-end gap-1 text-[10px] text-muted-foreground" data-testid={`status-group-read-${message.id}`}>{message.readByCount > 0 ? <><CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--support-moss))]" />Seen by {message.readByCount}</> : 'Sent'}</p>}
+      {!message.deletedAt && <MessageToolbar messageId={message.id} canReply onReply={() => onReply(message)} canEdit={own && message.kind === 'text'} canDelete={own && message.kind === 'text'} onEdit={() => { setDraft(message.body); setEditing(true); }} onDelete={() => onDelete(message.id)} onReact={(reaction) => onReact(message.id, reaction)} busy={busy} />}
+    </article>
+  </div>;
 }
 
 function MemberPanel({ group, members, onUpdate }: { group: SupportGroup; members: SupportGroupMember[]; onUpdate: (add: string[], remove: string[]) => Promise<void> }) {
@@ -307,10 +364,17 @@ function MemberPanel({ group, members, onUpdate }: { group: SupportGroup; member
   </form>;
 }
 
-function GroupComposer({ group, canGuide, afterSend }: { group: SupportGroup; canGuide: boolean; afterSend: () => Promise<void> }) {
+function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }: {
+  group: SupportGroup;
+  canGuide: boolean;
+  afterSend: () => Promise<void>;
+  replyingTo: SupportGroupMessage | null;
+  onClearReply: () => void;
+}) {
   const qc = useQueryClient();
   const send = useSendSupportGroupMessage();
   const upload = useRequestSupportGroupUpload();
+  const updateTyping = useUpdateSupportGroupTyping();
   const [mode, setMode] = useState<'text' | 'meeting' | 'question'>('text');
   const [body, setBody] = useState('');
   const [url, setUrl] = useState('');
@@ -323,6 +387,27 @@ function GroupComposer({ group, canGuide, afterSend }: { group: SupportGroup; ca
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingActive = useRef(false);
+  const lastTypingSent = useRef(0);
+  function setTyping(typing: boolean) {
+    if (typing) {
+      const now = Date.now();
+      if (!typingActive.current || now - lastTypingSent.current > 1200) {
+        updateTyping.mutate({ groupId: group.id, data: { typing: true } });
+        lastTypingSent.current = now;
+      }
+      typingActive.current = true;
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = setTimeout(() => setTyping(false), 2200);
+    } else {
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      typingTimeout.current = null;
+      if (typingActive.current) updateTyping.mutate({ groupId: group.id, data: { typing: false } });
+      typingActive.current = false;
+    }
+  }
+  useEffect(() => () => { if (typingTimeout.current) clearTimeout(typingTimeout.current); }, []);
   async function post(event: React.FormEvent) {
     event.preventDefault(); setError(''); setNotice('');
     if (!body.trim() && mode === 'text' && !files.length) { setError('Write a message or attach a file first.'); return; }
@@ -342,11 +427,12 @@ function GroupComposer({ group, canGuide, afterSend }: { group: SupportGroup; ca
         if (!result.ok) throw new Error(`Upload failed for ${file.name}. Try again.`);
         uploadTokens.push(signed.uploadToken);
       }
-      const data = mode === 'text' ? { kind: 'text' as const, ...(body.trim() ? { body: body.trim() } : {}), ...(uploadTokens.length ? { uploadTokens } : {}) }
+      const data = mode === 'text' ? { kind: 'text' as const, ...(body.trim() ? { body: body.trim() } : {}), ...(uploadTokens.length ? { uploadTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) }
         : mode === 'meeting' ? { kind: 'meeting' as const, meetingUrl: url.trim(), ...(startsAt ? { meetingStartsAt: new Date(startsAt).toISOString() } : {}), ...(agenda.trim() ? { meetingAgenda: agenda.trim() } : {}) }
           : { kind: 'question' as const, body: body.trim(), question: { type: questionType, ...(questionType === 'multiple_choice' ? { options } : {}) } };
       const sendVariables: SendSupportGroupMessageMutationVariables = { groupId: group.id, data };
       await send.mutateAsync(sendVariables);
+      setTyping(false); onClearReply();
       setBody(''); setFiles([]); setUrl(''); setStartsAt(''); setAgenda(''); setOptionsText('');
       if (inputRef.current) inputRef.current.value = '';
       setNotice(mode === 'question' ? 'Question shared. It is for learning, not grading.' : 'Your message is shared with the group.');
@@ -355,11 +441,16 @@ function GroupComposer({ group, canGuide, afterSend }: { group: SupportGroup; ca
     finally { setBusy(false); }
   }
   return <form onSubmit={post} className="space-y-3 border-t border-border bg-card p-3 sm:p-4" data-testid="form-group-message">
+    {replyingTo && <div className="flex items-center gap-3 rounded-xl border border-[hsl(var(--support-moss))]/20 bg-[hsl(var(--support-wash))]/45 px-3 py-2" data-testid="banner-reply-to-group-message">
+      <span className="h-8 w-1 rounded-full bg-[hsl(var(--support-moss))]" />
+      <div className="min-w-0 flex-1"><p className="text-xs font-bold text-[hsl(var(--support-moss))]">Replying to {replyingTo.senderName}</p><p className="truncate text-xs text-muted-foreground">{replyingTo.deletedAt ? 'This message was deleted.' : replyingTo.body || 'Message'}</p></div>
+      <button type="button" onClick={onClearReply} aria-label="Cancel reply" className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-card" data-testid="button-cancel-group-reply"><X className="h-4 w-4" /></button>
+    </div>}
     <div className="flex flex-wrap gap-2" role="group" aria-label="Message type">
       <button type="button" aria-pressed={mode === 'text'} className={`${softButton} ${mode === 'text' ? 'border-primary/30 bg-primary/5' : ''}`} onClick={() => setMode('text')} data-testid="button-compose-text"><MessageCircle className="h-4 w-4" />Message</button>
       {canGuide && <><button type="button" aria-pressed={mode === 'meeting'} className={`${softButton} ${mode === 'meeting' ? 'border-primary/30 bg-primary/5' : ''}`} onClick={() => setMode('meeting')} data-testid="button-compose-meeting"><Video className="h-4 w-4" />Meet</button><button type="button" aria-pressed={mode === 'question'} className={`${softButton} ${mode === 'question' ? 'border-primary/30 bg-primary/5' : ''}`} onClick={() => setMode('question')} data-testid="button-compose-question"><MessageCircle className="h-4 w-4" />Ask a question</button></>}
     </div>
-    {mode === 'text' && <><label className="sr-only" htmlFor="group-message-body">Write a message</label><textarea id="group-message-body" value={body} onChange={(e) => setBody(e.target.value)} maxLength={5000} rows={3} className={`${inputClass} resize-y`} placeholder="Share a thought, question or useful detail…" data-testid="input-group-message" />
+    {mode === 'text' && <><label className="sr-only" htmlFor="group-message-body">Write a message</label><textarea id="group-message-body" value={body} onChange={(e) => { setBody(e.target.value); setTyping(true); }} onBlur={() => setTyping(false)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} maxLength={5000} rows={3} className={`${inputClass} resize-y`} placeholder="Share a thought, question or useful detail…" data-testid="input-group-message" />
       <div className="flex flex-wrap items-center gap-2"><input ref={inputRef} type="file" multiple accept={ACCEPTED.join(',')} onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))} className="sr-only" id="group-file-input" data-testid="input-group-attachments" /><label htmlFor="group-file-input" className={`${softButton} cursor-pointer`}><Paperclip className="h-4 w-4" />Attach files</label><span className="text-xs text-muted-foreground">Up to 5 files · 10 MB each</span></div>
       {files.length > 0 && <p className="text-xs text-muted-foreground">{files.map((f) => f.name).join(' · ')}</p>}</>}
     {mode === 'meeting' && <div className="grid gap-3 sm:grid-cols-2"><label className="block sm:col-span-2"><span className="mb-1.5 block text-sm font-bold">Google Meet link</span><input type="url" required value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} placeholder="https://meet.google.com/..." data-testid="input-group-meet-url" /></label><label className="block"><span className="mb-1.5 block text-sm font-bold">Date and time</span><input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={inputClass} data-testid="input-group-meet-date" /></label><label className="block"><span className="mb-1.5 block text-sm font-bold">Agenda</span><input value={agenda} onChange={(e) => setAgenda(e.target.value)} maxLength={1000} className={inputClass} placeholder="What will the group discuss?" data-testid="input-group-meet-agenda" /></label></div>}
@@ -378,9 +469,21 @@ export function SupportGroupPage() {
   const query = useListSupportGroupMessages(groupId, { query: { enabled: !!user && !!groupId, queryKey: messageKey } });
   const groupListQuery = useListSupportGroups({ query: { enabled: !!user, queryKey: groupsKey } });
   const manage = useUpdateGuideSupportGroupMembers();
+  const editMessage = useEditSupportGroupMessage();
+  const deleteMessage = useDeleteSupportGroupMessage();
+  const toggleReaction = useToggleSupportGroupMessageReaction();
   const data = query.data;
   const endRef = useRef<HTMLDivElement>(null);
+  const [messageSearchOpen, setMessageSearchOpen] = useState(false);
+  const [messageSearch, setMessageSearch] = useState('');
+  const [groupSearch, setGroupSearch] = useState('');
+  const [replyingTo, setReplyingTo] = useState<SupportGroupMessage | null>(null);
+  const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
+  const [chatActionError, setChatActionError] = useState('');
+  const [typingPeers, setTypingPeers] = useState<string[]>([]);
+  const typingTimeouts = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   useTitle(data?.group.name || 'Support group');
+  useEffect(() => () => { if (preview?.url) URL.revokeObjectURL(preview.url); }, [preview?.url]);
 
   useEffect(() => {
     if (!groupId || !user) return;
@@ -389,23 +492,81 @@ export function SupportGroupPage() {
       void qc.invalidateQueries({ queryKey: getListSupportGroupMessagesQueryKey(groupId) });
       void qc.invalidateQueries({ queryKey: getListSupportGroupsQueryKey() });
     };
+    const onTyping = (event: Event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent<string>).data) as { userId?: string; name?: string; typing?: boolean };
+        if (!payload.userId || !payload.name) return;
+        const key = payload.userId;
+        if (typingTimeouts.current.has(key)) clearTimeout(typingTimeouts.current.get(key)!);
+        if (payload.typing) {
+          setTypingPeers((current) => current.includes(payload.name!) ? current : [...current, payload.name!]);
+          typingTimeouts.current.set(key, setTimeout(() => {
+            setTypingPeers((current) => current.filter((name) => name !== payload.name));
+            typingTimeouts.current.delete(key);
+          }, 4500));
+        } else {
+          setTypingPeers((current) => current.filter((name) => name !== payload.name));
+          typingTimeouts.current.delete(key);
+        }
+      } catch { /* ignore malformed ephemeral event */ }
+    };
     const revoke = () => { source.close(); refresh(); };
     source.addEventListener('support-group-message', refresh);
+    source.addEventListener('support-group-read', refresh);
+    source.addEventListener('support-group-typing', onTyping);
     source.addEventListener('support-group-access-revoked', revoke);
     source.onopen = refresh;
     return () => {
       source.removeEventListener('support-group-message', refresh);
+      source.removeEventListener('support-group-read', refresh);
+      source.removeEventListener('support-group-typing', onTyping);
       source.removeEventListener('support-group-access-revoked', revoke);
       source.close();
+      for (const timeout of typingTimeouts.current.values()) clearTimeout(timeout);
+      typingTimeouts.current.clear();
     };
   }, [groupId, qc, user]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [data?.messages.length]);
   async function refreshAfterSend() { await Promise.all([qc.invalidateQueries({ queryKey: messageKey }), qc.invalidateQueries({ queryKey: groupsKey })]); }
+  async function saveMessage(messageId: string, body: string) {
+    setChatActionError('');
+    try { await editMessage.mutateAsync({ groupId, messageId, data: { body } }); await refreshAfterSend(); }
+    catch (error) { setChatActionError(errMsg(error)); throw error; }
+  }
+  async function removeMessage(messageId: string) {
+    setChatActionError('');
+    try { await deleteMessage.mutateAsync({ groupId, messageId }); await refreshAfterSend(); }
+    catch (error) { setChatActionError(errMsg(error)); throw error; }
+  }
+  async function reactToMessage(messageId: string, reaction: ChatReactionInputReaction) {
+    setChatActionError('');
+    try { await toggleReaction.mutateAsync({ groupId, messageId, data: { reaction } }); await refreshAfterSend(); }
+    catch (error) { setChatActionError(errMsg(error)); }
+  }
   async function updateMembers(addEnrollmentIds: string[], removeUserIds: string[]) {
     const variables: UpdateGuideSupportGroupMembersMutationVariables = { groupId, data: { ...(addEnrollmentIds.length ? { addEnrollmentIds } : {}), ...(removeUserIds.length ? { removeUserIds } : {}) } };
     await manage.mutateAsync(variables);
     await refreshAfterSend();
   }
+  const visibleMessages = (data?.messages ?? []).filter((message) => message.kind !== 'question_response').filter((message) => {
+    const term = messageSearch.trim().toLocaleLowerCase();
+    if (!term) return true;
+    return [message.senderName, message.body, ...message.attachments.map((attachment) => attachment.fileName)]
+      .join(' ').toLocaleLowerCase().includes(term);
+  });
+  const messagesByDay = new Map<string, SupportGroupMessage[]>();
+  for (const message of visibleMessages) {
+    const date = new Date(message.createdAt);
+    const day = Number.isNaN(date.getTime()) ? 'Earlier' : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const items = messagesByDay.get(day) ?? [];
+    items.push(message);
+    messagesByDay.set(day, items);
+  }
+  const visibleGroups = (groupListQuery.data ?? []).filter((group) => {
+    const term = groupSearch.trim().toLocaleLowerCase();
+    return !term || [group.name, group.courseTitle, group.lastMessagePreview].join(' ').toLocaleLowerCase().includes(term);
+  });
+  const messageActionsBusy = editMessage.isPending || deleteMessage.isPending || toggleReaction.isPending;
   if (authLoading) return <main className="mx-auto max-w-6xl p-4 sm:p-8"><PageSkeleton /></main>;
   if (!user) return <main className="mx-auto max-w-4xl p-4 sm:p-8"><EmptyPanel title="Sign in to open this group" icon={<LockKeyhole className="h-6 w-6" />}><p>Group conversations are private. Sign in with an invited account to continue.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
   return <main className="mx-auto max-w-6xl space-y-4 p-3 pb-24 sm:space-y-5 sm:p-6">
@@ -426,23 +587,38 @@ export function SupportGroupPage() {
                 <header className="border-b border-border px-3.5 py-4">
                   <h2 className="font-display font-bold text-primary">Course groups</h2>
                   <p className="mt-1 text-xs text-muted-foreground">{groupListQuery.data?.length ?? 0} available to you</p>
+                  <label className="mt-3 flex min-h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 focus-within:border-[hsl(var(--support-moss))]/40 focus-within:ring-2 focus-within:ring-[hsl(var(--support-moss))]/10">
+                    <Search className="h-4 w-4 shrink-0 text-muted-foreground" /><span className="sr-only">Search course groups</span>
+                    <input value={groupSearch} onChange={(event) => setGroupSearch(event.target.value)} placeholder="Search groups" className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground" data-testid="input-search-support-groups" />
+                    {groupSearch && <button type="button" onClick={() => setGroupSearch('')} aria-label="Clear group search" className="grid h-7 w-7 place-items-center rounded-full hover:bg-secondary" data-testid="button-clear-support-group-search"><X className="h-3.5 w-3.5" /></button>}
+                  </label>
                 </header>
                 <nav className="max-h-[68dvh] space-y-1 overflow-y-auto p-2" aria-label="Choose a group conversation">
                   {groupListQuery.isLoading ? <div className="space-y-2 p-1" aria-busy="true" aria-label="Loading groups">{[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-secondary/50" />)}</div>
                     : groupListQuery.isError ? <div className="p-3 text-xs text-muted-foreground"><p>Groups did not load.</p><button type="button" onClick={() => void groupListQuery.refetch()} className="mt-2 min-h-9 font-bold text-primary underline underline-offset-4" data-testid="button-retry-group-list">Try again</button></div>
-                      : groupListQuery.data?.length ? groupListQuery.data.map((group) => <GroupConversationLink key={group.id} group={group} selected={group.id === groupId} />)
-                        : <p className="p-3 text-xs leading-relaxed text-muted-foreground">Groups you can access will appear here.</p>}
+                      : visibleGroups.length ? visibleGroups.map((group) => <GroupConversationLink key={group.id} group={group} selected={group.id === groupId} />)
+                        : <p className="p-3 text-xs leading-relaxed text-muted-foreground">{groupSearch ? 'No groups match that search.' : 'Groups you can access will appear here.'}</p>}
                 </nav>
               </section>
             </aside>
             <section className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-background" aria-label="Group conversation">
-              <div className="flex min-h-14 items-center justify-between gap-2 border-b border-border bg-card px-4"><h2 className="font-bold text-primary">Conversation</h2><span className="text-xs text-muted-foreground">{data.messages.length ? `${data.messages.length} messages` : 'Start with a thought'}</span></div>
+              <div className="flex min-h-14 items-center justify-between gap-2 border-b border-border bg-card px-3.5 sm:px-4">
+                <div className="min-w-0"><h2 className="font-bold text-primary">{data.group.name}</h2><p className="truncate text-[11px] text-muted-foreground">{data.members.length} members · {data.group.guideName} guides this space</p></div>
+                <div className="flex shrink-0 items-center gap-2"><span className="hidden text-xs text-muted-foreground sm:inline">{data.messages.length} messages</span><button type="button" onClick={() => { setMessageSearchOpen((open) => !open); setMessageSearch(''); }} aria-label={messageSearchOpen ? 'Close group message search' : 'Search group messages'} aria-expanded={messageSearchOpen} className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="button-toggle-group-message-search"><Search className="h-4 w-4" /></button></div>
+              </div>
+              {messageSearchOpen && <label className="flex min-h-11 items-center gap-2 border-b border-border bg-card px-3 sm:px-4"><Search className="h-4 w-4 shrink-0 text-muted-foreground" /><span className="sr-only">Search messages in this group</span><input autoFocus value={messageSearch} onChange={(event) => setMessageSearch(event.target.value)} placeholder="Search messages, people or files" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" data-testid="input-search-group-messages" />{messageSearch && <button type="button" onClick={() => setMessageSearch('')} aria-label="Clear message search" className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary" data-testid="button-clear-group-message-search"><X className="h-4 w-4" /></button>}</label>}
+              {chatActionError && <p role="alert" className="border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs font-medium text-destructive" data-testid="status-group-message-action-error">{chatActionError}</p>}
               <div className="support-scroll flex min-h-64 max-h-[64dvh] flex-col gap-2.5 overflow-y-auto bg-secondary/35 p-3 sm:gap-3 sm:p-5" aria-live="polite">
                 {!data.messages.length ? <div className="my-auto rounded-2xl border border-dashed border-border bg-card p-6 text-center"><MessageCircle className="mx-auto h-6 w-6 text-[hsl(var(--support-moss))]" /><p className="mt-3 font-bold text-primary">A quiet start</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Share a useful question, resource or next step with the group.</p></div>
-                  : data.messages.map((message) => <MessageItem key={message.id} message={message} own={message.senderId === user.id} groupId={groupId} messages={data.messages} />)}
+                  : !visibleMessages.length ? <div className="m-auto py-10 text-center"><Search className="mx-auto h-6 w-6 text-muted-foreground" /><p className="mt-3 text-sm font-semibold text-primary">No messages found</p><p className="mt-1 text-xs text-muted-foreground">Try another word or file name.</p></div>
+                    : Array.from(messagesByDay.entries()).map(([day, dayMessages]) => <div key={day} className="space-y-3">
+                      <div className="flex items-center gap-3 py-1"><span className="h-px flex-1 bg-border/70" /><span className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-semibold text-muted-foreground">{day}</span><span className="h-px flex-1 bg-border/70" /></div>
+                      {dayMessages.map((message) => <MessageItem key={message.id} message={message} own={message.senderId === user.id} groupId={groupId} messages={data.messages} onReply={setReplyingTo} onSaveEdit={saveMessage} onDelete={removeMessage} onReact={reactToMessage} onPreview={(url, name) => setPreview({ url, name })} busy={messageActionsBusy} />)}
+                    </div>)}
+                {typingPeers.length > 0 && <div className="flex items-center gap-2 rounded-xl bg-card/80 px-3 py-2 text-xs font-medium text-muted-foreground" role="status" data-testid="status-group-typing"><span className="flex gap-1"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))] [animation-delay:120ms]" /><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[hsl(var(--support-moss))] [animation-delay:240ms]" /></span>{typingPeers.length === 1 ? `${typingPeers[0]} is typing…` : `${typingPeers.length} people are typing…`}</div>}
                 <div ref={endRef} />
               </div>
-              <GroupComposer group={data.group} canGuide={!!user.isGuide && data.group.canManageMembers} afterSend={refreshAfterSend} />
+              <GroupComposer group={data.group} canGuide={!!user.isGuide && data.group.canManageMembers} afterSend={refreshAfterSend} replyingTo={replyingTo} onClearReply={() => setReplyingTo(null)} />
             </section>
             <aside className="space-y-3">
               <section className="rounded-2xl border border-border bg-card p-4" aria-label="Group members"><h2 className="flex items-center gap-2 font-bold text-primary"><UsersRound className="h-4 w-4 text-[hsl(var(--support-moss))]" />Members</h2><ul className="mt-3 space-y-2">{data.members.map((member) => <li key={member.userId} className="flex min-w-0 items-center gap-2.5"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-secondary text-[11px] font-bold text-primary">{initials(member.name)}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{member.name}</span>{member.userId === data.group.guideId && <span className="text-[10px] font-bold text-[hsl(var(--support-moss))]">Guide</span>}</li>)}</ul></section>
@@ -450,6 +626,12 @@ export function SupportGroupPage() {
               <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground"><ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-[hsl(var(--support-moss))]" />Shared with invited members and the creating guide. This space does not use one-to-one mentorship messages.</p>
             </aside>
           </div>
+          {preview && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-primary/85 p-3 backdrop-blur-sm sm:p-8" role="dialog" aria-modal="true" aria-label={`Image preview: ${preview.name}`} onClick={() => setPreview(null)} data-testid="dialog-group-image-preview">
+            <div className="relative max-h-full w-full max-w-5xl overflow-hidden rounded-2xl border border-white/20 bg-card shadow-2xl" onClick={(event) => event.stopPropagation()}>
+              <div className="flex min-w-0 items-center justify-between gap-3 border-b border-border px-4 py-3"><p className="min-w-0 truncate text-sm font-semibold text-primary">{preview.name}</p><button type="button" onClick={() => setPreview(null)} aria-label="Close image preview" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-primary hover:bg-secondary" data-testid="button-close-group-image-preview"><X className="h-5 w-5" /></button></div>
+              <div className="grid max-h-[calc(100dvh-9rem)] place-items-center overflow-auto bg-primary/5 p-2 sm:p-4"><img src={preview.url} alt={preview.name} className="max-h-[calc(100dvh-11rem)] max-w-full rounded-lg object-contain" /></div>
+            </div>
+          </div>}
         </>}
   </main>;
 }

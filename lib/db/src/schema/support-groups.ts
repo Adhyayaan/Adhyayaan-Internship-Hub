@@ -47,8 +47,29 @@ export const supportGroupMessages = pgTable("learning_support_group_messages", {
   meetingAgenda: text("meeting_agenda").notNull().default(""),
   replyToMessageId: text("reply_to_message_id").references((): AnyPgColumn => supportGroupMessages.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  editedAt: timestamp("edited_at", { withTimezone: true }),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => [
   index("learning_support_group_messages_group_created").on(table.groupId, table.createdAt),
+]);
+
+export const supportGroupMessageReactions = pgTable("learning_support_group_message_reactions", {
+  messageId: text("message_id").notNull().references(() => supportGroupMessages.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
+  reaction: text("reaction").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.messageId, table.userId, table.reaction] }),
+  index("learning_support_group_message_reactions_message").on(table.messageId),
+]);
+
+export const supportGroupReads = pgTable("learning_support_group_reads", {
+  groupId: text("group_id").notNull().references(() => supportGroups.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
+  lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+  lastReadMessageId: text("last_read_message_id"),
+}, (table) => [
+  primaryKey({ columns: [table.groupId, table.userId] }),
 ]);
 
 export const supportGroupQuestions = pgTable("learning_support_group_questions", {

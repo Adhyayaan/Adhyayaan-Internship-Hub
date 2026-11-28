@@ -423,6 +423,72 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Student or assigned guide access required }
         "404": { description: Course enrollment not found }
+  /mentorship/threads/{enrollmentId}/messages/{messageId}:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: editMentorshipMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatMessageEditInput" }
+      responses:
+        "200":
+          description: Updated text message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipMessage" }
+        "400": { description: Message cannot be edited }
+        "401": { description: Sign in first }
+        "403": { description: Only the message author can edit it }
+        "404": { description: Message not found in this conversation }
+    delete:
+      operationId: deleteMentorshipMessage
+      responses:
+        "200":
+          description: Message hidden for all conversation participants
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MentorshipMessage" }
+        "401": { description: Sign in first }
+        "403": { description: Only the message author can delete it }
+        "404": { description: Message not found in this conversation }
+  /mentorship/threads/{enrollmentId}/messages/{messageId}/reactions:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      operationId: toggleMentorshipMessageReaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatReactionInput" }
+      responses:
+        "200":
+          description: Updated reaction totals for the message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChatReactionUpdateResponse" }
+        "401": { description: Sign in first }
+        "403": { description: Conversation access required }
+        "404": { description: Message not found in this conversation }
+  /mentorship/threads/{enrollmentId}/typing:
+    parameters:
+      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: updateMentorshipTyping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatTypingInput" }
+      responses:
+        "204": { description: Typing state broadcast to the conversation }
+        "401": { description: Sign in first }
+        "403": { description: Conversation access required }
   /mentorship/threads/{enrollmentId}/questions/{questionId}/responses:
     parameters:
       - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -585,6 +651,72 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Group membership required; only the guide can ask questions or share Meet links }
         "404": { description: Support group not found }
+  /support-groups/{groupId}/messages/{messageId}:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: editSupportGroupMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatMessageEditInput" }
+      responses:
+        "200":
+          description: Updated text message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMessage" }
+        "400": { description: Message cannot be edited }
+        "401": { description: Sign in first }
+        "403": { description: Only the message author can edit it }
+        "404": { description: Message not found in this group }
+    delete:
+      operationId: deleteSupportGroupMessage
+      responses:
+        "200":
+          description: Message hidden for all group participants
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportGroupMessage" }
+        "401": { description: Sign in first }
+        "403": { description: Only the message author can delete it }
+        "404": { description: Message not found in this group }
+  /support-groups/{groupId}/messages/{messageId}/reactions:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: messageId, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      operationId: toggleSupportGroupMessageReaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatReactionInput" }
+      responses:
+        "200":
+          description: Updated reaction totals for the message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChatReactionUpdateResponse" }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
+        "404": { description: Message not found in this group }
+  /support-groups/{groupId}/typing:
+    parameters:
+      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: updateSupportGroupTyping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatTypingInput" }
+      responses:
+        "204": { description: Typing state broadcast to the group }
+        "401": { description: Sign in first }
+        "403": { description: Group membership required }
   /support-groups/{groupId}/uploads:
     parameters:
       - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1721,7 +1853,7 @@ components:
         joinedAt: { type: string, format: date-time }
     SupportGroup:
       type: object
-      required: [id, courseId, courseTitle, name, purpose, guideId, guideName, memberCount, messageCount, lastMessagePreview, lastMessageAt, canManageMembers, createdAt]
+      required: [id, courseId, courseTitle, name, purpose, guideId, guideName, memberCount, messageCount, unreadCount, lastMessagePreview, lastMessageAt, canManageMembers, createdAt]
       properties:
         id: { type: string, format: uuid }
         courseId: { type: string }
@@ -1732,6 +1864,7 @@ components:
         guideName: { type: string }
         memberCount: { type: integer }
         messageCount: { type: integer }
+        unreadCount: { type: integer, minimum: 0 }
         lastMessagePreview: { type: ["string", "null"] }
         lastMessageAt: { type: ["string", "null"], format: date-time }
         canManageMembers: { type: boolean }
@@ -1744,7 +1877,7 @@ components:
         members: { type: array, items: { $ref: "#/components/schemas/SupportGroupMember" } }
     SupportGroupMessage:
       type: object
-      required: [id, groupId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, createdAt]
+      required: [id, groupId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, reactions, readByCount, editedAt, deletedAt, createdAt]
       properties:
         id: { type: string, format: uuid }
         groupId: { type: string, format: uuid }
@@ -1762,6 +1895,10 @@ components:
             - { type: "null" }
         replyToMessageId: { type: ["string", "null"], format: uuid }
         attachments: { type: array, items: { $ref: "#/components/schemas/MentorshipAttachment" } }
+        reactions: { type: array, items: { $ref: "#/components/schemas/ChatReaction" } }
+        readByCount: { type: integer, minimum: 0 }
+        editedAt: { type: ["string", "null"], format: date-time }
+        deletedAt: { type: ["string", "null"], format: date-time }
         createdAt: { type: string, format: date-time }
     SupportGroupMessagesResponse:
       type: object
@@ -1797,7 +1934,7 @@ components:
         isImage: { type: boolean }
     MentorshipMessage:
       type: object
-      required: [id, enrollmentId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, createdAt]
+      required: [id, enrollmentId, senderId, senderName, senderRole, kind, body, meetingUrl, meetingStartsAt, meetingAgenda, question, replyToMessageId, attachments, reactions, readByCount, editedAt, deletedAt, createdAt]
       properties:
         id: { type: string, format: uuid }
         enrollmentId: { type: string, format: uuid }
@@ -1815,6 +1952,10 @@ components:
             - { type: "null" }
         replyToMessageId: { type: ["string", "null"], format: uuid }
         attachments: { type: array, items: { $ref: "#/components/schemas/MentorshipAttachment" } }
+        reactions: { type: array, items: { $ref: "#/components/schemas/ChatReaction" } }
+        readByCount: { type: integer, minimum: 0 }
+        editedAt: { type: ["string", "null"], format: date-time }
+        deletedAt: { type: ["string", "null"], format: date-time }
         createdAt: { type: string, format: date-time }
     MentorshipQuestion:
       type: object
@@ -1883,10 +2024,39 @@ components:
         meetingStartsAt: { type: string, format: date-time }
         meetingAgenda: { type: string, maxLength: 1000 }
         question: { $ref: "#/components/schemas/MentorshipQuestionInput" }
+        replyToMessageId: { type: string, format: uuid }
         uploadTokens:
           type: array
           maxItems: 5
           items: { type: string, maxLength: 4096 }
+    ChatReaction:
+      type: object
+      required: [reaction, count, selected]
+      properties:
+        reaction: { type: string, enum: [like, heart, laugh, surprise, celebrate] }
+        count: { type: integer, minimum: 1 }
+        selected: { type: boolean }
+    ChatReactionInput:
+      type: object
+      required: [reaction]
+      properties:
+        reaction: { type: string, enum: [like, heart, laugh, surprise, celebrate] }
+    ChatReactionUpdateResponse:
+      type: object
+      required: [messageId, reactions]
+      properties:
+        messageId: { type: string, format: uuid }
+        reactions: { type: array, items: { $ref: "#/components/schemas/ChatReaction" } }
+    ChatMessageEditInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 5000 }
+    ChatTypingInput:
+      type: object
+      required: [typing]
+      properties:
+        typing: { type: boolean }
     MentorshipUploadInput:
       type: object
       required: [fileName, contentType, size]

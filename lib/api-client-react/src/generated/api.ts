@@ -38,6 +38,10 @@ import type {
   AssessmentDraft,
   AssessmentRetakeWaitResponse,
   AssessmentWorkspace,
+  ChatMessageEditInput,
+  ChatReactionInput,
+  ChatReactionUpdateResponse,
+  ChatTypingInput,
   Course,
   Dashboard,
   Enrollment,
@@ -2590,6 +2594,329 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getSendMentorshipMessageMutationOptions(options), queryClient);
     }
 
+export const getEditMentorshipMessageUrl = (enrollmentId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/mentorship/threads/${enrollmentId}/messages/${messageId}`
+}
+
+export const editMentorshipMessage = async (enrollmentId: string,
+    messageId: string,
+    chatMessageEditInput: ChatMessageEditInput, options?: Parameters<typeof customFetch>[1]): Promise<MentorshipMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MentorshipMessage>(getEditMentorshipMessageUrl(enrollmentId,messageId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatMessageEditInput)
+  }
+);}
+
+
+
+
+
+export const getEditMentorshipMessageMutationKey = () => ['editMentorshipMessage'] as const;
+
+export const getEditMentorshipMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editMentorshipMessage>>, TError,EditMentorshipMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof editMentorshipMessage>>, TError,EditMentorshipMessageMutationVariables, TContext> => {
+
+const mutationKey = getEditMentorshipMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof editMentorshipMessage>>, EditMentorshipMessageMutationVariables> = (props) => {
+          const {enrollmentId,messageId,data} = props ?? {};
+
+          return  editMentorshipMessage(enrollmentId,messageId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EditMentorshipMessageMutationResult = NonNullable<Awaited<ReturnType<typeof editMentorshipMessage>>>
+    export type EditMentorshipMessageMutationBody = BodyType<ChatMessageEditInput>
+    export type EditMentorshipMessageMutationError = ErrorType<void>
+    export type EditMentorshipMessageMutationVariables = {enrollmentId: string;messageId: string;data: BodyType<ChatMessageEditInput>}
+
+    export const useEditMentorshipMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editMentorshipMessage>>, TError,EditMentorshipMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof editMentorshipMessage>>,
+        TError,
+        EditMentorshipMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEditMentorshipMessageMutationOptions(options), queryClient);
+    }
+
+export const getDeleteMentorshipMessageUrl = (enrollmentId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/mentorship/threads/${enrollmentId}/messages/${messageId}`
+}
+
+export const deleteMentorshipMessage = async (enrollmentId: string,
+    messageId: string, options?: Parameters<typeof customFetch>[1]): Promise<MentorshipMessage> => {
+
+  return customFetch<MentorshipMessage>(getDeleteMentorshipMessageUrl(enrollmentId,messageId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteMentorshipMessageMutationKey = () => ['deleteMentorshipMessage'] as const;
+
+export const getDeleteMentorshipMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMentorshipMessage>>, TError,DeleteMentorshipMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMentorshipMessage>>, TError,DeleteMentorshipMessageMutationVariables, TContext> => {
+
+const mutationKey = getDeleteMentorshipMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMentorshipMessage>>, DeleteMentorshipMessageMutationVariables> = (props) => {
+          const {enrollmentId,messageId} = props ?? {};
+
+          return  deleteMentorshipMessage(enrollmentId,messageId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMentorshipMessageMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMentorshipMessage>>>
+
+    export type DeleteMentorshipMessageMutationError = ErrorType<void>
+    export type DeleteMentorshipMessageMutationVariables = {enrollmentId: string;messageId: string}
+
+    export const useDeleteMentorshipMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMentorshipMessage>>, TError,DeleteMentorshipMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMentorshipMessage>>,
+        TError,
+        DeleteMentorshipMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteMentorshipMessageMutationOptions(options), queryClient);
+    }
+
+export const getToggleMentorshipMessageReactionUrl = (enrollmentId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/mentorship/threads/${enrollmentId}/messages/${messageId}/reactions`
+}
+
+export const toggleMentorshipMessageReaction = async (enrollmentId: string,
+    messageId: string,
+    chatReactionInput: ChatReactionInput, options?: Parameters<typeof customFetch>[1]): Promise<ChatReactionUpdateResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ChatReactionUpdateResponse>(getToggleMentorshipMessageReactionUrl(enrollmentId,messageId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatReactionInput)
+  }
+);}
+
+
+
+
+
+export const getToggleMentorshipMessageReactionMutationKey = () => ['toggleMentorshipMessageReaction'] as const;
+
+export const getToggleMentorshipMessageReactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>, TError,ToggleMentorshipMessageReactionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>, TError,ToggleMentorshipMessageReactionMutationVariables, TContext> => {
+
+const mutationKey = getToggleMentorshipMessageReactionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>, ToggleMentorshipMessageReactionMutationVariables> = (props) => {
+          const {enrollmentId,messageId,data} = props ?? {};
+
+          return  toggleMentorshipMessageReaction(enrollmentId,messageId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ToggleMentorshipMessageReactionMutationResult = NonNullable<Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>>
+    export type ToggleMentorshipMessageReactionMutationBody = BodyType<ChatReactionInput>
+    export type ToggleMentorshipMessageReactionMutationError = ErrorType<void>
+    export type ToggleMentorshipMessageReactionMutationVariables = {enrollmentId: string;messageId: string;data: BodyType<ChatReactionInput>}
+
+    export const useToggleMentorshipMessageReaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>, TError,ToggleMentorshipMessageReactionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof toggleMentorshipMessageReaction>>,
+        TError,
+        ToggleMentorshipMessageReactionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getToggleMentorshipMessageReactionMutationOptions(options), queryClient);
+    }
+
+export const getUpdateMentorshipTypingUrl = (enrollmentId: string,) => {
+
+
+
+
+  return `/api/mentorship/threads/${enrollmentId}/typing`
+}
+
+export const updateMentorshipTyping = async (enrollmentId: string,
+    chatTypingInput: ChatTypingInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getUpdateMentorshipTypingUrl(enrollmentId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatTypingInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateMentorshipTypingMutationKey = () => ['updateMentorshipTyping'] as const;
+
+export const getUpdateMentorshipTypingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipTyping>>, TError,UpdateMentorshipTypingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipTyping>>, TError,UpdateMentorshipTypingMutationVariables, TContext> => {
+
+const mutationKey = getUpdateMentorshipTypingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMentorshipTyping>>, UpdateMentorshipTypingMutationVariables> = (props) => {
+          const {enrollmentId,data} = props ?? {};
+
+          return  updateMentorshipTyping(enrollmentId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMentorshipTypingMutationResult = NonNullable<Awaited<ReturnType<typeof updateMentorshipTyping>>>
+    export type UpdateMentorshipTypingMutationBody = BodyType<ChatTypingInput>
+    export type UpdateMentorshipTypingMutationError = ErrorType<void>
+    export type UpdateMentorshipTypingMutationVariables = {enrollmentId: string;data: BodyType<ChatTypingInput>}
+
+    export const useUpdateMentorshipTyping = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMentorshipTyping>>, TError,UpdateMentorshipTypingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateMentorshipTyping>>,
+        TError,
+        UpdateMentorshipTypingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateMentorshipTypingMutationOptions(options), queryClient);
+    }
+
 export const getAnswerMentorshipQuestionUrl = (enrollmentId: string,
     questionId: string,) => {
 
@@ -3486,6 +3813,329 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getSendSupportGroupMessageMutationOptions(options), queryClient);
+    }
+
+export const getEditSupportGroupMessageUrl = (groupId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/messages/${messageId}`
+}
+
+export const editSupportGroupMessage = async (groupId: string,
+    messageId: string,
+    chatMessageEditInput: ChatMessageEditInput, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SupportGroupMessage>(getEditSupportGroupMessageUrl(groupId,messageId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatMessageEditInput)
+  }
+);}
+
+
+
+
+
+export const getEditSupportGroupMessageMutationKey = () => ['editSupportGroupMessage'] as const;
+
+export const getEditSupportGroupMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editSupportGroupMessage>>, TError,EditSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof editSupportGroupMessage>>, TError,EditSupportGroupMessageMutationVariables, TContext> => {
+
+const mutationKey = getEditSupportGroupMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof editSupportGroupMessage>>, EditSupportGroupMessageMutationVariables> = (props) => {
+          const {groupId,messageId,data} = props ?? {};
+
+          return  editSupportGroupMessage(groupId,messageId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EditSupportGroupMessageMutationResult = NonNullable<Awaited<ReturnType<typeof editSupportGroupMessage>>>
+    export type EditSupportGroupMessageMutationBody = BodyType<ChatMessageEditInput>
+    export type EditSupportGroupMessageMutationError = ErrorType<void>
+    export type EditSupportGroupMessageMutationVariables = {groupId: string;messageId: string;data: BodyType<ChatMessageEditInput>}
+
+    export const useEditSupportGroupMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof editSupportGroupMessage>>, TError,EditSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof editSupportGroupMessage>>,
+        TError,
+        EditSupportGroupMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEditSupportGroupMessageMutationOptions(options), queryClient);
+    }
+
+export const getDeleteSupportGroupMessageUrl = (groupId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/messages/${messageId}`
+}
+
+export const deleteSupportGroupMessage = async (groupId: string,
+    messageId: string, options?: Parameters<typeof customFetch>[1]): Promise<SupportGroupMessage> => {
+
+  return customFetch<SupportGroupMessage>(getDeleteSupportGroupMessageUrl(groupId,messageId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSupportGroupMessageMutationKey = () => ['deleteSupportGroupMessage'] as const;
+
+export const getDeleteSupportGroupMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportGroupMessage>>, TError,DeleteSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportGroupMessage>>, TError,DeleteSupportGroupMessageMutationVariables, TContext> => {
+
+const mutationKey = getDeleteSupportGroupMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportGroupMessage>>, DeleteSupportGroupMessageMutationVariables> = (props) => {
+          const {groupId,messageId} = props ?? {};
+
+          return  deleteSupportGroupMessage(groupId,messageId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSupportGroupMessageMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportGroupMessage>>>
+
+    export type DeleteSupportGroupMessageMutationError = ErrorType<void>
+    export type DeleteSupportGroupMessageMutationVariables = {groupId: string;messageId: string}
+
+    export const useDeleteSupportGroupMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportGroupMessage>>, TError,DeleteSupportGroupMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSupportGroupMessage>>,
+        TError,
+        DeleteSupportGroupMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteSupportGroupMessageMutationOptions(options), queryClient);
+    }
+
+export const getToggleSupportGroupMessageReactionUrl = (groupId: string,
+    messageId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/messages/${messageId}/reactions`
+}
+
+export const toggleSupportGroupMessageReaction = async (groupId: string,
+    messageId: string,
+    chatReactionInput: ChatReactionInput, options?: Parameters<typeof customFetch>[1]): Promise<ChatReactionUpdateResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ChatReactionUpdateResponse>(getToggleSupportGroupMessageReactionUrl(groupId,messageId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatReactionInput)
+  }
+);}
+
+
+
+
+
+export const getToggleSupportGroupMessageReactionMutationKey = () => ['toggleSupportGroupMessageReaction'] as const;
+
+export const getToggleSupportGroupMessageReactionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>, TError,ToggleSupportGroupMessageReactionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>, TError,ToggleSupportGroupMessageReactionMutationVariables, TContext> => {
+
+const mutationKey = getToggleSupportGroupMessageReactionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>, ToggleSupportGroupMessageReactionMutationVariables> = (props) => {
+          const {groupId,messageId,data} = props ?? {};
+
+          return  toggleSupportGroupMessageReaction(groupId,messageId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ToggleSupportGroupMessageReactionMutationResult = NonNullable<Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>>
+    export type ToggleSupportGroupMessageReactionMutationBody = BodyType<ChatReactionInput>
+    export type ToggleSupportGroupMessageReactionMutationError = ErrorType<void>
+    export type ToggleSupportGroupMessageReactionMutationVariables = {groupId: string;messageId: string;data: BodyType<ChatReactionInput>}
+
+    export const useToggleSupportGroupMessageReaction = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>, TError,ToggleSupportGroupMessageReactionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof toggleSupportGroupMessageReaction>>,
+        TError,
+        ToggleSupportGroupMessageReactionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getToggleSupportGroupMessageReactionMutationOptions(options), queryClient);
+    }
+
+export const getUpdateSupportGroupTypingUrl = (groupId: string,) => {
+
+
+
+
+  return `/api/support-groups/${groupId}/typing`
+}
+
+export const updateSupportGroupTyping = async (groupId: string,
+    chatTypingInput: ChatTypingInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getUpdateSupportGroupTypingUrl(groupId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(chatTypingInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateSupportGroupTypingMutationKey = () => ['updateSupportGroupTyping'] as const;
+
+export const getUpdateSupportGroupTypingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSupportGroupTyping>>, TError,UpdateSupportGroupTypingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSupportGroupTyping>>, TError,UpdateSupportGroupTypingMutationVariables, TContext> => {
+
+const mutationKey = getUpdateSupportGroupTypingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSupportGroupTyping>>, UpdateSupportGroupTypingMutationVariables> = (props) => {
+          const {groupId,data} = props ?? {};
+
+          return  updateSupportGroupTyping(groupId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSupportGroupTypingMutationResult = NonNullable<Awaited<ReturnType<typeof updateSupportGroupTyping>>>
+    export type UpdateSupportGroupTypingMutationBody = BodyType<ChatTypingInput>
+    export type UpdateSupportGroupTypingMutationError = ErrorType<void>
+    export type UpdateSupportGroupTypingMutationVariables = {groupId: string;data: BodyType<ChatTypingInput>}
+
+    export const useUpdateSupportGroupTyping = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSupportGroupTyping>>, TError,UpdateSupportGroupTypingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateSupportGroupTyping>>,
+        TError,
+        UpdateSupportGroupTypingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateSupportGroupTypingMutationOptions(options), queryClient);
     }
 
 export const getRequestSupportGroupUploadUrl = (groupId: string,) => {

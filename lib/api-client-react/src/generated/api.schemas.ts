@@ -825,6 +825,8 @@ export interface SupportGroup {
   guideName: string;
   memberCount: number;
   messageCount: number;
+  /** @minimum 0 */
+  unreadCount: number;
   /** @nullable */
   lastMessagePreview: string | null;
   /** @nullable */
@@ -882,6 +884,24 @@ export interface MentorshipAttachment {
   isImage: boolean;
 }
 
+export type ChatReactionReaction = typeof ChatReactionReaction[keyof typeof ChatReactionReaction];
+
+
+export const ChatReactionReaction = {
+  like: 'like',
+  heart: 'heart',
+  laugh: 'laugh',
+  surprise: 'surprise',
+  celebrate: 'celebrate',
+} as const;
+
+export interface ChatReaction {
+  reaction: ChatReactionReaction;
+  /** @minimum 1 */
+  count: number;
+  selected: boolean;
+}
+
 export interface SupportGroupMessage {
   id: string;
   groupId: string;
@@ -899,6 +919,13 @@ export interface SupportGroupMessage {
   /** @nullable */
   replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
+  reactions: ChatReaction[];
+  /** @minimum 0 */
+  readByCount: number;
+  /** @nullable */
+  editedAt: string | null;
+  /** @nullable */
+  deletedAt: string | null;
   createdAt: string;
 }
 
@@ -988,6 +1015,13 @@ export interface MentorshipMessage {
   /** @nullable */
   replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
+  reactions: ChatReaction[];
+  /** @minimum 0 */
+  readByCount: number;
+  /** @nullable */
+  editedAt: string | null;
+  /** @nullable */
+  deletedAt: string | null;
   createdAt: string;
 }
 
@@ -1060,11 +1094,44 @@ export interface MentorshipMessageInput {
   /** @maxLength 1000 */
   meetingAgenda?: string;
   question?: MentorshipQuestionInput;
+  replyToMessageId?: string;
   /**
      * @maxItems 5
      * @items.maxLength 4096
      */
   uploadTokens?: string[];
+}
+
+export type ChatReactionInputReaction = typeof ChatReactionInputReaction[keyof typeof ChatReactionInputReaction];
+
+
+export const ChatReactionInputReaction = {
+  like: 'like',
+  heart: 'heart',
+  laugh: 'laugh',
+  surprise: 'surprise',
+  celebrate: 'celebrate',
+} as const;
+
+export interface ChatReactionInput {
+  reaction: ChatReactionInputReaction;
+}
+
+export interface ChatReactionUpdateResponse {
+  messageId: string;
+  reactions: ChatReaction[];
+}
+
+export interface ChatMessageEditInput {
+  /**
+     * @minLength 1
+     * @maxLength 5000
+     */
+  body: string;
+}
+
+export interface ChatTypingInput {
+  typing: boolean;
 }
 
 export interface MentorshipUploadInput {

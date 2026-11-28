@@ -1023,6 +1023,9 @@ export const listMentorshipMessagesResponseMessagesItemQuestionOneOptionsItemMax
 export const listMentorshipMessagesResponseMessagesItemQuestionOneOptionsMax = 6;
 
 
+export const listMentorshipMessagesResponseMessagesItemReadByCountMin = 0;
+
+
 
 export const ListMentorshipMessagesResponse = zod.object({
   "thread": zod.object({
@@ -1065,6 +1068,14 @@ export const ListMentorshipMessagesResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(listMentorshipMessagesResponseMessagesItemReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 }))
 })
@@ -1100,12 +1111,16 @@ export const SendMentorshipMessageBody = zod.object({
   "type": zod.enum(['multiple_choice', 'open_response']),
   "options": zod.array(zod.string().min(1).max(sendMentorshipMessageBodyQuestionOptionsItemMax)).max(sendMentorshipMessageBodyQuestionOptionsMax).optional()
 }).optional(),
+  "replyToMessageId": zod.string().uuid().optional(),
   "uploadTokens": zod.array(zod.string().max(sendMentorshipMessageBodyUploadTokensItemMax)).max(sendMentorshipMessageBodyUploadTokensMax).optional()
 })
 
 export const sendMentorshipMessageResponseQuestionOneOptionsItemMax = 200;
 
 export const sendMentorshipMessageResponseQuestionOneOptionsMax = 6;
+
+
+export const sendMentorshipMessageResponseReadByCountMin = 0;
 
 
 
@@ -1133,8 +1148,157 @@ export const SendMentorshipMessageResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(sendMentorshipMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
+
+
+export const EditMentorshipMessageParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const editMentorshipMessageBodyBodyMax = 5000;
+
+
+
+export const EditMentorshipMessageBody = zod.object({
+  "body": zod.string().min(1).max(editMentorshipMessageBodyBodyMax)
+})
+
+export const editMentorshipMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const editMentorshipMessageResponseQuestionOneOptionsMax = 6;
+
+
+export const editMentorshipMessageResponseReadByCountMin = 0;
+
+
+
+export const EditMentorshipMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(editMentorshipMessageResponseQuestionOneOptionsItemMax)).max(editMentorshipMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(editMentorshipMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const DeleteMentorshipMessageParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const deleteMentorshipMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const deleteMentorshipMessageResponseQuestionOneOptionsMax = 6;
+
+
+export const deleteMentorshipMessageResponseReadByCountMin = 0;
+
+
+
+export const DeleteMentorshipMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(deleteMentorshipMessageResponseQuestionOneOptionsItemMax)).max(deleteMentorshipMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(deleteMentorshipMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ToggleMentorshipMessageReactionParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const ToggleMentorshipMessageReactionBody = zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate'])
+})
+
+
+
+
+export const ToggleMentorshipMessageReactionResponse = zod.object({
+  "messageId": zod.string().uuid(),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+}))
+})
+
+
+export const UpdateMentorshipTypingParams = zod.object({
+  "enrollmentId": zod.coerce.string().uuid()
+})
+
+export const UpdateMentorshipTypingBody = zod.object({
+  "typing": zod.boolean()
+})
+
+export const UpdateMentorshipTypingResponse = zod.void()
 
 
 export const AnswerMentorshipQuestionParams = zod.object({
@@ -1153,6 +1317,9 @@ export const AnswerMentorshipQuestionBody = zod.object({
 export const answerMentorshipQuestionResponseQuestionOneOptionsItemMax = 200;
 
 export const answerMentorshipQuestionResponseQuestionOneOptionsMax = 6;
+
+
+export const answerMentorshipQuestionResponseReadByCountMin = 0;
 
 
 
@@ -1180,6 +1347,14 @@ export const AnswerMentorshipQuestionResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(answerMentorshipQuestionResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 
@@ -1286,6 +1461,10 @@ export const CreateGuideSupportGroupBody = zod.object({
   "enrollmentIds": zod.array(zod.string().uuid()).min(createGuideSupportGroupBodyEnrollmentIdsMin).max(createGuideSupportGroupBodyEnrollmentIdsMax)
 })
 
+export const createGuideSupportGroupResponseUnreadCountMin = 0;
+
+
+
 export const CreateGuideSupportGroupResponse = zod.object({
   "id": zod.string().uuid(),
   "courseId": zod.string(),
@@ -1296,6 +1475,7 @@ export const CreateGuideSupportGroupResponse = zod.object({
   "guideName": zod.string(),
   "memberCount": zod.number().int(),
   "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int().min(createGuideSupportGroupResponseUnreadCountMin),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
   "canManageMembers": zod.boolean(),
@@ -1318,6 +1498,10 @@ export const UpdateGuideSupportGroupMembersBody = zod.object({
   "removeUserIds": zod.array(zod.string().uuid()).max(updateGuideSupportGroupMembersBodyRemoveUserIdsMax).optional()
 })
 
+export const updateGuideSupportGroupMembersResponseGroupUnreadCountMin = 0;
+
+
+
 export const UpdateGuideSupportGroupMembersResponse = zod.object({
   "group": zod.object({
   "id": zod.string().uuid(),
@@ -1329,6 +1513,7 @@ export const UpdateGuideSupportGroupMembersResponse = zod.object({
   "guideName": zod.string(),
   "memberCount": zod.number().int(),
   "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int().min(updateGuideSupportGroupMembersResponseGroupUnreadCountMin),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
   "canManageMembers": zod.boolean(),
@@ -1343,6 +1528,10 @@ export const UpdateGuideSupportGroupMembersResponse = zod.object({
 })
 
 
+export const listSupportGroupsResponseUnreadCountMin = 0;
+
+
+
 export const ListSupportGroupsResponseItem = zod.object({
   "id": zod.string().uuid(),
   "courseId": zod.string(),
@@ -1353,6 +1542,7 @@ export const ListSupportGroupsResponseItem = zod.object({
   "guideName": zod.string(),
   "memberCount": zod.number().int(),
   "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int().min(listSupportGroupsResponseUnreadCountMin),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
   "canManageMembers": zod.boolean(),
@@ -1365,9 +1555,14 @@ export const ListSupportGroupMessagesParams = zod.object({
   "groupId": zod.coerce.string().uuid()
 })
 
+export const listSupportGroupMessagesResponseGroupUnreadCountMin = 0;
+
 export const listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsItemMax = 200;
 
 export const listSupportGroupMessagesResponseMessagesItemQuestionOneOptionsMax = 6;
+
+
+export const listSupportGroupMessagesResponseMessagesItemReadByCountMin = 0;
 
 
 
@@ -1382,6 +1577,7 @@ export const ListSupportGroupMessagesResponse = zod.object({
   "guideName": zod.string(),
   "memberCount": zod.number().int(),
   "messageCount": zod.number().int(),
+  "unreadCount": zod.number().int().min(listSupportGroupMessagesResponseGroupUnreadCountMin),
   "lastMessagePreview": zod.string().nullable(),
   "lastMessageAt": zod.coerce.date().nullable(),
   "canManageMembers": zod.boolean(),
@@ -1417,6 +1613,14 @@ export const ListSupportGroupMessagesResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(listSupportGroupMessagesResponseMessagesItemReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 }))
 })
@@ -1461,6 +1665,9 @@ export const sendSupportGroupMessageResponseQuestionOneOptionsItemMax = 200;
 export const sendSupportGroupMessageResponseQuestionOneOptionsMax = 6;
 
 
+export const sendSupportGroupMessageResponseReadByCountMin = 0;
+
+
 
 export const SendSupportGroupMessageResponse = zod.object({
   "id": zod.string().uuid(),
@@ -1486,8 +1693,157 @@ export const SendSupportGroupMessageResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(sendSupportGroupMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
+
+
+export const EditSupportGroupMessageParams = zod.object({
+  "groupId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const editSupportGroupMessageBodyBodyMax = 5000;
+
+
+
+export const EditSupportGroupMessageBody = zod.object({
+  "body": zod.string().min(1).max(editSupportGroupMessageBodyBodyMax)
+})
+
+export const editSupportGroupMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const editSupportGroupMessageResponseQuestionOneOptionsMax = 6;
+
+
+export const editSupportGroupMessageResponseReadByCountMin = 0;
+
+
+
+export const EditSupportGroupMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "groupId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(editSupportGroupMessageResponseQuestionOneOptionsItemMax)).max(editSupportGroupMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(editSupportGroupMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const DeleteSupportGroupMessageParams = zod.object({
+  "groupId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const deleteSupportGroupMessageResponseQuestionOneOptionsItemMax = 200;
+
+export const deleteSupportGroupMessageResponseQuestionOneOptionsMax = 6;
+
+
+export const deleteSupportGroupMessageResponseReadByCountMin = 0;
+
+
+
+export const DeleteSupportGroupMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "groupId": zod.string().uuid(),
+  "senderId": zod.string().uuid(),
+  "senderName": zod.string(),
+  "senderRole": zod.enum(['student', 'guide']),
+  "kind": zod.enum(['text', 'meeting', 'question', 'question_response']),
+  "body": zod.string(),
+  "meetingUrl": zod.string().url().nullable(),
+  "meetingStartsAt": zod.coerce.date().nullable(),
+  "meetingAgenda": zod.string(),
+  "question": zod.union([zod.object({
+  "type": zod.enum(['multiple_choice', 'open_response']),
+  "options": zod.array(zod.string().max(deleteSupportGroupMessageResponseQuestionOneOptionsItemMax)).max(deleteSupportGroupMessageResponseQuestionOneOptionsMax)
+}),zod.null()]),
+  "replyToMessageId": zod.string().uuid().nullable(),
+  "attachments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isImage": zod.boolean()
+})),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(deleteSupportGroupMessageResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const ToggleSupportGroupMessageReactionParams = zod.object({
+  "groupId": zod.coerce.string().uuid(),
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const ToggleSupportGroupMessageReactionBody = zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate'])
+})
+
+
+
+
+export const ToggleSupportGroupMessageReactionResponse = zod.object({
+  "messageId": zod.string().uuid(),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+}))
+})
+
+
+export const UpdateSupportGroupTypingParams = zod.object({
+  "groupId": zod.coerce.string().uuid()
+})
+
+export const UpdateSupportGroupTypingBody = zod.object({
+  "typing": zod.boolean()
+})
+
+export const UpdateSupportGroupTypingResponse = zod.void()
 
 
 export const RequestSupportGroupUploadParams = zod.object({
@@ -1533,6 +1889,9 @@ export const answerSupportGroupQuestionResponseQuestionOneOptionsItemMax = 200;
 export const answerSupportGroupQuestionResponseQuestionOneOptionsMax = 6;
 
 
+export const answerSupportGroupQuestionResponseReadByCountMin = 0;
+
+
 
 export const AnswerSupportGroupQuestionResponse = zod.object({
   "id": zod.string().uuid(),
@@ -1558,6 +1917,14 @@ export const AnswerSupportGroupQuestionResponse = zod.object({
   "downloadUrl": zod.string(),
   "isImage": zod.boolean()
 })),
+  "reactions": zod.array(zod.object({
+  "reaction": zod.enum(['like', 'heart', 'laugh', 'surprise', 'celebrate']),
+  "count": zod.number().int().min(1),
+  "selected": zod.boolean()
+})),
+  "readByCount": zod.number().int().min(answerSupportGroupQuestionResponseReadByCountMin),
+  "editedAt": zod.coerce.date().nullable(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 

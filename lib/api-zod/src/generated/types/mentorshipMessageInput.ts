@@ -18,6 +18,7 @@ export interface MentorshipMessageInput {
   /** @maxLength 1000 */
   meetingAgenda?: string;
   question?: MentorshipQuestionInput;
+  replyToMessageId?: string;
   /**
      * @maxItems 5
      * @items.maxLength 4096

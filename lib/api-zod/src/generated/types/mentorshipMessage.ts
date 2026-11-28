@@ -5,6 +5,7 @@
  * Adhyayaan internship learning API
  * OpenAPI spec version: 1.0.0
  */
+import type { ChatReaction } from './chatReaction';
 import type { MentorshipAttachment } from './mentorshipAttachment';
 import type { MentorshipMessageKind } from './mentorshipMessageKind';
 import type { MentorshipMessageSenderRole } from './mentorshipMessageSenderRole';
@@ -27,5 +28,12 @@ export interface MentorshipMessage {
   /** @nullable */
   replyToMessageId: string | null;
   attachments: MentorshipAttachment[];
+  reactions: ChatReaction[];
+  /** @minimum 0 */
+  readByCount: number;
+  /** @nullable */
+  editedAt: Date | null;
+  /** @nullable */
+  deletedAt: Date | null;
   createdAt: Date;
 }

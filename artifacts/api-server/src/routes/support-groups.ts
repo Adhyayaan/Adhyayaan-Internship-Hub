@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream";
 import { Router, type IRouter } from "express";
-import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import {
   db,
   enrollments,
@@ -11,7 +11,9 @@ import {
   supportGroupAttachments,
   supportGroupMembers,
   supportGroupMessages,
+  supportGroupMessageReactions,
   supportGroupQuestions,
+  supportGroupReads,
   supportGroups,
   type Learner,
 } from "@workspace/db";
@@ -21,7 +23,12 @@ import {
   AnswerSupportGroupQuestionResponse,
   CreateGuideSupportGroupBody,
   CreateGuideSupportGroupResponse,
+  DeleteSupportGroupMessageParams,
+  DeleteSupportGroupMessageResponse,
   DownloadSupportGroupAttachmentParams,
+  EditSupportGroupMessageBody,
+  EditSupportGroupMessageParams,
+  EditSupportGroupMessageResponse,
   GetGuideSupportReviewQueryParams,
   GetGuideSupportReviewResponse,
   ListSupportGroupMessagesParams,
@@ -33,6 +40,11 @@ import {
   SendSupportGroupMessageBody,
   SendSupportGroupMessageResponse,
   StreamSupportGroupEventsParams,
+  ToggleSupportGroupMessageReactionBody,
+  ToggleSupportGroupMessageReactionParams,
+  ToggleSupportGroupMessageReactionResponse,
+  UpdateSupportGroupTypingBody,
+  UpdateSupportGroupTypingParams,
   UpdateGuideSupportGroupMembersBody,
   UpdateGuideSupportGroupMembersParams,
   UpdateGuideSupportGroupMembersResponse,
@@ -57,11 +69,14 @@ import {
 } from "../lib/mentorship-storage";
 import {
   publishSupportGroupMessage,
+  publishSupportGroupRead,
+  publishSupportGroupTyping,
   revokeSupportGroupMembers,
   subscribeToSupportGroup,
 } from "../lib/support-group-events";
 import { canPostSupportGroupKind, supportGroupAccess } from "../lib/support-group-rules";
 import { supportReviewSignals } from "../lib/support-review";
+import { CHAT_REACTIONS, readPositionIncludesMessage, summarizeChatReactions } from "../lib/chat-features";
 
 const router: IRouter = Router();
 router.use("/support-groups", requireLearner, checkAssessment);
@@ -103,7 +118,8 @@ async function membersForGroup(groupId: string) {
     .orderBy(asc(learners.name));
 }
 
-function messagePreview(message: Pick<GroupMessageRow, "kind" | "body" | "meetingAgenda">) {
+function messagePreview(message: Pick<GroupMessageRow, "kind" | "body" | "meetingAgenda" | "deletedAt">) {
+  if (message.deletedAt) return "Message deleted";
   if (message.kind === "meeting") {
     return `Google Meet session${message.meetingAgenda ? ` · ${message.meetingAgenda}` : ""}`.slice(0, 160);
   }
@@ -114,17 +130,31 @@ function messagePreview(message: Pick<GroupMessageRow, "kind" | "body" | "meetin
 
 async function groupView(group: GroupRow, user: Learner) {
   const course = findCourse(group.courseId);
-  const [guideRow, memberCountRow, messageCountRow, latestRows] = await Promise.all([
+  const [guideRow, memberCountRow, messageCountRow, unreadCountRow, latestRows] = await Promise.all([
     db.select({ id: learners.id, name: learners.name }).from(learners)
       .where(eq(learners.id, group.guideId)).limit(1),
     db.select({ total: count() }).from(supportGroupMembers)
       .where(eq(supportGroupMembers.groupId, group.id)),
     db.select({ total: count() }).from(supportGroupMessages)
       .where(eq(supportGroupMessages.groupId, group.id)),
+    db.select({ total: count() }).from(supportGroupMessages)
+      .leftJoin(supportGroupReads, and(
+        eq(supportGroupReads.groupId, group.id),
+        eq(supportGroupReads.userId, user.id),
+      ))
+      .where(and(
+        eq(supportGroupMessages.groupId, group.id),
+        ne(supportGroupMessages.senderId, user.id),
+        or(
+          isNull(supportGroupReads.lastReadAt),
+          sql`(${supportGroupMessages.createdAt}, ${supportGroupMessages.id}) > (${supportGroupReads.lastReadAt}, ${supportGroupReads.lastReadMessageId})`,
+        ),
+      )),
     db.select({
       kind: supportGroupMessages.kind,
       body: supportGroupMessages.body,
       meetingAgenda: supportGroupMessages.meetingAgenda,
+      deletedAt: supportGroupMessages.deletedAt,
       createdAt: supportGroupMessages.createdAt,
     }).from(supportGroupMessages)
       .where(eq(supportGroupMessages.groupId, group.id))
@@ -143,6 +173,7 @@ async function groupView(group: GroupRow, user: Learner) {
     guideName: guide.name,
     memberCount: Number(memberCountRow[0]?.total ?? 0),
     messageCount: Number(messageCountRow[0]?.total ?? 0),
+    unreadCount: Number(unreadCountRow[0]?.total ?? 0),
     lastMessagePreview: latest ? messagePreview(latest) : null,
     lastMessageAt: latest?.createdAt.toISOString() ?? null,
     canManageMembers: user.role === "guide" && user.id === group.guideId,
@@ -159,7 +190,7 @@ async function attachmentsForMessages(messageIds: string[]) {
   return result;
 }
 
-async function messageViews(groupId: string, limit = 100) {
+async function messageViews(groupId: string, viewerId: string, limit = 100) {
   const recent = await db.select().from(supportGroupMessages)
     .where(eq(supportGroupMessages.groupId, groupId))
     .orderBy(desc(supportGroupMessages.createdAt)).limit(limit);
@@ -167,22 +198,29 @@ async function messageViews(groupId: string, limit = 100) {
   if (!rows.length) return [];
   const ids = rows.map((row) => row.id);
   const senderIds = [...new Set(rows.map((row) => row.senderId))];
-  const [senderRows, questionRows, attachmentMap] = await Promise.all([
+  const [senderRows, questionRows, attachmentMap, reactionRows, readRows] = await Promise.all([
     db.select({ id: learners.id, name: learners.name }).from(learners).where(inArray(learners.id, senderIds)),
     db.select().from(supportGroupQuestions).where(inArray(supportGroupQuestions.messageId, ids)),
     attachmentsForMessages(ids),
+    db.select().from(supportGroupMessageReactions).where(inArray(supportGroupMessageReactions.messageId, ids)),
+    db.select().from(supportGroupReads).where(eq(supportGroupReads.groupId, groupId)),
   ]);
   const senderMap = new Map(senderRows.map((row) => [row.id, row.name]));
   const questionMap = new Map(questionRows.map((row) => [row.messageId, row]));
+  const reactionsByMessage = summarizeChatReactions(reactionRows, viewerId);
   return rows.map((row) => {
     const question = questionMap.get(row.id);
     const attachments = attachmentMap.get(row.id) ?? [];
     return {
       ...row,
+      body: row.deletedAt ? "" : row.body,
       senderName: senderMap.get(row.senderId) ?? "Group member",
+      readByCount: readRows.filter((read) => read.userId !== row.senderId
+        && readPositionIncludesMessage(read.lastReadAt, read.lastReadMessageId, row.createdAt, row.id)).length,
+      reactions: row.deletedAt ? [] : reactionsByMessage.get(row.id) ?? [],
       question: question ? { type: question.type, options: question.options } : null,
       replyToMessageId: row.replyToMessageId,
-      attachments: attachments.map((attachment) => ({
+      attachments: row.deletedAt ? [] : attachments.map((attachment) => ({
         id: attachment.id,
         fileName: attachment.fileName,
         contentType: attachment.contentType,
@@ -195,10 +233,41 @@ async function messageViews(groupId: string, limit = 100) {
 }
 
 async function groupResponse(group: GroupRow, user: Learner) {
+  const [latestMessage] = await db.select({
+    id: supportGroupMessages.id,
+    createdAt: supportGroupMessages.createdAt,
+  }).from(supportGroupMessages)
+    .where(eq(supportGroupMessages.groupId, group.id))
+    .orderBy(desc(supportGroupMessages.createdAt), desc(supportGroupMessages.id))
+    .limit(1);
+  const [previousRead] = await db.select().from(supportGroupReads)
+    .where(and(eq(supportGroupReads.groupId, group.id), eq(supportGroupReads.userId, user.id)))
+    .limit(1);
+  const readAdvanced = !!latestMessage && !readPositionIncludesMessage(
+    previousRead?.lastReadAt ?? null,
+    previousRead?.lastReadMessageId ?? null,
+    latestMessage.createdAt,
+    latestMessage.id,
+  );
+  if (!previousRead || readAdvanced) {
+    await db.insert(supportGroupReads).values({
+      groupId: group.id,
+      userId: user.id,
+      lastReadAt: latestMessage?.createdAt ?? null,
+      lastReadMessageId: latestMessage?.id ?? null,
+    }).onConflictDoUpdate({
+      target: [supportGroupReads.groupId, supportGroupReads.userId],
+      set: {
+        lastReadAt: latestMessage?.createdAt ?? null,
+        lastReadMessageId: latestMessage?.id ?? null,
+      },
+    });
+  }
+  if (readAdvanced) publishSupportGroupRead(group.id, user.id);
   const [view, members, messages] = await Promise.all([
     groupView(group, user),
     membersForGroup(group.id),
-    messageViews(group.id),
+    messageViews(group.id, user.id),
   ]);
   if (!view) return null;
   return {
@@ -697,6 +766,8 @@ router.post("/support-groups/:groupId/messages", async (req, res): Promise<void>
       ...saved.message,
       senderName: user.name,
       question: questionData,
+      reactions: [],
+      readByCount: 0,
       attachments: saved.attachments.map((attachment) => ({
         id: attachment.id,
         fileName: attachment.fileName,
@@ -714,6 +785,170 @@ router.post("/support-groups/:groupId/messages", async (req, res): Promise<void>
     req.log.error({ err: error }, "Could not save support group message");
     res.status(409).json({ error: "The message could not be saved. Check the files and try again." });
   }
+});
+
+router.patch("/support-groups/:groupId/messages/:messageId", async (req, res): Promise<void> => {
+  const params = EditSupportGroupMessageParams.safeParse(req.params);
+  const parsed = EditSupportGroupMessageBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Write a message of up to 5,000 characters." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await groupAccess(params.data.groupId, user);
+  if (!access.group) {
+    res.status(404).json({ error: "Support group not found." });
+    return;
+  }
+  if (!access.allowed) {
+    res.status(403).json({ error: "You are not a member of this support group." });
+    return;
+  }
+  const [message] = await db.select().from(supportGroupMessages)
+    .where(and(
+      eq(supportGroupMessages.id, params.data.messageId),
+      eq(supportGroupMessages.groupId, access.group.id),
+    )).limit(1);
+  if (!message || message.kind !== "text" || message.deletedAt) {
+    res.status(404).json({ error: "This message cannot be edited." });
+    return;
+  }
+  if (message.senderId !== user.id) {
+    res.status(403).json({ error: "You can only edit your own messages." });
+    return;
+  }
+  const body = parsed.data.body.trim();
+  if (!body) {
+    res.status(400).json({ error: "A message cannot be empty." });
+    return;
+  }
+  await db.update(supportGroupMessages).set({ body, editedAt: new Date() })
+    .where(eq(supportGroupMessages.id, message.id));
+  const updated = (await messageViews(access.group.id, user.id)).find((item) => item.id === message.id);
+  if (!updated) {
+    res.status(404).json({ error: "This message could not be reloaded." });
+    return;
+  }
+  publishSupportGroupMessage(access.group.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(EditSupportGroupMessageResponse.parse(updated));
+});
+
+router.delete("/support-groups/:groupId/messages/:messageId", async (req, res): Promise<void> => {
+  const params = DeleteSupportGroupMessageParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Choose a valid message." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await groupAccess(params.data.groupId, user);
+  if (!access.group) {
+    res.status(404).json({ error: "Support group not found." });
+    return;
+  }
+  if (!access.allowed) {
+    res.status(403).json({ error: "You are not a member of this support group." });
+    return;
+  }
+  const [message] = await db.select().from(supportGroupMessages)
+    .where(and(
+      eq(supportGroupMessages.id, params.data.messageId),
+      eq(supportGroupMessages.groupId, access.group.id),
+    )).limit(1);
+  if (!message || message.kind !== "text" || message.deletedAt) {
+    res.status(404).json({ error: "This message cannot be deleted." });
+    return;
+  }
+  if (message.senderId !== user.id) {
+    res.status(403).json({ error: "You can only delete your own messages." });
+    return;
+  }
+  await db.update(supportGroupMessages).set({ body: "", deletedAt: new Date() })
+    .where(eq(supportGroupMessages.id, message.id));
+  const updated = (await messageViews(access.group.id, user.id)).find((item) => item.id === message.id);
+  if (!updated) {
+    res.status(404).json({ error: "This message could not be reloaded." });
+    return;
+  }
+  publishSupportGroupMessage(access.group.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(DeleteSupportGroupMessageResponse.parse(updated));
+});
+
+router.put("/support-groups/:groupId/messages/:messageId/reactions", async (req, res): Promise<void> => {
+  const params = ToggleSupportGroupMessageReactionParams.safeParse(req.params);
+  const parsed = ToggleSupportGroupMessageReactionBody.safeParse(req.body);
+  if (!params.success || !parsed.success || !CHAT_REACTIONS.includes(parsed.data.reaction)) {
+    res.status(400).json({ error: "Choose a supported reaction." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await groupAccess(params.data.groupId, user);
+  if (!access.group) {
+    res.status(404).json({ error: "Support group not found." });
+    return;
+  }
+  if (!access.allowed) {
+    res.status(403).json({ error: "You are not a member of this support group." });
+    return;
+  }
+  const [message] = await db.select({ id: supportGroupMessages.id, deletedAt: supportGroupMessages.deletedAt })
+    .from(supportGroupMessages)
+    .where(and(
+      eq(supportGroupMessages.id, params.data.messageId),
+      eq(supportGroupMessages.groupId, access.group.id),
+    )).limit(1);
+  if (!message || message.deletedAt) {
+    res.status(404).json({ error: "This message is not available." });
+    return;
+  }
+  const existing = await db.select({ reaction: supportGroupMessageReactions.reaction })
+    .from(supportGroupMessageReactions)
+    .where(and(
+      eq(supportGroupMessageReactions.messageId, message.id),
+      eq(supportGroupMessageReactions.userId, user.id),
+      eq(supportGroupMessageReactions.reaction, parsed.data.reaction),
+    )).limit(1);
+  if (existing.length) {
+    await db.delete(supportGroupMessageReactions).where(and(
+      eq(supportGroupMessageReactions.messageId, message.id),
+      eq(supportGroupMessageReactions.userId, user.id),
+      eq(supportGroupMessageReactions.reaction, parsed.data.reaction),
+    ));
+  } else {
+    await db.insert(supportGroupMessageReactions).values({
+      messageId: message.id,
+      userId: user.id,
+      reaction: parsed.data.reaction,
+    }).onConflictDoNothing();
+  }
+  const reactionRows = await db.select().from(supportGroupMessageReactions)
+    .where(eq(supportGroupMessageReactions.messageId, message.id));
+  const reactions = summarizeChatReactions(reactionRows, user.id).get(message.id) ?? [];
+  publishSupportGroupMessage(access.group.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(ToggleSupportGroupMessageReactionResponse.parse({
+    messageId: message.id,
+    reactions,
+  }));
+});
+
+router.post("/support-groups/:groupId/typing", async (req, res): Promise<void> => {
+  const params = UpdateSupportGroupTypingParams.safeParse(req.params);
+  const parsed = UpdateSupportGroupTypingBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Choose a valid group." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await groupAccess(params.data.groupId, user);
+  if (!access.group) {
+    res.status(404).json({ error: "Support group not found." });
+    return;
+  }
+  if (!access.allowed) {
+    res.status(403).json({ error: "You are not a member of this support group." });
+    return;
+  }
+  publishSupportGroupTyping(access.group.id, user.id, user.name, parsed.data.typing);
+  res.status(204).end();
 });
 
 router.post("/support-groups/:groupId/questions/:questionId/responses", async (req, res): Promise<void> => {
@@ -779,6 +1014,8 @@ router.post("/support-groups/:groupId/questions/:questionId/responses", async (r
     ...saved,
     senderName: req.learner!.name,
     question: null,
+    reactions: [],
+    readByCount: 0,
     attachments: [],
   });
   await db.update(supportGroups).set({ updatedAt: new Date() })
@@ -851,7 +1088,10 @@ router.get("/support-groups/attachments/:attachmentId", async (req, res): Promis
     groupId: supportGroupMessages.groupId,
   }).from(supportGroupAttachments)
     .innerJoin(supportGroupMessages, eq(supportGroupMessages.id, supportGroupAttachments.messageId))
-    .where(eq(supportGroupAttachments.id, params.data.attachmentId)).limit(1);
+    .where(and(
+      eq(supportGroupAttachments.id, params.data.attachmentId),
+      isNull(supportGroupMessages.deletedAt),
+    )).limit(1);
   if (!row) {
     res.status(404).json({ error: "Attachment not found." });
     return;

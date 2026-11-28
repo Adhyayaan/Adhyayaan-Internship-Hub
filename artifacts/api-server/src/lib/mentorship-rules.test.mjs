@@ -105,6 +105,10 @@ test("generated API contracts accept question prompts and linked student replies
     meetingStartsAt: null,
     meetingAgenda: "",
     attachments: [],
+    reactions: [],
+    readByCount: 0,
+    editedAt: null,
+    deletedAt: null,
     createdAt: new Date(),
   };
   assert.equal(SendMentorshipMessageResponse.safeParse({

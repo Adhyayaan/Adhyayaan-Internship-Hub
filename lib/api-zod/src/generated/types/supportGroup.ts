@@ -16,6 +16,8 @@ export interface SupportGroup {
   guideName: string;
   memberCount: number;
   messageCount: number;
+  /** @minimum 0 */
+  unreadCount: number;
   /** @nullable */
   lastMessagePreview: string | null;
   /** @nullable */

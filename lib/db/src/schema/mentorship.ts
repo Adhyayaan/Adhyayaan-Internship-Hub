@@ -14,8 +14,20 @@ export const mentorshipMessages = pgTable("learning_mentorship_messages", {
   meetingAgenda: text("meeting_agenda").notNull().default(""),
   replyToMessageId: text("reply_to_message_id").references((): AnyPgColumn => mentorshipMessages.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  editedAt: timestamp("edited_at", { withTimezone: true }),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => [
   index("learning_mentorship_messages_enrollment_created").on(table.enrollmentId, table.createdAt),
+]);
+
+export const mentorshipMessageReactions = pgTable("learning_mentorship_message_reactions", {
+  messageId: text("message_id").notNull().references(() => mentorshipMessages.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => learners.id, { onDelete: "cascade" }),
+  reaction: text("reaction").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.messageId, table.userId, table.reaction] }),
+  index("learning_mentorship_message_reactions_message").on(table.messageId),
 ]);
 
 export const mentorshipQuestions = pgTable("learning_mentorship_questions", {

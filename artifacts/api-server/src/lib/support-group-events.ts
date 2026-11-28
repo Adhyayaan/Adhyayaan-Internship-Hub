@@ -29,6 +29,30 @@ export function publishSupportGroupMessage(groupId: string, messageId: string) {
   if (!group.size) subscribers.delete(groupId);
 }
 
+function publishGroupEvent(groupId: string, eventName: string, data: Record<string, unknown>, exceptUserId?: string) {
+  const group = subscribers.get(groupId);
+  if (!group) return;
+  const event = `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const subscriber of group) {
+    if (subscriber.userId === exceptUserId) continue;
+    const { response } = subscriber;
+    if (response.destroyed || response.writableEnded) {
+      group.delete(subscriber);
+      continue;
+    }
+    response.write(event);
+  }
+  if (!group.size) subscribers.delete(groupId);
+}
+
+export function publishSupportGroupRead(groupId: string, userId: string) {
+  publishGroupEvent(groupId, "support-group-read", { userId }, userId);
+}
+
+export function publishSupportGroupTyping(groupId: string, userId: string, name: string, typing: boolean) {
+  publishGroupEvent(groupId, "support-group-typing", { userId, name, typing }, userId);
+}
+
 export function revokeSupportGroupMembers(groupId: string, userIds: string[]) {
   const group = subscribers.get(groupId);
   if (!group || !userIds.length) return;

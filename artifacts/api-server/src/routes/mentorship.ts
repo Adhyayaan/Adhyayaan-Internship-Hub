@@ -8,6 +8,7 @@ import {
   learners,
   mentorshipAttachments,
   mentorshipMessages,
+  mentorshipMessageReactions,
   mentorshipNotificationPreferences,
   mentorshipQuestions,
   mentorshipThreadReads,
@@ -15,6 +16,11 @@ import {
   type MentorshipMessage,
 } from "@workspace/db";
 import {
+  DeleteMentorshipMessageParams,
+  DeleteMentorshipMessageResponse,
+  EditMentorshipMessageBody,
+  EditMentorshipMessageParams,
+  EditMentorshipMessageResponse,
   AnswerMentorshipQuestionBody,
   AnswerMentorshipQuestionParams,
   AnswerMentorshipQuestionResponse,
@@ -27,6 +33,11 @@ import {
   SendMentorshipMessageBody,
   SendMentorshipMessageResponse,
   StreamMentorshipEventsParams,
+  ToggleMentorshipMessageReactionBody,
+  ToggleMentorshipMessageReactionParams,
+  ToggleMentorshipMessageReactionResponse,
+  UpdateMentorshipTypingBody,
+  UpdateMentorshipTypingParams,
   UpdateMentorshipNotificationPreferenceBody,
 } from "@workspace/api-zod";
 import { checkAssessment, requireLearner } from "../lib/auth";
@@ -34,9 +45,12 @@ import { findCourse } from "../lib/catalog";
 import {
   publishMentorshipMessage,
   publishMentorshipNotification,
+  publishMentorshipRead,
+  publishMentorshipTyping,
   subscribeToMentorshipNotifications,
   subscribeToMentorshipThread,
 } from "../lib/mentorship-events";
+import { CHAT_REACTIONS, readPositionIncludesMessage, summarizeChatReactions } from "../lib/chat-features";
 import { getMentorshipCounterpartId } from "../lib/mentorship-notifications";
 import {
   canAccessMentorshipThread,
@@ -92,14 +106,16 @@ function threadView(
   student: PersonSummary,
   guide: PersonSummary | null,
   user: Learner,
-  latest?: { kind: "text" | "meeting" | "question" | "question_response"; body: string; meetingAgenda: string; createdAt: Date },
+  latest?: { kind: "text" | "meeting" | "question" | "question_response"; body: string; meetingAgenda: string; deletedAt: Date | null; createdAt: Date },
   messageCount = 0,
   unreadCount = 0,
 ) {
   const course = findCourse(enrollment.courseId);
   if (!course) return null;
   const lastMessagePreview = latest
-    ? latest.kind === "meeting"
+    ? latest.deletedAt
+      ? "Message deleted"
+      : latest.kind === "meeting"
       ? `Google Meet session${latest.meetingAgenda ? ` · ${latest.meetingAgenda}` : ""}`
       : latest.kind === "question"
         ? `Learning question · ${latest.body.trim().replace(/\s+/g, " ").slice(0, 130)}`
@@ -135,6 +151,7 @@ async function buildThread(
     kind: mentorshipMessages.kind,
     body: mentorshipMessages.body,
     meetingAgenda: mentorshipMessages.meetingAgenda,
+    deletedAt: mentorshipMessages.deletedAt,
     createdAt: mentorshipMessages.createdAt,
   }).from(mentorshipMessages)
     .where(eq(mentorshipMessages.enrollmentId, enrollment.id))
@@ -169,6 +186,7 @@ router.get("/mentorship/threads", async (req, res): Promise<void> => {
     kind: mentorshipMessages.kind,
     body: mentorshipMessages.body,
     meetingAgenda: mentorshipMessages.meetingAgenda,
+    deletedAt: mentorshipMessages.deletedAt,
     createdAt: mentorshipMessages.createdAt,
   }).from(mentorshipMessages)
     .where(inArray(mentorshipMessages.enrollmentId, enrollmentIds))
@@ -282,7 +300,7 @@ router.get("/mentorship/events", async (req, res): Promise<void> => {
   });
 });
 
-async function getMessagesForEnrollment(enrollmentId: string) {
+async function getMessagesForEnrollment(enrollmentId: string, viewerId: string) {
   const rows = await db.select({
     message: mentorshipMessages,
     senderName: learners.name,
@@ -293,13 +311,21 @@ async function getMessagesForEnrollment(enrollmentId: string) {
   if (rows.length === 0) return [];
   const messageIds = rows.map((row) => row.message.id);
   const questionIds = rows.filter((row) => row.message.kind === "question").map((row) => row.message.id);
-  const attachments = await db.select().from(mentorshipAttachments)
-    .where(inArray(mentorshipAttachments.messageId, messageIds))
-    .orderBy(asc(mentorshipAttachments.createdAt));
+  const [attachments, reactionRows, readRows] = await Promise.all([
+    db.select().from(mentorshipAttachments)
+      .where(inArray(mentorshipAttachments.messageId, messageIds))
+      .orderBy(asc(mentorshipAttachments.createdAt)),
+    db.select().from(mentorshipMessageReactions)
+      .where(inArray(mentorshipMessageReactions.messageId, messageIds)),
+    db.select().from(mentorshipThreadReads)
+      .where(and(eq(mentorshipThreadReads.enrollmentId, enrollmentId), ne(mentorshipThreadReads.userId, viewerId))),
+  ]);
   const questions = questionIds.length
     ? await db.select().from(mentorshipQuestions).where(inArray(mentorshipQuestions.messageId, questionIds))
     : [];
   const questionsByMessage = new Map(questions.map((question) => [question.messageId, question]));
+  const reactionsByMessage = summarizeChatReactions(reactionRows, viewerId);
+  const counterpartRead = readRows[0];
   const attachmentsByMessage = new Map<string, typeof attachments>();
   for (const attachment of attachments) {
     const group = attachmentsByMessage.get(attachment.messageId) ?? [];
@@ -308,14 +334,22 @@ async function getMessagesForEnrollment(enrollmentId: string) {
   }
   return rows.map(({ message, senderName }) => ({
     ...message,
+    body: message.deletedAt ? "" : message.body,
     senderName,
+    readByCount: message.senderId === viewerId && readPositionIncludesMessage(
+      counterpartRead?.lastReadAt ?? null,
+      counterpartRead?.lastReadMessageId ?? null,
+      message.createdAt,
+      message.id,
+    ) ? 1 : 0,
+    reactions: message.deletedAt ? [] : reactionsByMessage.get(message.id) ?? [],
     question: questionsByMessage.get(message.id)
       ? {
           type: questionsByMessage.get(message.id)!.type,
           options: questionsByMessage.get(message.id)!.options,
         }
       : null,
-    attachments: (attachmentsByMessage.get(message.id) ?? []).map((attachment) => ({
+    attachments: message.deletedAt ? [] : (attachmentsByMessage.get(message.id) ?? []).map((attachment) => ({
       id: attachment.id,
       fileName: attachment.fileName,
       contentType: attachment.contentType,
@@ -346,20 +380,34 @@ router.get("/mentorship/threads/:enrollmentId/messages", async (req, res): Promi
     .where(eq(mentorshipMessages.enrollmentId, access.enrollment.id))
     .orderBy(desc(mentorshipMessages.createdAt), desc(mentorshipMessages.id))
     .limit(1);
-  await db.insert(mentorshipThreadReads).values({
-    enrollmentId: access.enrollment.id,
-    userId: req.learner!.id,
-    lastReadAt: latestMessage?.createdAt ?? null,
-    lastReadMessageId: latestMessage?.id ?? null,
-  }).onConflictDoUpdate({
-    target: [mentorshipThreadReads.enrollmentId, mentorshipThreadReads.userId],
-    set: {
+  const [previousRead] = await db.select().from(mentorshipThreadReads)
+    .where(and(
+      eq(mentorshipThreadReads.enrollmentId, access.enrollment.id),
+      eq(mentorshipThreadReads.userId, req.learner!.id),
+    )).limit(1);
+  const readAdvanced = !!latestMessage && !readPositionIncludesMessage(
+    previousRead?.lastReadAt ?? null,
+    previousRead?.lastReadMessageId ?? null,
+    latestMessage.createdAt,
+    latestMessage.id,
+  );
+  if (!previousRead || readAdvanced) {
+    await db.insert(mentorshipThreadReads).values({
+      enrollmentId: access.enrollment.id,
+      userId: req.learner!.id,
       lastReadAt: latestMessage?.createdAt ?? null,
       lastReadMessageId: latestMessage?.id ?? null,
-    },
-  });
+    }).onConflictDoUpdate({
+      target: [mentorshipThreadReads.enrollmentId, mentorshipThreadReads.userId],
+      set: {
+        lastReadAt: latestMessage?.createdAt ?? null,
+        lastReadMessageId: latestMessage?.id ?? null,
+      },
+    });
+  }
   const thread = await buildThread(access.enrollment, req.learner!);
-  const messages = await getMessagesForEnrollment(access.enrollment.id);
+  if (readAdvanced) publishMentorshipRead(access.enrollment.id, req.learner!.id);
+  const messages = await getMessagesForEnrollment(access.enrollment.id, req.learner!.id);
   res.set("Cache-Control", "private, no-store");
   res.json(ListMentorshipMessagesResponse.parse({ thread, messages }));
 });
@@ -431,6 +479,8 @@ router.post("/mentorship/threads/:enrollmentId/questions/:questionId/responses",
     ...saved,
     senderName: user.name,
     question: null,
+    reactions: [],
+    readByCount: 0,
     attachments: [],
   });
   publishMentorshipMessage(access.enrollment.id, saved.id);
@@ -493,6 +543,23 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
   const body = (parsed.data.body ?? "").trim();
   const meetingAgenda = (parsed.data.meetingAgenda ?? "").trim();
   const uploadTokens = parsed.data.uploadTokens ?? [];
+  let replyToMessageId: string | null = null;
+  if (parsed.data.replyToMessageId) {
+    if (parsed.data.kind !== "text") {
+      res.status(400).json({ error: "Only a regular message can reply to another message." });
+      return;
+    }
+    const [reply] = await db.select({ id: mentorshipMessages.id }).from(mentorshipMessages)
+      .where(and(
+        eq(mentorshipMessages.id, parsed.data.replyToMessageId),
+        eq(mentorshipMessages.enrollmentId, access.enrollment.id),
+      )).limit(1);
+    if (!reply) {
+      res.status(400).json({ error: "Reply to a message in this conversation." });
+      return;
+    }
+    replyToMessageId = reply.id;
+  }
   let questionData: ReturnType<typeof normalizeMentorshipQuestion> = null;
   if (parsed.data.kind === "meeting") {
     if (user.role !== "guide") {
@@ -561,7 +628,7 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
         meetingUrl: parsed.data.kind === "meeting" ? parsed.data.meetingUrl! : null,
         meetingStartsAt: parsed.data.kind === "meeting" ? parsed.data.meetingStartsAt ?? null : null,
         meetingAgenda: parsed.data.kind === "meeting" ? meetingAgenda : "",
-        replyToMessageId: null,
+        replyToMessageId,
       }).returning();
       if (!message) throw new Error("Message insert did not return a row.");
       if (questionData) {
@@ -596,6 +663,8 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
     ...saved,
     senderName: user.name,
     question: questionData,
+    reactions: [],
+    readByCount: 0,
     attachments: savedAttachments.map((attachment) => ({
       id: attachment.id,
       fileName: attachment.fileName,
@@ -609,6 +678,156 @@ router.post("/mentorship/threads/:enrollmentId/messages", async (req, res): Prom
   const recipientId = getMentorshipCounterpartId(user.id, access.student.id, access.guide?.id ?? null);
   if (recipientId) publishMentorshipNotification(recipientId, access.enrollment.id, saved.id);
   res.status(201).set("Cache-Control", "private, no-store").json(response);
+});
+
+router.patch("/mentorship/threads/:enrollmentId/messages/:messageId", async (req, res): Promise<void> => {
+  const params = EditMentorshipMessageParams.safeParse(req.params);
+  const parsed = EditMentorshipMessageBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Write a message of up to 5,000 characters." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
+  if (!access) {
+    res.status(403).json({ error: "You are not part of this conversation." });
+    return;
+  }
+  const [message] = await db.select().from(mentorshipMessages)
+    .where(and(
+      eq(mentorshipMessages.id, params.data.messageId),
+      eq(mentorshipMessages.enrollmentId, access.enrollment.id),
+    )).limit(1);
+  if (!message || message.kind !== "text" || message.deletedAt) {
+    res.status(404).json({ error: "This message cannot be edited." });
+    return;
+  }
+  if (message.senderId !== user.id) {
+    res.status(403).json({ error: "You can only edit your own messages." });
+    return;
+  }
+  const body = parsed.data.body.trim();
+  if (!body) {
+    res.status(400).json({ error: "A message cannot be empty." });
+    return;
+  }
+  await db.update(mentorshipMessages).set({ body, editedAt: new Date() })
+    .where(eq(mentorshipMessages.id, message.id));
+  const updated = (await getMessagesForEnrollment(access.enrollment.id, user.id))
+    .find((item) => item.id === message.id);
+  if (!updated) {
+    res.status(404).json({ error: "This message could not be reloaded." });
+    return;
+  }
+  publishMentorshipMessage(access.enrollment.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(EditMentorshipMessageResponse.parse(updated));
+});
+
+router.delete("/mentorship/threads/:enrollmentId/messages/:messageId", async (req, res): Promise<void> => {
+  const params = DeleteMentorshipMessageParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: "Choose a valid message." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
+  if (!access) {
+    res.status(403).json({ error: "You are not part of this conversation." });
+    return;
+  }
+  const [message] = await db.select().from(mentorshipMessages)
+    .where(and(
+      eq(mentorshipMessages.id, params.data.messageId),
+      eq(mentorshipMessages.enrollmentId, access.enrollment.id),
+    )).limit(1);
+  if (!message || message.kind !== "text" || message.deletedAt) {
+    res.status(404).json({ error: "This message cannot be deleted." });
+    return;
+  }
+  if (message.senderId !== user.id) {
+    res.status(403).json({ error: "You can only delete your own messages." });
+    return;
+  }
+  await db.update(mentorshipMessages).set({ body: "", deletedAt: new Date() })
+    .where(eq(mentorshipMessages.id, message.id));
+  const updated = (await getMessagesForEnrollment(access.enrollment.id, user.id))
+    .find((item) => item.id === message.id);
+  if (!updated) {
+    res.status(404).json({ error: "This message could not be reloaded." });
+    return;
+  }
+  publishMentorshipMessage(access.enrollment.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(DeleteMentorshipMessageResponse.parse(updated));
+});
+
+router.put("/mentorship/threads/:enrollmentId/messages/:messageId/reactions", async (req, res): Promise<void> => {
+  const params = ToggleMentorshipMessageReactionParams.safeParse(req.params);
+  const parsed = ToggleMentorshipMessageReactionBody.safeParse(req.body);
+  if (!params.success || !parsed.success || !CHAT_REACTIONS.includes(parsed.data.reaction)) {
+    res.status(400).json({ error: "Choose a supported reaction." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
+  if (!access) {
+    res.status(403).json({ error: "You are not part of this conversation." });
+    return;
+  }
+  const [message] = await db.select({ id: mentorshipMessages.id, deletedAt: mentorshipMessages.deletedAt })
+    .from(mentorshipMessages)
+    .where(and(
+      eq(mentorshipMessages.id, params.data.messageId),
+      eq(mentorshipMessages.enrollmentId, access.enrollment.id),
+    )).limit(1);
+  if (!message || message.deletedAt) {
+    res.status(404).json({ error: "This message is not available." });
+    return;
+  }
+  const existing = await db.select({ reaction: mentorshipMessageReactions.reaction })
+    .from(mentorshipMessageReactions)
+    .where(and(
+      eq(mentorshipMessageReactions.messageId, message.id),
+      eq(mentorshipMessageReactions.userId, user.id),
+      eq(mentorshipMessageReactions.reaction, parsed.data.reaction),
+    )).limit(1);
+  if (existing.length) {
+    await db.delete(mentorshipMessageReactions).where(and(
+      eq(mentorshipMessageReactions.messageId, message.id),
+      eq(mentorshipMessageReactions.userId, user.id),
+      eq(mentorshipMessageReactions.reaction, parsed.data.reaction),
+    ));
+  } else {
+    await db.insert(mentorshipMessageReactions).values({
+      messageId: message.id,
+      userId: user.id,
+      reaction: parsed.data.reaction,
+    }).onConflictDoNothing();
+  }
+  const reactionRows = await db.select().from(mentorshipMessageReactions)
+    .where(eq(mentorshipMessageReactions.messageId, message.id));
+  const reactions = summarizeChatReactions(reactionRows, user.id).get(message.id) ?? [];
+  publishMentorshipMessage(access.enrollment.id, message.id);
+  res.set("Cache-Control", "private, no-store").json(ToggleMentorshipMessageReactionResponse.parse({
+    messageId: message.id,
+    reactions,
+  }));
+});
+
+router.post("/mentorship/threads/:enrollmentId/typing", async (req, res): Promise<void> => {
+  const params = UpdateMentorshipTypingParams.safeParse(req.params);
+  const parsed = UpdateMentorshipTypingBody.safeParse(req.body);
+  if (!params.success || !parsed.success) {
+    res.status(400).json({ error: "Choose a valid conversation." });
+    return;
+  }
+  const user = req.learner!;
+  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
+  if (!access || !canSendMentorshipMessage(user, access.enrollment)) {
+    res.status(403).json({ error: "You cannot send messages in this conversation." });
+    return;
+  }
+  publishMentorshipTyping(access.enrollment.id, user.id, user.name, parsed.data.typing);
+  res.status(204).end();
 });
 
 router.get("/mentorship/threads/:enrollmentId/events", async (req, res): Promise<void> => {
@@ -631,7 +850,7 @@ router.get("/mentorship/threads/:enrollmentId/events", async (req, res): Promise
   });
   res.flushHeaders();
   res.write("retry: 3000\n: connected\n\n");
-  const unsubscribe = subscribeToMentorshipThread(access.enrollment.id, res);
+  const unsubscribe = subscribeToMentorshipThread(access.enrollment.id, req.learner!.id, res);
   const heartbeat = setInterval(() => {
     if (!res.destroyed && !res.writableEnded) res.write(": ping\n\n");
   }, 25_000);
@@ -652,7 +871,10 @@ router.get("/mentorship/attachments/:attachmentId", async (req, res): Promise<vo
     enrollmentId: mentorshipMessages.enrollmentId,
   }).from(mentorshipAttachments)
     .innerJoin(mentorshipMessages, eq(mentorshipMessages.id, mentorshipAttachments.messageId))
-    .where(eq(mentorshipAttachments.id, params.data.attachmentId)).limit(1);
+    .where(and(
+      eq(mentorshipAttachments.id, params.data.attachmentId),
+      isNull(mentorshipMessages.deletedAt),
+    )).limit(1);
   if (!row) {
     res.status(404).json({ error: "Attachment not found." });
     return;
