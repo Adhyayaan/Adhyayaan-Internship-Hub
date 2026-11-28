@@ -1011,9 +1011,6 @@ export const UpdateMentorshipNotificationPreferenceResponse = zod.object({
 })
 
 
-export const StreamMentorshipNotificationsResponse = zod.unknown()
-
-
 export const ListMentorshipMessagesParams = zod.object({
   "enrollmentId": zod.coerce.string().uuid()
 })
@@ -1290,17 +1287,6 @@ export const ToggleMentorshipMessageReactionResponse = zod.object({
 })
 
 
-export const UpdateMentorshipTypingParams = zod.object({
-  "enrollmentId": zod.coerce.string().uuid()
-})
-
-export const UpdateMentorshipTypingBody = zod.object({
-  "typing": zod.boolean()
-})
-
-export const UpdateMentorshipTypingResponse = zod.void()
-
-
 export const AnswerMentorshipQuestionParams = zod.object({
   "enrollmentId": zod.coerce.string().uuid(),
   "questionId": zod.coerce.string().uuid()
@@ -1382,13 +1368,6 @@ export const RequestMentorshipUploadResponse = zod.object({
   "uploadToken": zod.string(),
   "expiresAt": zod.coerce.date()
 })
-
-
-export const StreamMentorshipEventsParams = zod.object({
-  "enrollmentId": zod.coerce.string().uuid()
-})
-
-export const StreamMentorshipEventsResponse = zod.unknown()
 
 
 export const DownloadMentorshipAttachmentParams = zod.object({
@@ -1835,17 +1814,6 @@ export const ToggleSupportGroupMessageReactionResponse = zod.object({
 })
 
 
-export const UpdateSupportGroupTypingParams = zod.object({
-  "groupId": zod.coerce.string().uuid()
-})
-
-export const UpdateSupportGroupTypingBody = zod.object({
-  "typing": zod.boolean()
-})
-
-export const UpdateSupportGroupTypingResponse = zod.void()
-
-
 export const RequestSupportGroupUploadParams = zod.object({
   "groupId": zod.coerce.string().uuid()
 })
@@ -1927,13 +1895,6 @@ export const AnswerSupportGroupQuestionResponse = zod.object({
   "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
-
-
-export const StreamSupportGroupEventsParams = zod.object({
-  "groupId": zod.coerce.string().uuid()
-})
-
-export const StreamSupportGroupEventsResponse = zod.unknown()
 
 
 export const DownloadSupportGroupAttachmentParams = zod.object({

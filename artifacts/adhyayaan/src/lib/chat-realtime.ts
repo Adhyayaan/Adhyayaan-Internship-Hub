@@ -79,6 +79,7 @@ function resetForUser(userId: string) {
   activeUserId = userId;
   everConnected = false;
   reconnectAttempts = 0;
+  listeners.clear();
   if (reconnectTimer) clearTimeout(reconnectTimer);
   reconnectTimer = null;
   desiredRooms.clear();

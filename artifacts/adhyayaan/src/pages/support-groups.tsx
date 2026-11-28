@@ -517,13 +517,16 @@ export function SupportGroupPage() {
         : message.kind === 'question' ? `Learning question · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
           : message.kind === 'question_response' ? `Question response · ${message.body.trim().replace(/\s+/g, ' ').slice(0, 130)}`
             : message.body.trim().replace(/\s+/g, ' ').slice(0, 160) || 'Shared an attachment';
-    qc.setQueryData<SupportGroup[]>(groupsKey, (current) => current?.map((group) => group.id !== groupId ? group : ({
-      ...group,
-      messageCount: group.messageCount + (isNew ? 1 : 0),
-      unreadCount: group.unreadCount + (isNew && message.senderId !== user.id ? 1 : 0),
-      lastMessagePreview: preview,
-      lastMessageAt: message.createdAt,
-    })));
+    qc.setQueryData<SupportGroup[]>(groupsKey, (current) => current?.map((group) => {
+      if (group.id !== groupId) return group;
+      const isLatest = !group.lastMessageAt || message.createdAt >= group.lastMessageAt;
+      return {
+        ...group,
+        messageCount: group.messageCount + (isNew ? 1 : 0),
+        unreadCount: group.unreadCount + (isNew && message.senderId !== user.id ? 1 : 0),
+        ...(isLatest ? { lastMessagePreview: preview, lastMessageAt: message.createdAt } : {}),
+      };
+    }));
   }, [groupId, groupsKey, messageKey, qc, user]);
   const endRef = useRef<HTMLDivElement>(null);
   const [messageSearchOpen, setMessageSearchOpen] = useState(false);
@@ -541,7 +544,7 @@ export function SupportGroupPage() {
     if (!groupId || !user) return;
     const room = { kind: 'support-group' as const, id: groupId };
     const unsubscribe = subscribeChatRealtime(user.id, (event) => {
-      if (event.type === 'connection' && event.reconnected) {
+      if (event.type === 'resync' || (event.type === 'connection' && event.reconnected)) {
         void qc.invalidateQueries({ queryKey: messageKey });
         void qc.invalidateQueries({ queryKey: groupsKey });
         return;
@@ -549,7 +552,10 @@ export function SupportGroupPage() {
       if (event.type === 'support-group.message' && event.groupId === groupId && event.message) {
         const message = event.message as SupportGroupMessage;
         cacheIncomingMessage(message);
-        if (message.senderId !== user.id && document.visibilityState === 'visible') markChatRead(room);
+        if (message.senderId !== user.id && document.visibilityState === 'visible') {
+          markChatRead(room);
+          qc.setQueryData<SupportGroup[]>(groupsKey, (current) => current?.map((group) => group.id === groupId ? { ...group, unreadCount: 0 } : group));
+        }
         return;
       }
       if (event.type === 'support-group.read' && event.groupId === groupId && typeof event.userId === 'string') {

@@ -32,12 +32,9 @@ import {
   RequestMentorshipUploadResponse,
   SendMentorshipMessageBody,
   SendMentorshipMessageResponse,
-  StreamMentorshipEventsParams,
   ToggleMentorshipMessageReactionBody,
   ToggleMentorshipMessageReactionParams,
   ToggleMentorshipMessageReactionResponse,
-  UpdateMentorshipTypingBody,
-  UpdateMentorshipTypingParams,
   UpdateMentorshipNotificationPreferenceBody,
 } from "@workspace/api-zod";
 import { checkAssessment, requireLearner } from "../lib/auth";
@@ -46,9 +43,6 @@ import {
   publishMentorshipMessage,
   publishMentorshipNotification,
   publishMentorshipRead,
-  publishMentorshipTyping,
-  subscribeToMentorshipNotifications,
-  subscribeToMentorshipThread,
 } from "../lib/mentorship-events";
 import { CHAT_REACTIONS, readPositionIncludesMessage, summarizeChatReactions } from "../lib/chat-features";
 import { getMentorshipCounterpartId } from "../lib/mentorship-notifications";
@@ -274,31 +268,6 @@ router.put("/mentorship/notification-preference", async (req, res): Promise<void
   }).returning({ browserNotificationsEnabled: mentorshipNotificationPreferences.browserNotificationsEnabled });
   res.set("Cache-Control", "private, no-store");
   res.json(preference);
-});
-
-router.get("/mentorship/events", async (req, res): Promise<void> => {
-  const user = req.learner!;
-  if (!roleCanUseMentorship(user)) {
-    res.status(403).json({ error: "Student or assigned guide access is required." });
-    return;
-  }
-  res.status(200);
-  res.set({
-    "Content-Type": "text/event-stream; charset=utf-8",
-    "Cache-Control": "private, no-cache, no-transform",
-    Connection: "keep-alive",
-    "X-Accel-Buffering": "no",
-  });
-  res.flushHeaders();
-  res.write("retry: 3000\n: connected\n\n");
-  const unsubscribe = subscribeToMentorshipNotifications(user.id, res);
-  const heartbeat = setInterval(() => {
-    if (!res.destroyed && !res.writableEnded) res.write(": ping\n\n");
-  }, 25_000);
-  res.on("close", () => {
-    clearInterval(heartbeat);
-    unsubscribe();
-  });
 });
 
 async function getMessagesForEnrollment(enrollmentId: string, viewerId: string) {
@@ -812,53 +781,6 @@ router.put("/mentorship/threads/:enrollmentId/messages/:messageId/reactions", as
     messageId: message.id,
     reactions,
   }));
-});
-
-router.post("/mentorship/threads/:enrollmentId/typing", async (req, res): Promise<void> => {
-  const params = UpdateMentorshipTypingParams.safeParse(req.params);
-  const parsed = UpdateMentorshipTypingBody.safeParse(req.body);
-  if (!params.success || !parsed.success) {
-    res.status(400).json({ error: "Choose a valid conversation." });
-    return;
-  }
-  const user = req.learner!;
-  const access = await loadEnrollmentAccess(params.data.enrollmentId, user);
-  if (!access || !canSendMentorshipMessage(user, access.enrollment)) {
-    res.status(403).json({ error: "You cannot send messages in this conversation." });
-    return;
-  }
-  publishMentorshipTyping(access.enrollment.id, user.id, user.name, parsed.data.typing);
-  res.status(204).end();
-});
-
-router.get("/mentorship/threads/:enrollmentId/events", async (req, res): Promise<void> => {
-  const params = StreamMentorshipEventsParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: "Choose a valid course conversation." });
-    return;
-  }
-  const access = await loadEnrollmentAccess(params.data.enrollmentId, req.learner!);
-  if (!access) {
-    res.status(403).json({ error: "You are not part of this conversation." });
-    return;
-  }
-  res.status(200);
-  res.set({
-    "Content-Type": "text/event-stream; charset=utf-8",
-    "Cache-Control": "private, no-cache, no-transform",
-    Connection: "keep-alive",
-    "X-Accel-Buffering": "no",
-  });
-  res.flushHeaders();
-  res.write("retry: 3000\n: connected\n\n");
-  const unsubscribe = subscribeToMentorshipThread(access.enrollment.id, req.learner!.id, res);
-  const heartbeat = setInterval(() => {
-    if (!res.destroyed && !res.writableEnded) res.write(": ping\n\n");
-  }, 25_000);
-  res.on("close", () => {
-    clearInterval(heartbeat);
-    unsubscribe();
-  });
 });
 
 router.get("/mentorship/attachments/:attachmentId", async (req, res): Promise<void> => {

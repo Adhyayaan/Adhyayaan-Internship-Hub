@@ -40,7 +40,6 @@ export * from './chatReactionInput';
 export * from './chatReactionInputReaction';
 export * from './chatReactionReaction';
 export * from './chatReactionUpdateResponse';
-export * from './chatTypingInput';
 export * from './course';
 export * from './dashboard';
 export * from './enrollment';

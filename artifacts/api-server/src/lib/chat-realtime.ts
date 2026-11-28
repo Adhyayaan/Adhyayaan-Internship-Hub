@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage, Server } from "node:http";
 import type { Socket } from "node:net";
-import type { PoolClient } from "pg";
 import { and, desc, eq } from "drizzle-orm";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
@@ -35,14 +34,22 @@ const MAX_ROOMS_PER_SOCKET = 12;
 const MAX_USER_SOCKETS = 5;
 const MAX_TYPING_EVENTS_PER_WINDOW = 8;
 const TYPING_WINDOW_MS = 5_000;
+type PgNotification = { channel: string; payload?: string };
+type ListenerClient = {
+  query(text: string): Promise<unknown>;
+  on(event: "notification", listener: (notification: PgNotification) => void): void;
+  on(event: "error", listener: (error: Error) => void): void;
+  on(event: "end", listener: () => void): void;
+  release(error?: Error): void;
+};
 
 type RoomKind = "mentorship" | "support-group";
 type ChatEvent =
-  | { id: string; type: "mentorship.message"; roomId: string; messageId: string; actorId: string }
+  | { id: string; type: "mentorship.message"; roomId: string; messageId: string }
   | { id: string; type: "mentorship.read"; roomId: string; actorId: string }
   | { id: string; type: "mentorship.typing"; roomId: string; actorId: string; name: string; typing: boolean }
   | { id: string; type: "mentorship.notification"; recipientId: string; roomId: string; messageId: string }
-  | { id: string; type: "support-group.message"; roomId: string; messageId: string; actorId: string }
+  | { id: string; type: "support-group.message"; roomId: string; messageId: string }
   | { id: string; type: "support-group.read"; roomId: string; actorId: string }
   | { id: string; type: "support-group.typing"; roomId: string; actorId: string; name: string; typing: boolean }
   | { id: string; type: "support-group.revoked"; roomId: string; userId: string };
@@ -68,7 +75,7 @@ type SupportGroupMessageRow = typeof supportGroupMessages.$inferSelect;
 const rooms = new Map<string, Set<Connection>>();
 const userConnections = new Map<string, Set<Connection>>();
 const connections = new Set<Connection>();
-let listenerClient: PoolClient | null = null;
+let listenerClient: ListenerClient | null = null;
 let listenerRetry: ReturnType<typeof setTimeout> | null = null;
 let listenerStopping = false;
 
@@ -457,11 +464,13 @@ function scheduleListenerReconnect() {
 
 async function connectListener() {
   if (listenerStopping || listenerClient) return;
+  let client: ListenerClient | null = null;
   try {
-    const client = await pool.connect();
-    await client.query(`LISTEN ${CHANNEL}`);
-    listenerClient = client;
-    client.on("notification", (notification) => {
+    client = await pool.connect();
+    const activeClient = client;
+    await activeClient.query(`LISTEN ${CHANNEL}`);
+    listenerClient = activeClient;
+    activeClient.on("notification", (notification) => {
       if (notification.channel !== CHANNEL || !notification.payload) return;
       try {
         const event = JSON.parse(notification.payload) as ChatEvent;
@@ -473,22 +482,24 @@ async function connectListener() {
       }
     });
     const disconnect = (error?: Error) => {
-      if (listenerClient !== client) return;
+      if (listenerClient !== activeClient) return;
       listenerClient = null;
-      client.release(error ?? new Error("Chat event listener disconnected"));
+      activeClient.release(error ?? new Error("Chat event listener disconnected"));
       scheduleListenerReconnect();
     };
-    client.on("error", disconnect);
-    client.on("end", () => disconnect());
+    activeClient.on("error", disconnect);
+    activeClient.on("end", () => disconnect());
+    for (const connection of connections) send(connection, { type: "resync" });
     logger.info("PostgreSQL chat event listener connected");
   } catch (error) {
+    client?.release(error instanceof Error ? error : new Error("Chat event listener failed"));
     logger.warn({ err: error }, "Could not connect the PostgreSQL chat event listener");
     scheduleListenerReconnect();
   }
 }
 
-export function publishMentorshipRealtimeMessage(enrollmentId: string, messageId: string, actorId: string) {
-  void publishChatEvent({ id: randomUUID(), type: "mentorship.message", roomId: enrollmentId, messageId, actorId });
+export function publishMentorshipRealtimeMessage(enrollmentId: string, messageId: string) {
+  void publishChatEvent({ id: randomUUID(), type: "mentorship.message", roomId: enrollmentId, messageId });
 }
 
 export function publishMentorshipRealtimeRead(enrollmentId: string, actorId: string) {
@@ -503,8 +514,8 @@ export function publishMentorshipRealtimeNotification(recipientId: string, enrol
   void publishChatEvent({ id: randomUUID(), type: "mentorship.notification", recipientId, roomId: enrollmentId, messageId });
 }
 
-export function publishSupportGroupRealtimeMessage(groupId: string, messageId: string, actorId: string) {
-  void publishChatEvent({ id: randomUUID(), type: "support-group.message", roomId: groupId, messageId, actorId });
+export function publishSupportGroupRealtimeMessage(groupId: string, messageId: string) {
+  void publishChatEvent({ id: randomUUID(), type: "support-group.message", roomId: groupId, messageId });
 }
 
 export function publishSupportGroupRealtimeRead(groupId: string, actorId: string) {

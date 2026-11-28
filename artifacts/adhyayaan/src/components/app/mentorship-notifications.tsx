@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
   getGetMentorshipNotificationPreferenceQueryKey, getListMentorshipThreadsQueryKey,
@@ -14,6 +14,9 @@ export function MentorshipNotifications() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const locationRef = useRef(location);
+  const preferenceRef = useRef(false);
+  const setLocationRef = useRef(setLocation);
   const canReceive = !!user && (user.isGuide || (!user.isAdmin && !user.isSuperadmin));
   const preference = useGetMentorshipNotificationPreference({
     query: {
@@ -25,9 +28,15 @@ export function MentorshipNotifications() {
   });
 
   useEffect(() => {
+    locationRef.current = location;
+    preferenceRef.current = !!preference.data?.browserNotificationsEnabled;
+    setLocationRef.current = setLocation;
+  }, [location, preference.data?.browserNotificationsEnabled, setLocation]);
+
+  useEffect(() => {
     if (!canReceive || !user) return;
     return subscribeChatRealtime(user.id, (event) => {
-      if (event.type === 'connection' && event.reconnected) {
+      if (event.type === 'resync' || (event.type === 'connection' && event.reconnected)) {
         void queryClient.invalidateQueries({ queryKey: getListMentorshipThreadsQueryKey() });
         return;
       }
@@ -36,7 +45,7 @@ export function MentorshipNotifications() {
         || typeof event.messageId !== 'string'
         || !event.message) return;
       const message = { enrollmentId: event.enrollmentId, messageId: event.messageId };
-      if (location !== `/mentorship/${message.enrollmentId}`) {
+      if (locationRef.current !== `/mentorship/${message.enrollmentId}`) {
         const detail = event.message as MentorshipMessage;
         const preview = detail.deletedAt ? 'Message deleted'
           : detail.kind === 'meeting' ? `Google Meet session${detail.meetingAgenda ? ` · ${detail.meetingAgenda}` : ''}`
@@ -55,10 +64,10 @@ export function MentorshipNotifications() {
         }));
       }
       const channel = getMentorshipAlertChannel({
-        notificationsEnabled: !!preference.data?.browserNotificationsEnabled,
+        notificationsEnabled: preferenceRef.current,
         browserPermissionGranted: 'Notification' in window && Notification.permission === 'granted',
         tabHidden: document.hidden,
-        threadOpen: location === `/mentorship/${message.enrollmentId}`,
+        threadOpen: locationRef.current === `/mentorship/${message.enrollmentId}`,
       });
       if (channel === 'toast') {
         toast({
@@ -74,12 +83,12 @@ export function MentorshipNotifications() {
         });
         notification.onclick = () => {
           window.focus();
-          setLocation(`/mentorship/${message.enrollmentId}`);
+          setLocationRef.current(`/mentorship/${message.enrollmentId}`);
           notification.close();
         };
       }
     });
-  }, [canReceive, location, preference.data?.browserNotificationsEnabled, queryClient, setLocation, user]);
+  }, [canReceive, queryClient, user]);
 
   return null;
 }

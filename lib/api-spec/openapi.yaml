@@ -381,17 +381,6 @@ paths:
         "400": { description: Invalid preference }
         "401": { description: Sign in first }
         "403": { description: Student or assigned guide access required }
-  /mentorship/events:
-    get:
-      operationId: streamMentorshipNotifications
-      responses:
-        "200":
-          description: Reconnecting event stream for messages sent to the signed-in student or guide
-          content:
-            text/event-stream:
-              schema: { type: string }
-        "401": { description: Sign in first }
-        "403": { description: Student or assigned guide access required }
   /mentorship/threads/{enrollmentId}/messages:
     parameters:
       - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -475,20 +464,6 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Conversation access required }
         "404": { description: Message not found in this conversation }
-  /mentorship/threads/{enrollmentId}/typing:
-    parameters:
-      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
-    post:
-      operationId: updateMentorshipTyping
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ChatTypingInput" }
-      responses:
-        "204": { description: Typing state broadcast to the conversation }
-        "401": { description: Sign in first }
-        "403": { description: Conversation access required }
   /mentorship/threads/{enrollmentId}/questions/{questionId}/responses:
     parameters:
       - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -527,19 +502,6 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/MentorshipUploadResponse" }
         "400": { description: Unsupported file type or size }
-        "401": { description: Sign in first }
-        "403": { description: Student or assigned guide access required }
-  /mentorship/threads/{enrollmentId}/events:
-    parameters:
-      - { name: enrollmentId, in: path, required: true, schema: { type: string, format: uuid } }
-    get:
-      operationId: streamMentorshipEvents
-      responses:
-        "200":
-          description: Reconnecting server-sent notifications for new conversation messages
-          content:
-            text/event-stream:
-              schema: { type: string }
         "401": { description: Sign in first }
         "403": { description: Student or assigned guide access required }
   /mentorship/attachments/{attachmentId}:
@@ -703,20 +665,6 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Group membership required }
         "404": { description: Message not found in this group }
-  /support-groups/{groupId}/typing:
-    parameters:
-      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
-    post:
-      operationId: updateSupportGroupTyping
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ChatTypingInput" }
-      responses:
-        "204": { description: Typing state broadcast to the group }
-        "401": { description: Sign in first }
-        "403": { description: Group membership required }
   /support-groups/{groupId}/uploads:
     parameters:
       - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -758,20 +706,6 @@ paths:
         "401": { description: Sign in first }
         "403": { description: Group membership required }
         "404": { description: Question not found in this group }
-  /support-groups/{groupId}/events:
-    parameters:
-      - { name: groupId, in: path, required: true, schema: { type: string, format: uuid } }
-    get:
-      operationId: streamSupportGroupEvents
-      responses:
-        "200":
-          description: Reconnecting event stream for group messages
-          content:
-            text/event-stream:
-              schema: { type: string }
-        "401": { description: Sign in first }
-        "403": { description: Group membership required }
-        "404": { description: Support group not found }
   /support-groups/attachments/{attachmentId}:
     parameters:
       - { name: attachmentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -2052,11 +1986,6 @@ components:
       required: [body]
       properties:
         body: { type: string, minLength: 1, maxLength: 5000 }
-    ChatTypingInput:
-      type: object
-      required: [typing]
-      properties:
-        typing: { type: boolean }
     MentorshipUploadInput:
       type: object
       required: [fileName, contentType, size]

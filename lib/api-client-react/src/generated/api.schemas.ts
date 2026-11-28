@@ -1130,10 +1130,6 @@ export interface ChatMessageEditInput {
   body: string;
 }
 
-export interface ChatTypingInput {
-  typing: boolean;
-}
-
 export interface MentorshipUploadInput {
   /**
      * @minLength 1

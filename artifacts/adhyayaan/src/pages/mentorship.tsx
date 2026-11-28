@@ -531,7 +531,7 @@ export default function MentorshipThreadPage() {
     if (!enrollmentId || !user) return;
     const room = { kind: 'mentorship' as const, id: enrollmentId };
     const unsubscribe = subscribeChatRealtime(user.id, (event) => {
-      if (event.type === 'connection' && event.reconnected) {
+      if (event.type === 'resync' || (event.type === 'connection' && event.reconnected)) {
         void qc.invalidateQueries({ queryKey: key });
         void qc.invalidateQueries({ queryKey: threadKey });
         return;
@@ -539,7 +539,10 @@ export default function MentorshipThreadPage() {
       if (event.type === 'mentorship.message' && event.enrollmentId === enrollmentId && event.message) {
         const message = event.message as MentorshipMessage;
         cacheIncomingMessage(message);
-        if (message.senderId !== user.id && document.visibilityState === 'visible') markChatRead(room);
+        if (message.senderId !== user.id && document.visibilityState === 'visible') {
+          markChatRead(room);
+          qc.setQueryData<MentorshipThread[]>(threadKey, (current) => current?.map((item) => item.enrollmentId === enrollmentId ? { ...item, unreadCount: 0 } : item));
+        }
         return;
       }
       if (event.type === 'mentorship.notification' && event.enrollmentId === enrollmentId && event.message) {

@@ -39,12 +39,9 @@ import {
   RequestSupportGroupUploadResponse,
   SendSupportGroupMessageBody,
   SendSupportGroupMessageResponse,
-  StreamSupportGroupEventsParams,
   ToggleSupportGroupMessageReactionBody,
   ToggleSupportGroupMessageReactionParams,
   ToggleSupportGroupMessageReactionResponse,
-  UpdateSupportGroupTypingBody,
-  UpdateSupportGroupTypingParams,
   UpdateGuideSupportGroupMembersBody,
   UpdateGuideSupportGroupMembersParams,
   UpdateGuideSupportGroupMembersResponse,
@@ -71,9 +68,7 @@ import {
 import {
   publishSupportGroupMessage,
   publishSupportGroupRead,
-  publishSupportGroupTyping,
   revokeSupportGroupMembers,
-  subscribeToSupportGroup,
 } from "../lib/support-group-events";
 import { canPostSupportGroupKind, supportGroupAccess } from "../lib/support-group-rules";
 import { supportReviewSignals } from "../lib/support-review";
@@ -100,11 +95,6 @@ async function groupAccess(groupId: string, user: Learner) {
     isMember = !!membership;
   }
   return { group, ...supportGroupAccess(user, group, isMember) };
-}
-
-async function freshGroupAccess(groupId: string, userId: string) {
-  const [user] = await db.select().from(learners).where(eq(learners.id, userId)).limit(1);
-  return user ? groupAccess(groupId, user) : null;
 }
 
 async function membersForGroup(groupId: string) {
@@ -931,27 +921,6 @@ router.put("/support-groups/:groupId/messages/:messageId/reactions", async (req,
   }));
 });
 
-router.post("/support-groups/:groupId/typing", async (req, res): Promise<void> => {
-  const params = UpdateSupportGroupTypingParams.safeParse(req.params);
-  const parsed = UpdateSupportGroupTypingBody.safeParse(req.body);
-  if (!params.success || !parsed.success) {
-    res.status(400).json({ error: "Choose a valid group." });
-    return;
-  }
-  const user = req.learner!;
-  const access = await groupAccess(params.data.groupId, user);
-  if (!access.group) {
-    res.status(404).json({ error: "Support group not found." });
-    return;
-  }
-  if (!access.allowed) {
-    res.status(403).json({ error: "You are not a member of this support group." });
-    return;
-  }
-  publishSupportGroupTyping(access.group.id, user.id, user.name, parsed.data.typing);
-  res.status(204).end();
-});
-
 router.post("/support-groups/:groupId/questions/:questionId/responses", async (req, res): Promise<void> => {
   const params = AnswerSupportGroupQuestionParams.safeParse(req.params);
   const parsed = AnswerSupportGroupQuestionBody.safeParse(req.body);
@@ -1023,59 +992,6 @@ router.post("/support-groups/:groupId/questions/:questionId/responses", async (r
     .where(eq(supportGroups.id, access.group.id));
   publishSupportGroupMessage(access.group.id, saved.id);
   res.status(201).set("Cache-Control", "private, no-store").json(response);
-});
-
-router.get("/support-groups/:groupId/events", async (req, res): Promise<void> => {
-  const params = StreamSupportGroupEventsParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(404).json({ error: "Support group not found." });
-    return;
-  }
-  const access = await groupAccess(params.data.groupId, req.learner!);
-  if (!access.group) {
-    res.status(404).json({ error: "Support group not found." });
-    return;
-  }
-  if (!access.allowed) {
-    res.status(403).json({ error: "You are not a member of this support group." });
-    return;
-  }
-  res.status(200);
-  res.set({
-    "Content-Type": "text/event-stream; charset=utf-8",
-    "Cache-Control": "private, no-cache, no-transform",
-    Connection: "keep-alive",
-    "X-Accel-Buffering": "no",
-  });
-  res.flushHeaders();
-  res.write("retry: 3000\n: connected\n\n");
-  const unsubscribe = subscribeToSupportGroup(access.group.id, req.learner!.id, res);
-  let ended = false;
-  const heartbeat = setInterval(() => {
-    if (ended || res.destroyed || res.writableEnded) return;
-    void freshGroupAccess(access.group!.id, req.learner!.id).then((current) => {
-      if (!current?.group || !current.allowed) {
-        res.write("event: support-group-access-revoked\ndata: {}\n\n");
-        res.end();
-        ended = true;
-        clearInterval(heartbeat);
-        unsubscribe();
-        return;
-      }
-      if (!res.destroyed && !res.writableEnded) res.write(": ping\n\n");
-    }).catch((error: unknown) => {
-      req.log.warn({ err: error }, "Could not recheck support group stream access");
-      ended = true;
-      clearInterval(heartbeat);
-      unsubscribe();
-      res.end();
-    });
-  }, 25_000);
-  res.on("close", () => {
-    ended = true;
-    clearInterval(heartbeat);
-    unsubscribe();
-  });
 });
 
 router.get("/support-groups/attachments/:attachmentId", async (req, res): Promise<void> => {
