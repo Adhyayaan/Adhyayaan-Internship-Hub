@@ -512,6 +512,187 @@ export interface GuideDashboard {
   learners: GuideLearner[];
 }
 
+export interface ProjectAssignmentInput {
+  /** @minLength 1 */
+  courseId: string;
+  /**
+     * @minLength 3
+     * @maxLength 160
+     */
+  title: string;
+  /**
+     * @minLength 20
+     * @maxLength 10000
+     */
+  instructions: string;
+  /**
+     * @minLength 10
+     * @maxLength 5000
+     */
+  rubric: string;
+  /** @nullable */
+  dueAt?: string | null;
+  /**
+     * @minItems 1
+     * @maxItems 50
+     */
+  enrollmentIds: string[];
+}
+
+export interface ProjectCourseOption {
+  id: string;
+  title: string;
+}
+
+export interface ProjectLearnerOption {
+  enrollmentId: string;
+  learnerId: string;
+  courseId: string;
+  courseTitle: string;
+  name: string;
+  college: string;
+}
+
+export interface ProjectAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  downloadUrl: string;
+  isArchive: boolean;
+}
+
+export interface ProjectAiCriterion {
+  criterion: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  /**
+     * @minimum 1
+     * @maximum 100
+     */
+  maxScore: number;
+  feedback: string;
+  evidence: string;
+}
+
+export interface ProjectAiEvaluation {
+  /**
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  overallScore: number | null;
+  summary: string;
+  criteria: ProjectAiCriterion[];
+  strengths: string[];
+  improvements: string[];
+  guideQuestions: string[];
+  limitations: string[];
+}
+
+export type StudentProjectSubmissionEvaluationStatus = typeof StudentProjectSubmissionEvaluationStatus[keyof typeof StudentProjectSubmissionEvaluationStatus];
+
+
+export const StudentProjectSubmissionEvaluationStatus = {
+  pending: 'pending',
+  ready: 'ready',
+  failed: 'failed',
+} as const;
+
+export interface StudentProjectSubmission {
+  id: string;
+  version: number;
+  reflection: string;
+  projectUrl: string;
+  evaluationStatus: StudentProjectSubmissionEvaluationStatus;
+  submittedAt: string;
+  files: ProjectAttachment[];
+}
+
+export type GuideProjectSubmission = StudentProjectSubmission & ({
+  evaluation: ProjectAiEvaluation | null;
+});
+
+export interface GuideProjectTarget {
+  id: string;
+  enrollmentId: string;
+  learnerId: string;
+  learnerName: string;
+  learnerEmail: string;
+  assignedAt: string;
+  latestSubmission: GuideProjectSubmission | null;
+}
+
+export interface GuideProjectAssignment {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  title: string;
+  instructions: string;
+  rubric: string;
+  /** @nullable */
+  dueAt: string | null;
+  createdAt: string;
+  targets: GuideProjectTarget[];
+}
+
+export interface GuideProjectsDashboard {
+  courses: ProjectCourseOption[];
+  learners: ProjectLearnerOption[];
+  assignments: GuideProjectAssignment[];
+}
+
+export interface StudentProjectAssignment {
+  targetId: string;
+  assignmentId: string;
+  courseId: string;
+  courseTitle: string;
+  title: string;
+  instructions: string;
+  rubric: string;
+  /** @nullable */
+  dueAt: string | null;
+  assignedAt: string;
+  latestSubmission: StudentProjectSubmission | null;
+}
+
+export interface ProjectUploadInput {
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  fileName: string;
+  /** @maxLength 120 */
+  contentType: string;
+  /**
+     * @minimum 1
+     * @maximum 26214400
+     */
+  size: number;
+}
+
+export interface ProjectUploadResponse {
+  uploadUrl: string;
+  uploadToken: string;
+  expiresAt: string;
+}
+
+export interface ProjectSubmissionInput {
+  /**
+     * @minItems 1
+     * @maxItems 5
+     * @items.maxLength 4096
+     */
+  uploadTokens: string[];
+  /** @maxLength 12000 */
+  reflection?: string;
+  /** @maxLength 2000 */
+  projectUrl?: string;
+}
+
 export type GuideSupportLearnerHours = typeof GuideSupportLearnerHours[keyof typeof GuideSupportLearnerHours];
 
 

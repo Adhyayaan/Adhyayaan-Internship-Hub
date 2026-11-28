@@ -36,16 +36,16 @@ An AI-supported, project-based internship learning platform for final-year colle
 - Programmes and modules came from 30 course-build workbooks. These are planning blueprints, not finished accredited teaching materials. Draft hour allocations and extended pathways require academic review.
 - INR500/1000 fees are indicative assumptions from the supplied portfolio, not payment-enabled enrolment. Pathway enrolment does not charge money or establish institutional approval.
 - AI quizzes are formative, not official assessment. Five questions cover all three cognitive levels. Server-side answer keys remain private until submission; prior scores adjust difficulty and wrong answers target weak concepts.
-- Community Survey has 16 authored teaching-draft chapters (32 lessons), instructional diagrams, controlled step animations, silent summary clips and lesson-grounded AI teach-back. Other courses remain plans; no course has academic approval. Official mentor evaluation, approval workflows, college acceptance, certificates, payment collection and email password recovery are not implemented.
+- Community Survey has 16 authored teaching-draft chapters (32 lessons), instructional diagrams, controlled step animations, silent summary clips and lesson-grounded AI teach-back. Other courses remain plans; no course has academic approval. Guide-assigned project files receive an AI review draft for the guide; this is not an official grade, approval or certification. College acceptance, certificates, payment collection and email password recovery are not implemented.
 - Reading positions, read/unread marks and bookmarks are private to the learner. Reading and formative teaching never award practical hours or mark supervised internship modules complete.
-- Project submission requires all applicable modules, logged target hours, a valid project URL and a substantive reflection. Changing submitted work or deleting supporting logs resets submission status.
+- Portfolio submission requires all applicable modules, logged target hours, a valid project URL and a substantive reflection. Changing submitted work or deleting supporting logs resets portfolio submission status. Guide-assigned project briefs are a separate workflow and accept multiple supported files or one ZIP, with evaluation results visible only to the assigning guide.
 
 ## Stack
 
 - React/Vite, Tailwind, Wouter, React Query; Express 5 and PostgreSQL/Drizzle.
 - OpenAPI/Orval generates typed hooks and Zod 3 schemas. Keep request bodies as named components.
 - SDK client comes from `@workspace/integrations-openai-ai-server`; use server-side calls only.
-- Do not store uploaded file bytes in PostgreSQL. Current projects submit portfolio/repository links, not file uploads.
+- Do not store uploaded file bytes in PostgreSQL. Guide-assigned project files use private App Storage and database metadata; verify a student's or assigning guide's access before streaming any file. The older portfolio reflection flow remains link-based.
 
 ## Operational notes
 

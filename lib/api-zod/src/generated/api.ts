@@ -698,6 +698,215 @@ export const GetGuideDashboardResponse = zod.object({
 })
 
 
+export const listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMin = 0;
+export const listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMax = 100;
+
+export const listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMin = 0;
+export const listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMax = 100;
+
+export const listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemMaxScoreMax = 100;
+
+
+
+export const ListGuideProjectsResponse = zod.object({
+  "courses": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string()
+})),
+  "learners": zod.array(zod.object({
+  "enrollmentId": zod.string().uuid(),
+  "learnerId": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "name": zod.string(),
+  "college": zod.string()
+})),
+  "assignments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "rubric": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "targets": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "learnerId": zod.string().uuid(),
+  "learnerName": zod.string(),
+  "learnerEmail": zod.string().email(),
+  "assignedAt": zod.coerce.date(),
+  "latestSubmission": zod.union([zod.object({
+  "id": zod.string().uuid(),
+  "version": zod.number().int(),
+  "reflection": zod.string(),
+  "projectUrl": zod.string(),
+  "evaluationStatus": zod.enum(['pending', 'ready', 'failed']),
+  "submittedAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
+}).and(zod.object({
+  "evaluation": zod.union([zod.object({
+  "overallScore": zod.number().int().min(listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMin).max(listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMax).nullable(),
+  "summary": zod.string(),
+  "criteria": zod.array(zod.object({
+  "criterion": zod.string(),
+  "score": zod.number().int().min(listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMin).max(listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMax),
+  "maxScore": zod.number().int().min(1).max(listGuideProjectsResponseAssignmentsItemTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemMaxScoreMax),
+  "feedback": zod.string(),
+  "evidence": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "improvements": zod.array(zod.string()),
+  "guideQuestions": zod.array(zod.string()),
+  "limitations": zod.array(zod.string())
+}),zod.null()])
+})),zod.null()])
+}))
+}))
+})
+
+
+
+export const createGuideProjectAssignmentBodyTitleMin = 3;
+export const createGuideProjectAssignmentBodyTitleMax = 160;
+
+export const createGuideProjectAssignmentBodyInstructionsMin = 20;
+export const createGuideProjectAssignmentBodyInstructionsMax = 10000;
+
+export const createGuideProjectAssignmentBodyRubricMin = 10;
+export const createGuideProjectAssignmentBodyRubricMax = 5000;
+
+export const createGuideProjectAssignmentBodyEnrollmentIdsMax = 50;
+
+
+
+export const CreateGuideProjectAssignmentBody = zod.object({
+  "courseId": zod.string().min(1),
+  "title": zod.string().min(createGuideProjectAssignmentBodyTitleMin).max(createGuideProjectAssignmentBodyTitleMax),
+  "instructions": zod.string().min(createGuideProjectAssignmentBodyInstructionsMin).max(createGuideProjectAssignmentBodyInstructionsMax),
+  "rubric": zod.string().min(createGuideProjectAssignmentBodyRubricMin).max(createGuideProjectAssignmentBodyRubricMax),
+  "dueAt": zod.coerce.date().nullish(),
+  "enrollmentIds": zod.array(zod.string().uuid()).min(1).max(createGuideProjectAssignmentBodyEnrollmentIdsMax)
+})
+
+export const createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMin = 0;
+export const createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMax = 100;
+
+export const createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMin = 0;
+export const createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMax = 100;
+
+export const createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemMaxScoreMax = 100;
+
+
+
+export const CreateGuideProjectAssignmentResponse = zod.object({
+  "id": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "rubric": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "targets": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "enrollmentId": zod.string().uuid(),
+  "learnerId": zod.string().uuid(),
+  "learnerName": zod.string(),
+  "learnerEmail": zod.string().email(),
+  "assignedAt": zod.coerce.date(),
+  "latestSubmission": zod.union([zod.object({
+  "id": zod.string().uuid(),
+  "version": zod.number().int(),
+  "reflection": zod.string(),
+  "projectUrl": zod.string(),
+  "evaluationStatus": zod.enum(['pending', 'ready', 'failed']),
+  "submittedAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
+}).and(zod.object({
+  "evaluation": zod.union([zod.object({
+  "overallScore": zod.number().int().min(createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMin).max(createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneOverallScoreMax).nullable(),
+  "summary": zod.string(),
+  "criteria": zod.array(zod.object({
+  "criterion": zod.string(),
+  "score": zod.number().int().min(createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMin).max(createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemScoreMax),
+  "maxScore": zod.number().int().min(1).max(createGuideProjectAssignmentResponseTargetsItemLatestSubmissionOneTwoEvaluationOneCriteriaItemMaxScoreMax),
+  "feedback": zod.string(),
+  "evidence": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "improvements": zod.array(zod.string()),
+  "guideQuestions": zod.array(zod.string()),
+  "limitations": zod.array(zod.string())
+}),zod.null()])
+})),zod.null()])
+}))
+})
+
+
+export const RetryGuideProjectEvaluationParams = zod.object({
+  "submissionId": zod.coerce.string().uuid()
+})
+
+export const retryGuideProjectEvaluationResponseTwoEvaluationOneOverallScoreMin = 0;
+export const retryGuideProjectEvaluationResponseTwoEvaluationOneOverallScoreMax = 100;
+
+export const retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemScoreMin = 0;
+export const retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemScoreMax = 100;
+
+export const retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemMaxScoreMax = 100;
+
+
+
+export const RetryGuideProjectEvaluationResponse = zod.object({
+  "id": zod.string().uuid(),
+  "version": zod.number().int(),
+  "reflection": zod.string(),
+  "projectUrl": zod.string(),
+  "evaluationStatus": zod.enum(['pending', 'ready', 'failed']),
+  "submittedAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
+}).and(zod.object({
+  "evaluation": zod.union([zod.object({
+  "overallScore": zod.number().int().min(retryGuideProjectEvaluationResponseTwoEvaluationOneOverallScoreMin).max(retryGuideProjectEvaluationResponseTwoEvaluationOneOverallScoreMax).nullable(),
+  "summary": zod.string(),
+  "criteria": zod.array(zod.object({
+  "criterion": zod.string(),
+  "score": zod.number().int().min(retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemScoreMin).max(retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemScoreMax),
+  "maxScore": zod.number().int().min(1).max(retryGuideProjectEvaluationResponseTwoEvaluationOneCriteriaItemMaxScoreMax),
+  "feedback": zod.string(),
+  "evidence": zod.string()
+})),
+  "strengths": zod.array(zod.string()),
+  "improvements": zod.array(zod.string()),
+  "guideQuestions": zod.array(zod.string()),
+  "limitations": zod.array(zod.string())
+}),zod.null()])
+}))
+
+
 export const GetGuideLearningReportParams = zod.object({
   "learnerId": zod.coerce.string().uuid(),
   "reportId": zod.coerce.string().uuid()
@@ -2130,6 +2339,106 @@ export const UpdateEnrollmentResponse = zod.object({
   "email": zod.string().email()
 }),zod.null()])
 })
+
+
+export const ListStudentProjectAssignmentsResponseItem = zod.object({
+  "targetId": zod.string().uuid(),
+  "assignmentId": zod.string().uuid(),
+  "courseId": zod.string(),
+  "courseTitle": zod.string(),
+  "title": zod.string(),
+  "instructions": zod.string(),
+  "rubric": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "assignedAt": zod.coerce.date(),
+  "latestSubmission": zod.union([zod.object({
+  "id": zod.string().uuid(),
+  "version": zod.number().int(),
+  "reflection": zod.string(),
+  "projectUrl": zod.string(),
+  "evaluationStatus": zod.enum(['pending', 'ready', 'failed']),
+  "submittedAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
+}),zod.null()])
+})
+export const ListStudentProjectAssignmentsResponse = zod.array(ListStudentProjectAssignmentsResponseItem)
+
+
+export const RequestStudentProjectUploadParams = zod.object({
+  "targetId": zod.coerce.string().uuid()
+})
+
+export const requestStudentProjectUploadBodyFileNameMax = 160;
+
+export const requestStudentProjectUploadBodyContentTypeMax = 120;
+
+export const requestStudentProjectUploadBodySizeMax = 26214400;
+
+
+
+export const RequestStudentProjectUploadBody = zod.object({
+  "fileName": zod.string().min(1).max(requestStudentProjectUploadBodyFileNameMax),
+  "contentType": zod.string().max(requestStudentProjectUploadBodyContentTypeMax),
+  "size": zod.number().int().min(1).max(requestStudentProjectUploadBodySizeMax)
+})
+
+export const RequestStudentProjectUploadResponse = zod.object({
+  "uploadUrl": zod.string().url(),
+  "uploadToken": zod.string(),
+  "expiresAt": zod.coerce.date()
+})
+
+
+export const SubmitStudentProjectParams = zod.object({
+  "targetId": zod.coerce.string().uuid()
+})
+
+export const submitStudentProjectBodyUploadTokensItemMax = 4096;
+
+export const submitStudentProjectBodyUploadTokensMax = 5;
+
+export const submitStudentProjectBodyReflectionMax = 12000;
+
+export const submitStudentProjectBodyProjectUrlMax = 2000;
+
+
+
+export const SubmitStudentProjectBody = zod.object({
+  "uploadTokens": zod.array(zod.string().max(submitStudentProjectBodyUploadTokensItemMax)).min(1).max(submitStudentProjectBodyUploadTokensMax),
+  "reflection": zod.string().max(submitStudentProjectBodyReflectionMax).optional(),
+  "projectUrl": zod.string().max(submitStudentProjectBodyProjectUrlMax).optional()
+})
+
+export const SubmitStudentProjectResponse = zod.object({
+  "id": zod.string().uuid(),
+  "version": zod.number().int(),
+  "reflection": zod.string(),
+  "projectUrl": zod.string(),
+  "evaluationStatus": zod.enum(['pending', 'ready', 'failed']),
+  "submittedAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "fileName": zod.string(),
+  "contentType": zod.string(),
+  "size": zod.number().int(),
+  "downloadUrl": zod.string(),
+  "isArchive": zod.boolean()
+}))
+})
+
+
+export const DownloadProjectAttachmentParams = zod.object({
+  "attachmentId": zod.coerce.string().uuid()
+})
+
+export const DownloadProjectAttachmentResponse = zod.unknown()
 
 
 export const ListLogsResponseItem = zod.object({

@@ -22,6 +22,7 @@ const NAV = [
 const GUIDE_NAV = [
   { href: '/guide', label: 'Guide dashboard', icon: UsersRound },
   { href: '/guide/support', label: 'Course support', icon: ShieldCheck },
+  { href: '/guide/projects', label: 'Projects', icon: FolderGit2 },
   { href: '/support-groups', label: 'Course groups', icon: Users },
   { href: '/mentorship', label: 'Mentorship', icon: MessagesSquare },
   { href: '/profile', label: 'Account', icon: UserRound },

@@ -46,6 +46,9 @@ import type {
   GetGuideDashboardParams,
   GetGuideSupportReviewParams,
   GuideDashboard,
+  GuideProjectAssignment,
+  GuideProjectSubmission,
+  GuideProjectsDashboard,
   GuideSupportReview,
   HealthStatus,
   InitialPasswordChangeInput,
@@ -66,8 +69,14 @@ import type {
   PracticeAnswers,
   PracticeAttempt,
   PracticeInput,
+  ProjectAssignmentInput,
+  ProjectSubmissionInput,
+  ProjectUploadInput,
+  ProjectUploadResponse,
   RegistrationInput,
   Session,
+  StudentProjectAssignment,
+  StudentProjectSubmission,
   StudyBook,
   StudyProgress,
   StudyProgressInput,
@@ -1686,6 +1695,251 @@ export function useGetGuideDashboard<TData = Awaited<ReturnType<typeof getGuideD
 
 
 
+
+export const getListGuideProjectsUrl = () => {
+
+
+
+
+  return `/api/guide/projects`
+}
+
+export const listGuideProjects = async ( options?: Parameters<typeof customFetch>[1]): Promise<GuideProjectsDashboard> => {
+
+  return customFetch<GuideProjectsDashboard>(getListGuideProjectsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGuideProjectsQueryKey = () => {
+    return [
+    `/api/guide/projects`
+    ] as const;
+    }
+
+
+export const getListGuideProjectsQueryOptions = <TData = Awaited<ReturnType<typeof listGuideProjects>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGuideProjectsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGuideProjects>>> = ({ signal }) => listGuideProjects({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListGuideProjectsQueryResult = NonNullable<Awaited<ReturnType<typeof listGuideProjects>>>
+export type ListGuideProjectsQueryError = ErrorType<void>
+
+
+export function useListGuideProjects<TData = Awaited<ReturnType<typeof listGuideProjects>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGuideProjects>>,
+          TError,
+          Awaited<ReturnType<typeof listGuideProjects>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGuideProjects<TData = Awaited<ReturnType<typeof listGuideProjects>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listGuideProjects>>,
+          TError,
+          Awaited<ReturnType<typeof listGuideProjects>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListGuideProjects<TData = Awaited<ReturnType<typeof listGuideProjects>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListGuideProjects<TData = Awaited<ReturnType<typeof listGuideProjects>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listGuideProjects>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListGuideProjectsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateGuideProjectAssignmentUrl = () => {
+
+
+
+
+  return `/api/guide/projects`
+}
+
+export const createGuideProjectAssignment = async (projectAssignmentInput: ProjectAssignmentInput, options?: Parameters<typeof customFetch>[1]): Promise<GuideProjectAssignment> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GuideProjectAssignment>(getCreateGuideProjectAssignmentUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(projectAssignmentInput)
+  }
+);}
+
+
+
+
+
+export const getCreateGuideProjectAssignmentMutationKey = () => ['createGuideProjectAssignment'] as const;
+
+export const getCreateGuideProjectAssignmentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGuideProjectAssignment>>, TError,CreateGuideProjectAssignmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createGuideProjectAssignment>>, TError,CreateGuideProjectAssignmentMutationVariables, TContext> => {
+
+const mutationKey = getCreateGuideProjectAssignmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createGuideProjectAssignment>>, CreateGuideProjectAssignmentMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createGuideProjectAssignment(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateGuideProjectAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof createGuideProjectAssignment>>>
+    export type CreateGuideProjectAssignmentMutationBody = BodyType<ProjectAssignmentInput>
+    export type CreateGuideProjectAssignmentMutationError = ErrorType<void>
+    export type CreateGuideProjectAssignmentMutationVariables = {data: BodyType<ProjectAssignmentInput>}
+
+    export const useCreateGuideProjectAssignment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGuideProjectAssignment>>, TError,CreateGuideProjectAssignmentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createGuideProjectAssignment>>,
+        TError,
+        CreateGuideProjectAssignmentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateGuideProjectAssignmentMutationOptions(options), queryClient);
+    }
+
+export const getRetryGuideProjectEvaluationUrl = (submissionId: string,) => {
+
+
+
+
+  return `/api/guide/projects/submissions/${submissionId}/evaluate`
+}
+
+export const retryGuideProjectEvaluation = async (submissionId: string, options?: Parameters<typeof customFetch>[1]): Promise<GuideProjectSubmission> => {
+
+  return customFetch<GuideProjectSubmission>(getRetryGuideProjectEvaluationUrl(submissionId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRetryGuideProjectEvaluationMutationKey = () => ['retryGuideProjectEvaluation'] as const;
+
+export const getRetryGuideProjectEvaluationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryGuideProjectEvaluation>>, TError,RetryGuideProjectEvaluationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof retryGuideProjectEvaluation>>, TError,RetryGuideProjectEvaluationMutationVariables, TContext> => {
+
+const mutationKey = getRetryGuideProjectEvaluationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retryGuideProjectEvaluation>>, RetryGuideProjectEvaluationMutationVariables> = (props) => {
+          const {submissionId} = props ?? {};
+
+          return  retryGuideProjectEvaluation(submissionId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RetryGuideProjectEvaluationMutationResult = NonNullable<Awaited<ReturnType<typeof retryGuideProjectEvaluation>>>
+
+    export type RetryGuideProjectEvaluationMutationError = ErrorType<void>
+    export type RetryGuideProjectEvaluationMutationVariables = {submissionId: string}
+
+    export const useRetryGuideProjectEvaluation = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryGuideProjectEvaluation>>, TError,RetryGuideProjectEvaluationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof retryGuideProjectEvaluation>>,
+        TError,
+        RetryGuideProjectEvaluationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRetryGuideProjectEvaluationMutationOptions(options), queryClient);
+    }
 
 export const getGetGuideLearningReportUrl = (learnerId: string,
     reportId: string,) => {
@@ -5185,6 +5439,362 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getUpdateEnrollmentMutationOptions(options), queryClient);
     }
+
+export const getListStudentProjectAssignmentsUrl = () => {
+
+
+
+
+  return `/api/projects/assignments`
+}
+
+export const listStudentProjectAssignments = async ( options?: Parameters<typeof customFetch>[1]): Promise<StudentProjectAssignment[]> => {
+
+  return customFetch<StudentProjectAssignment[]>(getListStudentProjectAssignmentsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListStudentProjectAssignmentsQueryKey = () => {
+    return [
+    `/api/projects/assignments`
+    ] as const;
+    }
+
+
+export const getListStudentProjectAssignmentsQueryOptions = <TData = Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListStudentProjectAssignmentsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listStudentProjectAssignments>>> = ({ signal }) => listStudentProjectAssignments({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListStudentProjectAssignmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listStudentProjectAssignments>>>
+export type ListStudentProjectAssignmentsQueryError = ErrorType<void>
+
+
+export function useListStudentProjectAssignments<TData = Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listStudentProjectAssignments>>,
+          TError,
+          Awaited<ReturnType<typeof listStudentProjectAssignments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListStudentProjectAssignments<TData = Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listStudentProjectAssignments>>,
+          TError,
+          Awaited<ReturnType<typeof listStudentProjectAssignments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListStudentProjectAssignments<TData = Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListStudentProjectAssignments<TData = Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStudentProjectAssignments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListStudentProjectAssignmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRequestStudentProjectUploadUrl = (targetId: string,) => {
+
+
+
+
+  return `/api/projects/assignments/${targetId}/uploads`
+}
+
+export const requestStudentProjectUpload = async (targetId: string,
+    projectUploadInput: ProjectUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<ProjectUploadResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProjectUploadResponse>(getRequestStudentProjectUploadUrl(targetId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(projectUploadInput)
+  }
+);}
+
+
+
+
+
+export const getRequestStudentProjectUploadMutationKey = () => ['requestStudentProjectUpload'] as const;
+
+export const getRequestStudentProjectUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestStudentProjectUpload>>, TError,RequestStudentProjectUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestStudentProjectUpload>>, TError,RequestStudentProjectUploadMutationVariables, TContext> => {
+
+const mutationKey = getRequestStudentProjectUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestStudentProjectUpload>>, RequestStudentProjectUploadMutationVariables> = (props) => {
+          const {targetId,data} = props ?? {};
+
+          return  requestStudentProjectUpload(targetId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestStudentProjectUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestStudentProjectUpload>>>
+    export type RequestStudentProjectUploadMutationBody = BodyType<ProjectUploadInput>
+    export type RequestStudentProjectUploadMutationError = ErrorType<void>
+    export type RequestStudentProjectUploadMutationVariables = {targetId: string;data: BodyType<ProjectUploadInput>}
+
+    export const useRequestStudentProjectUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestStudentProjectUpload>>, TError,RequestStudentProjectUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestStudentProjectUpload>>,
+        TError,
+        RequestStudentProjectUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestStudentProjectUploadMutationOptions(options), queryClient);
+    }
+
+export const getSubmitStudentProjectUrl = (targetId: string,) => {
+
+
+
+
+  return `/api/projects/assignments/${targetId}/submissions`
+}
+
+export const submitStudentProject = async (targetId: string,
+    projectSubmissionInput: ProjectSubmissionInput, options?: Parameters<typeof customFetch>[1]): Promise<StudentProjectSubmission> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<StudentProjectSubmission>(getSubmitStudentProjectUrl(targetId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(projectSubmissionInput)
+  }
+);}
+
+
+
+
+
+export const getSubmitStudentProjectMutationKey = () => ['submitStudentProject'] as const;
+
+export const getSubmitStudentProjectMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitStudentProject>>, TError,SubmitStudentProjectMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitStudentProject>>, TError,SubmitStudentProjectMutationVariables, TContext> => {
+
+const mutationKey = getSubmitStudentProjectMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitStudentProject>>, SubmitStudentProjectMutationVariables> = (props) => {
+          const {targetId,data} = props ?? {};
+
+          return  submitStudentProject(targetId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitStudentProjectMutationResult = NonNullable<Awaited<ReturnType<typeof submitStudentProject>>>
+    export type SubmitStudentProjectMutationBody = BodyType<ProjectSubmissionInput>
+    export type SubmitStudentProjectMutationError = ErrorType<void>
+    export type SubmitStudentProjectMutationVariables = {targetId: string;data: BodyType<ProjectSubmissionInput>}
+
+    export const useSubmitStudentProject = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitStudentProject>>, TError,SubmitStudentProjectMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof submitStudentProject>>,
+        TError,
+        SubmitStudentProjectMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSubmitStudentProjectMutationOptions(options), queryClient);
+    }
+
+export const getDownloadProjectAttachmentUrl = (attachmentId: string,) => {
+
+
+
+
+  return `/api/projects/attachments/${attachmentId}`
+}
+
+export const downloadProjectAttachment = async (attachmentId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadProjectAttachmentUrl(attachmentId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadProjectAttachmentQueryKey = (attachmentId: string,) => {
+    return [
+    `/api/projects/attachments/${attachmentId}`
+    ] as const;
+    }
+
+
+export const getDownloadProjectAttachmentQueryOptions = <TData = Awaited<ReturnType<typeof downloadProjectAttachment>>, TError = ErrorType<void>>(attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadProjectAttachmentQueryKey(attachmentId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadProjectAttachment>>> = ({ signal }) => downloadProjectAttachment(attachmentId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: attachmentId !== null && attachmentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadProjectAttachmentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadProjectAttachment>>>
+export type DownloadProjectAttachmentQueryError = ErrorType<void>
+
+
+export function useDownloadProjectAttachment<TData = Awaited<ReturnType<typeof downloadProjectAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadProjectAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof downloadProjectAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadProjectAttachment<TData = Awaited<ReturnType<typeof downloadProjectAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadProjectAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof downloadProjectAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadProjectAttachment<TData = Awaited<ReturnType<typeof downloadProjectAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDownloadProjectAttachment<TData = Awaited<ReturnType<typeof downloadProjectAttachment>>, TError = ErrorType<void>>(
+ attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadProjectAttachment>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDownloadProjectAttachmentQueryOptions(attachmentId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListLogsUrl = () => {
 
