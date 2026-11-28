@@ -23,6 +23,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useAuth, errMsg, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/parts';
 import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
+import { AudioNotePlayer, VoiceNoteRecorder } from '@/components/chat/voice-note';
 
 const ACCEPTED = [
   'image/jpeg',
@@ -265,6 +266,18 @@ function AttachmentAction({ attachment, onPreview }: { attachment: MentorshipAtt
   </div>;
 }
 
+function MentorshipAudioNote({ attachment }: { attachment: MentorshipAttachment }) {
+  const download = useDownloadMentorshipAttachment(attachment.id, {
+    query: { enabled: false, queryKey: getDownloadMentorshipAttachmentQueryKey(attachment.id) },
+  });
+  async function loadAudio() {
+    const result = await download.refetch();
+    if (!result.data) throw new Error('This voice note could not be loaded.');
+    return result.data;
+  }
+  return <AudioNotePlayer id={attachment.id} label={attachment.fileName} load={loadAudio} />;
+}
+
 function QuestionCard({ message, responses, isGuide, canAnswer, enrollmentId }: {
   message: MentorshipMessage; responses: MentorshipMessage[]; isGuide: boolean; canAnswer: boolean; enrollmentId: string;
 }) {
@@ -392,7 +405,9 @@ function MessageCard({ message, own, replyPreview, onPreview, onReply, onSaveEdi
           <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
           {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" data-testid={`link-join-meeting-${message.id}`} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--ledger))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Join session <ArrowUpRight className="h-4 w-4" /></a>}
         </div> : message.body && <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
-      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
+      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => a.contentType.startsWith('audio/')
+        ? <MentorshipAudioNote key={a.id} attachment={a} />
+        : <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
       {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={onReact} disabled={busy} />}
       {own && !message.deletedAt && <p className="mt-1.5 flex items-center justify-end gap-1 text-[10px] text-muted-foreground" data-testid={`status-read-${message.id}`}>
         {message.readByCount > 0 ? <><CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--ledger))]" />Seen</> : <><CheckCircle2 className="h-3 w-3" />Sent</>}
@@ -438,6 +453,7 @@ export default function MentorshipThreadPage() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [voiceNote, setVoiceNote] = useState<{ file: File; duration: number } | null>(null);
   const [sendError, setSendError] = useState('');
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -553,17 +569,28 @@ export default function MentorshipThreadPage() {
   }
   async function submitText(values: z.infer<typeof messageSchema>) {
     const clean = values.body.trim();
-    if (!clean && pendingTokens.length === 0) {
-      messageForm.setError('body', { message: 'Write a message or attach a file before sending.' });
+    if (!clean && pendingTokens.length === 0 && !voiceNote) {
+      messageForm.setError('body', { message: 'Write a message, attach a file or record a voice note.' });
       return;
     }
-    if (!canSend || send.isPending) return;
+    if (!canSend || send.isPending || uploading) return;
     setSendError('');
     try {
       setTyping(false);
-      await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(pendingTokens.length ? { uploadTokens: pendingTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) } });
-      messageForm.reset({ body: '' }); setReplyingTo(null); setPendingTokens([]); setPendingFileNames([]); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
+      const uploadTokens = [...pendingTokens];
+      if (voiceNote) {
+        setUploading(true);
+        setUploadStatus('Uploading voice note…');
+        const file = voiceNote.file;
+        const signed = await uploadRequest.mutateAsync({ enrollmentId, data: { fileName: file.name, contentType: file.type, size: file.size } });
+        const result = await fetch(signed.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+        if (!result.ok) throw new Error('Voice note upload failed. Please try again.');
+        uploadTokens.push(signed.uploadToken);
+      }
+      await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(uploadTokens.length ? { uploadTokens } : {}), ...(replyingTo ? { replyToMessageId: replyingTo.id } : {}) } });
+      messageForm.reset({ body: '' }); setReplyingTo(null); setPendingTokens([]); setPendingFileNames([]); setVoiceNote(null); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
     } catch (error) { setSendError(errMsg(error)); }
+    finally { setUploading(false); }
   }
   async function submitMeeting(values: z.infer<typeof meetingSchema>) {
     if (!canSend) return;
@@ -593,7 +620,7 @@ export default function MentorshipThreadPage() {
   async function onFiles(files: FileList | null) {
     if (!files || !canSend) return;
     const selected = Array.from(files);
-    if (selected.length + pendingTokens.length > MAX_FILES) { setUploadStatus(`You can add up to ${MAX_FILES} files to one message.`); return; }
+    if (selected.length + pendingTokens.length + (voiceNote ? 1 : 0) > MAX_FILES) { setUploadStatus(`You can add up to ${MAX_FILES} files to one message.`); return; }
     setUploading(true); setUploadStatus(''); setUploadFailed(false);
     let uploadedCount = 0;
     try {
@@ -743,16 +770,17 @@ export default function MentorshipThreadPage() {
           <div className="rounded-2xl border border-border bg-background px-3 pt-2.5 focus-within:border-[hsl(var(--ledger))]/45 focus-within:ring-2 focus-within:ring-[hsl(var(--ledger))]/10 sm:px-4">
             <FormField control={messageForm.control} name="body" render={({ field }) => <FormItem className="space-y-1"><FormLabel className="sr-only">Write a message</FormLabel><FormControl><textarea {...field} ref={(element) => { field.ref(element); messageInput.current = element; }} onChange={(event) => { field.onChange(event); setTyping(true); }} onBlur={() => { field.onBlur(); setTyping(false); }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void messageForm.handleSubmit(submitText)(); } }} maxLength={5000} rows={2} placeholder="Write a message to your guide…" disabled={!canSend || uploading} className="max-h-36 min-h-12 w-full resize-y bg-transparent py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:ring-0 disabled:opacity-60" data-testid="input-message-body" /></FormControl><FormMessage /></FormItem>} />
             <div className="flex flex-wrap items-center gap-1 border-t border-border/70 py-1.5">
-              <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading || pendingTokens.length >= MAX_FILES} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:opacity-50" data-testid="button-attach-file"><Paperclip className="h-4 w-4" />Attach file</button>
+              <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading || pendingTokens.length + (voiceNote ? 1 : 0) >= MAX_FILES} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:opacity-50" data-testid="button-attach-file"><Paperclip className="h-4 w-4" />Attach file</button>
+              <VoiceNoteRecorder file={voiceNote?.file ?? null} duration={voiceNote?.duration ?? 0} onChange={(file, duration) => setVoiceNote(file ? { file, duration } : null)} disabled={!canSend || uploading || send.isPending || pendingTokens.length >= MAX_FILES} testId="mentorship" />
               {user?.isGuide && <button type="button" onClick={() => { setMeetingOpen((v) => !v); setQuestionOpen(false); }} disabled={send.isPending} aria-expanded={meetingOpen} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50 ${meetingOpen ? 'bg-secondary text-primary' : 'text-muted-foreground'}`} data-testid="button-open-meeting"><Video className="h-4 w-4" />Meet</button>}
               {user?.isGuide && <button type="button" onClick={() => { setQuestionOpen((v) => !v); setMeetingOpen(false); }} disabled={send.isPending} aria-expanded={questionOpen} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50 ${questionOpen ? 'bg-secondary text-primary' : 'text-muted-foreground'}`} data-testid="button-open-question"><MessageCircle className="h-4 w-4" />Ask question</button>}
               <span className={`ml-auto max-w-full text-[11px] ${uploadFailed ? 'text-destructive' : 'text-muted-foreground'}`} role={uploadFailed ? 'alert' : uploading ? 'status' : undefined} data-testid={uploadFailed ? 'status-upload-error' : undefined}>{uploadStatus}</span>
-              <Button type="submit" aria-label="Send message" disabled={send.isPending || uploading || (!messageForm.watch('body').trim() && pendingTokens.length === 0)} className="ml-auto min-h-10 min-w-10 rounded-xl px-3" data-testid="button-send-message"><Send className="h-4 w-4" /><span className="hidden sm:inline">{send.isPending ? 'Sending…' : 'Send'}</span><span className="sr-only sm:hidden">Send message</span></Button>
+              <Button type="submit" aria-label="Send message" disabled={send.isPending || uploading || (!messageForm.watch('body').trim() && pendingTokens.length === 0 && !voiceNote)} className="ml-auto min-h-10 min-w-10 rounded-xl px-3" data-testid="button-send-message"><Send className="h-4 w-4" /><span className="hidden sm:inline">{uploading ? 'Uploading…' : send.isPending ? 'Sending…' : 'Send'}</span><span className="sr-only sm:hidden">Send message</span></Button>
             </div>
             <input ref={fileInput} type="file" multiple accept={ACCEPTED.join(',')} onChange={(e) => void onFiles(e.target.files)} className="sr-only" aria-label="Choose images or documents" data-testid="input-attachment-file" />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 text-[10px] text-muted-foreground">
-            <span>Private to this pathway · Images and common documents</span>
+            <span>Private to this pathway · Voice notes, images and common documents</span>
             <span>Up to {MAX_FILES} files · 10 MB each</span>
           </div>
           {pendingTokens.length > 0 && <div className="flex flex-wrap gap-1.5" role="status" aria-label={`${pendingTokens.length} attachment${pendingTokens.length === 1 ? '' : 's'} ready to send`} data-testid="list-pending-mentorship-attachments">

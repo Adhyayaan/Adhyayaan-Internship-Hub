@@ -57,6 +57,7 @@ import {
   isGoogleMeetLink,
   isValidMentorshipQuestionResponse,
   MAX_MENTORSHIP_ATTACHMENT_BYTES,
+  MAX_MENTORSHIP_VOICE_NOTE_BYTES,
   normalizeMentorshipQuestion,
   sanitizeMentorshipFileName,
 } from "../lib/mentorship-rules";
@@ -615,7 +616,7 @@ router.post("/support-groups/:groupId/uploads", async (req, res): Promise<void> 
     return;
   }
   if (!isAllowedMentorshipAttachment(parsed.data.contentType, parsed.data.size)) {
-    res.status(400).json({ error: `Use an image or document no larger than ${MAX_MENTORSHIP_ATTACHMENT_BYTES / (1024 * 1024)} MB.` });
+    res.status(400).json({ error: `Use a voice note up to ${MAX_MENTORSHIP_VOICE_NOTE_BYTES / (1024 * 1024)} MB, or an image or document up to ${MAX_MENTORSHIP_ATTACHMENT_BYTES / (1024 * 1024)} MB.` });
     return;
   }
   try {
@@ -1107,7 +1108,9 @@ router.get("/support-groups/attachments/:attachmentId", async (req, res): Promis
     return;
   }
   const fileName = sanitizeMentorshipFileName(row.attachment.fileName);
-  const disposition = row.attachment.contentType.startsWith("image/") ? "inline" : "attachment";
+  const disposition = row.attachment.contentType.startsWith("image/") || row.attachment.contentType.startsWith("audio/")
+    ? "inline"
+    : "attachment";
   res.set({
     "Content-Type": row.attachment.contentType,
     "Content-Length": String(row.attachment.size),

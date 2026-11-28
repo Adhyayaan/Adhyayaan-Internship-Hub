@@ -34,10 +34,15 @@ test("a conversation cannot send until its assigned guide exists", () => {
   assert.equal(canSendMentorshipMessage({ id: "admin-a", role: "admin" }, enrollment), false);
 });
 
-test("attachments allow common images and documents within the size limit", () => {
+test("attachments allow common images, documents and short audio notes within their size limits", () => {
   assert.equal(isAllowedMentorshipAttachment("image/png", 1024), true);
   assert.equal(isAllowedMentorshipAttachment("application/pdf", 2048), true);
+  assert.equal(isAllowedMentorshipAttachment("audio/webm", 2048), true);
+  assert.equal(isAllowedMentorshipAttachment("audio/webm;codecs=opus", 2048), true);
+  assert.equal(isAllowedMentorshipAttachment("audio/mp4", 5 * 1024 * 1024), true);
+  assert.equal(isAllowedMentorshipAttachment("audio/webm", 5 * 1024 * 1024 + 1), false);
   assert.equal(isAllowedMentorshipAttachment("image/svg+xml", 1024), false);
+  assert.equal(isAllowedMentorshipAttachment("audio/mpeg", 1024), false);
   assert.equal(isAllowedMentorshipAttachment("application/x-msdownload", 1024), false);
   assert.equal(isAllowedMentorshipAttachment("image/jpeg", 11 * 1024 * 1024), false);
 });

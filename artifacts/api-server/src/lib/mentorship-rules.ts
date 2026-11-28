@@ -11,8 +11,15 @@ const ALLOWED_MENTORSHIP_FILE_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]);
+const ALLOWED_MENTORSHIP_AUDIO_TYPES = new Set([
+  "audio/webm",
+  "audio/mp4",
+  "audio/ogg",
+  "audio/wav",
+]);
 
 export const MAX_MENTORSHIP_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+export const MAX_MENTORSHIP_VOICE_NOTE_BYTES = 5 * 1024 * 1024;
 export type MentorshipQuestionType = "multiple_choice" | "open_response";
 
 export type NormalizedMentorshipQuestion = {
@@ -65,9 +72,13 @@ export function canSendMentorshipMessage(
 }
 
 export function isAllowedMentorshipAttachment(contentType: string, size: number): boolean {
-  return ALLOWED_MENTORSHIP_FILE_TYPES.has(contentType.trim().toLowerCase())
-    && Number.isInteger(size)
-    && size > 0
+  const normalizedType = contentType.trim().toLowerCase().split(";")[0];
+  const validSize = Number.isInteger(size) && size > 0;
+  if (ALLOWED_MENTORSHIP_AUDIO_TYPES.has(normalizedType)) {
+    return validSize && size <= MAX_MENTORSHIP_VOICE_NOTE_BYTES;
+  }
+  return ALLOWED_MENTORSHIP_FILE_TYPES.has(normalizedType)
+    && validSize
     && size <= MAX_MENTORSHIP_ATTACHMENT_BYTES;
 }
 

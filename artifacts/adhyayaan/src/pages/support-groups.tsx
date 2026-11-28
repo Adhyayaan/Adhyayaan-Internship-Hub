@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth, errMsg, useTitle } from '@/lib/app';
 import { EmptyPanel, ErrorPanel, PageSkeleton } from '@/components/assessment/parts';
 import { MessageToolbar, ReactionPills } from '@/components/chat/message-controls';
+import { AudioNotePlayer, VoiceNoteRecorder } from '@/components/chat/voice-note';
+import { MAX_VOICE_NOTE_BYTES, VOICE_NOTE_TYPES } from '@/components/chat/voice-note-config';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'text/plain', 'text/csv',
@@ -255,6 +257,16 @@ function GroupAttachment({ attachment, onError, onPreview }: { attachment: Suppo
   return <Button type="button" variant="outline" size="sm" onClick={() => void open()} disabled={query.isFetching} className="min-h-10 max-w-full justify-start" data-testid={`button-open-group-attachment-${attachment.id}`}>{attachment.isImage ? <ImageIcon className="mr-2 h-4 w-4 shrink-0" /> : <FileText className="mr-2 h-4 w-4 shrink-0" />}{query.isFetching ? 'Opening file…' : attachment.isImage ? 'View image' : `Open ${attachment.fileName}`}</Button>;
 }
 
+function GroupAudioNote({ attachment }: { attachment: SupportGroupMessage['attachments'][number] }) {
+  const query = useDownloadSupportGroupAttachment(attachment.id, { query: { enabled: false, queryKey: getDownloadSupportGroupAttachmentQueryKey(attachment.id) } });
+  async function loadAudio() {
+    const result = await query.refetch();
+    if (!result.data) throw new Error('This voice note could not be loaded.');
+    return result.data;
+  }
+  return <AudioNotePlayer id={attachment.id} label={attachment.fileName} load={loadAudio} />;
+}
+
 function QuestionThread({ question, messages, groupId }: { question: SupportGroupMessage; messages: SupportGroupMessage[]; groupId: string }) {
   const answer = useAnswerSupportGroupQuestion();
   const qc = useQueryClient();
@@ -337,7 +349,9 @@ function MessageItem({ message, own, groupId, messages, onReply, onSaveEdit, onD
           <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--support-wash))] text-[hsl(var(--support-moss))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-bold text-primary">Group Meet</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{stamp(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
           {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--support-moss))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-join-group-meet-${message.id}`}>Open Meet <ArrowUpRight className="h-4 w-4" /></a>}
         </div> : <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
-      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{message.attachments.map((file) => <span key={file.id} className="min-w-0"><GroupAttachment attachment={file} onError={setAttachmentError} onPreview={onPreview} /><span className="ml-2 break-all text-xs text-muted-foreground">{file.fileName} · {formatBytes(file.size)}</span></span>)}</div>}
+      {!message.deletedAt && message.attachments.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{message.attachments.map((file) => <span key={file.id} className="min-w-0">{file.contentType.startsWith('audio/')
+        ? <GroupAudioNote attachment={file} />
+        : <GroupAttachment attachment={file} onError={setAttachmentError} onPreview={onPreview} />}<span className="ml-2 break-all text-xs text-muted-foreground">{file.fileName} · {formatBytes(file.size)}</span></span>)}</div>}
       {attachmentError && <p role="alert" className="mt-2 text-xs text-destructive">{attachmentError}</p>}
       {!message.deletedAt && <ReactionPills messageId={message.id} values={message.reactions} onToggle={(reaction) => onReact(message.id, reaction)} disabled={busy} />}
       {own && !message.deletedAt && <p className="mt-1.5 flex items-center justify-end gap-1 text-[10px] text-muted-foreground" data-testid={`status-group-read-${message.id}`}>{message.readByCount > 0 ? <><CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--support-moss))]" />Seen by {message.readByCount}</> : 'Sent'}</p>}
@@ -383,6 +397,7 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
   const [questionType, setQuestionType] = useState<'open_response' | 'multiple_choice'>('open_response');
   const [optionsText, setOptionsText] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [voiceNote, setVoiceNote] = useState<{ file: File; duration: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -410,7 +425,7 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
   useEffect(() => () => { if (typingTimeout.current) clearTimeout(typingTimeout.current); }, []);
   async function post(event: React.FormEvent) {
     event.preventDefault(); setError(''); setNotice('');
-    if (!body.trim() && mode === 'text' && !files.length) { setError('Write a message or attach a file first.'); return; }
+    if (!body.trim() && mode === 'text' && !files.length && !voiceNote) { setError('Write a message, attach a file or record a voice note first.'); return; }
      if (mode === 'meeting') {
        try { const parsed = new URL(url); if (parsed.protocol !== 'https:' || parsed.hostname !== 'meet.google.com' || parsed.port || parsed.username || parsed.password || !/^\/[a-z0-9-]+\/?$/i.test(parsed.pathname)) throw new Error('Use a valid Google Meet link.'); } catch { setError('Use a valid link from meet.google.com.'); return; }
     }
@@ -419,8 +434,13 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
     setBusy(true);
     try {
       const uploadTokens: string[] = [];
-      if (mode === 'text') for (const file of files) {
-        if (!ACCEPTED.includes(file.type) || !file.size || file.size > MAX_FILE_SIZE) throw new Error(`${file.name} is not supported. Choose an image or document under 10 MB.`);
+      const uploadFiles = [...files, ...(voiceNote ? [voiceNote.file] : [])];
+      if (uploadFiles.length > 5) throw new Error('You can add up to 5 files to one message.');
+      if (mode === 'text') for (const file of uploadFiles) {
+        const isAudio = (VOICE_NOTE_TYPES as readonly string[]).includes(file.type);
+        if ((!ACCEPTED.includes(file.type) && !isAudio) || !file.size || file.size > (isAudio ? MAX_VOICE_NOTE_BYTES : MAX_FILE_SIZE)) {
+          throw new Error(`${file.name} is not supported. Use a voice note under 5 MB or an image or document under 10 MB.`);
+        }
         const uploadVariables: RequestSupportGroupUploadMutationVariables = { groupId: group.id, data: { fileName: file.name, contentType: file.type, size: file.size } };
         const signed = await upload.mutateAsync(uploadVariables);
         const result = await fetch(signed.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
@@ -433,7 +453,7 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
       const sendVariables: SendSupportGroupMessageMutationVariables = { groupId: group.id, data };
       await send.mutateAsync(sendVariables);
       setTyping(false); onClearReply();
-      setBody(''); setFiles([]); setUrl(''); setStartsAt(''); setAgenda(''); setOptionsText('');
+      setBody(''); setFiles([]); setVoiceNote(null); setUrl(''); setStartsAt(''); setAgenda(''); setOptionsText('');
       if (inputRef.current) inputRef.current.value = '';
       setNotice(mode === 'question' ? 'Question shared. It is for learning, not grading.' : 'Your message is shared with the group.');
       await afterSend(); await qc.invalidateQueries({ queryKey: getListSupportGroupsQueryKey() });
@@ -451,7 +471,8 @@ function GroupComposer({ group, canGuide, afterSend, replyingTo, onClearReply }:
       {canGuide && <><button type="button" aria-pressed={mode === 'meeting'} className={`${softButton} ${mode === 'meeting' ? 'border-primary/30 bg-primary/5' : ''}`} onClick={() => setMode('meeting')} data-testid="button-compose-meeting"><Video className="h-4 w-4" />Meet</button><button type="button" aria-pressed={mode === 'question'} className={`${softButton} ${mode === 'question' ? 'border-primary/30 bg-primary/5' : ''}`} onClick={() => setMode('question')} data-testid="button-compose-question"><MessageCircle className="h-4 w-4" />Ask a question</button></>}
     </div>
     {mode === 'text' && <><label className="sr-only" htmlFor="group-message-body">Write a message</label><textarea id="group-message-body" value={body} onChange={(e) => { setBody(e.target.value); setTyping(true); }} onBlur={() => setTyping(false)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} maxLength={5000} rows={3} className={`${inputClass} resize-y`} placeholder="Share a thought, question or useful detail…" data-testid="input-group-message" />
-      <div className="flex flex-wrap items-center gap-2"><input ref={inputRef} type="file" multiple accept={ACCEPTED.join(',')} onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))} className="sr-only" id="group-file-input" data-testid="input-group-attachments" /><label htmlFor="group-file-input" className={`${softButton} cursor-pointer`}><Paperclip className="h-4 w-4" />Attach files</label><span className="text-xs text-muted-foreground">Up to 5 files · 10 MB each</span></div>
+      <div className="flex flex-wrap items-center gap-2"><input ref={inputRef} type="file" multiple accept={ACCEPTED.join(',')} onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, voiceNote ? 4 : 5))} className="sr-only" id="group-file-input" data-testid="input-group-attachments" /><label htmlFor="group-file-input" className={`${softButton} cursor-pointer`}><Paperclip className="h-4 w-4" />Attach files</label><span className="text-xs text-muted-foreground">Up to 5 files · audio notes up to 5 MB</span></div>
+      <VoiceNoteRecorder file={voiceNote?.file ?? null} duration={voiceNote?.duration ?? 0} onChange={(file, duration) => setVoiceNote(file ? { file, duration } : null)} disabled={busy || send.isPending || upload.isPending || mode !== 'text' || files.length >= 5} testId="support-group" />
       {files.length > 0 && <p className="text-xs text-muted-foreground">{files.map((f) => f.name).join(' · ')}</p>}</>}
     {mode === 'meeting' && <div className="grid gap-3 sm:grid-cols-2"><label className="block sm:col-span-2"><span className="mb-1.5 block text-sm font-bold">Google Meet link</span><input type="url" required value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} placeholder="https://meet.google.com/..." data-testid="input-group-meet-url" /></label><label className="block"><span className="mb-1.5 block text-sm font-bold">Date and time</span><input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={inputClass} data-testid="input-group-meet-date" /></label><label className="block"><span className="mb-1.5 block text-sm font-bold">Agenda</span><input value={agenda} onChange={(e) => setAgenda(e.target.value)} maxLength={1000} className={inputClass} placeholder="What will the group discuss?" data-testid="input-group-meet-agenda" /></label></div>}
      {mode === 'question' && <div className="space-y-3"><label className="block"><span className="mb-1.5 block text-sm font-bold">Question for the group</span><textarea required value={body} onChange={(e) => setBody(e.target.value)} maxLength={1200} rows={3} className={inputClass} placeholder="Invite learners to explain their thinking…" data-testid="input-group-question" /></label><label className="block"><span className="mb-1.5 block text-sm font-bold">Response type</span><select value={questionType} onChange={(e) => setQuestionType(e.target.value as typeof questionType)} className={inputClass} data-testid="select-group-question-type"><option value="open_response">Open response</option><option value="multiple_choice">Choose an option</option></select></label>{questionType === 'multiple_choice' && <label className="block"><span className="mb-1.5 block text-sm font-bold">Options, one per line</span><textarea value={optionsText} onChange={(e) => setOptionsText(e.target.value)} rows={3} className={inputClass} placeholder={'First option\\nSecond option'} data-testid="input-group-question-options" /></label>}<p className="rounded-lg bg-[hsl(var(--support-wash))]/70 p-3 text-xs leading-relaxed text-[hsl(var(--support-moss))]">Responses are shared with group members. This is a formative question, not a grade.</p></div>}
