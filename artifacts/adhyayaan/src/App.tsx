@@ -23,6 +23,7 @@ import Assessment, { AssessmentGuide, LearningReportPage } from '@/pages/assessm
 import { AdminDirectoryPage, AdminLearnerPage, AdminLearningReportPage } from '@/pages/admin';
 import { AdminGuidesPanel } from '@/pages/admin-guides';
 import { GuideDashboardPage, GuideLearningReportPage } from '@/pages/guide';
+import GuideLogbookPage from '@/pages/guide-logbook';
 import GuideProjectsPage from '@/pages/guide-projects';
 import SuperadminPage from '@/pages/superadmin';
 import ChangePasswordPage from '@/pages/change-password';
@@ -85,6 +86,7 @@ function Router() {
           <Route path="/mentorship" component={MentorshipListPage} />
           <Route path="/mentorship/:enrollmentId" component={MentorshipThreadPage} />
           <Route path="/guide/support" component={GuideSupportPage} />
+          <Route path="/guide/logbook" component={GuideLogbookPage} />
           <Route path="/guide/projects" component={GuideProjectsPage} />
           <Route path="/support-groups" component={SupportGroupsPage} />
           <Route path="/support-groups/:groupId" component={SupportGroupPage} />

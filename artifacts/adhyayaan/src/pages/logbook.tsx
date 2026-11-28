@@ -55,23 +55,23 @@ export default function Logbook() {
   };
 
   return (
-    <div>
+    <div className="min-w-0">
       <PageHeader kicker="Practical logbook" title="What did your hands do today?" sub="Every entry pairs an activity with what it taught you. That pairing is what a mentor reads." />
       {isLoading ? <CardSkeletons n={2} /> : !user ? <SignInWall what="keep a logbook" /> : enr.isLoading ? <CardSkeletons n={2} /> : enr.error ? <ErrorPanel error={enr.error} onRetry={() => enr.refetch()} /> : !enr.data?.length ? (
         <Empty title="Logs need a pathway" body="Enroll in an internship first; each entry counts toward that pathway's hours." action={<Button asChild data-testid="button-empty-explore"><Link href="/explore">Explore internships</Link></Button>} />
       ) : (
-        <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-          <div className="space-y-4 self-start">
-          <form onSubmit={submit} className="ink-card space-y-4 p-6" data-testid="form-log">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(17rem,23.75rem)_minmax(0,1fr)] lg:gap-8">
+          <div className="min-w-0 space-y-4 self-start">
+          <form onSubmit={submit} className="ink-card min-w-0 space-y-4 p-4 sm:p-6" data-testid="form-log">
             <h2 className="font-display text-xl font-semibold text-primary">New entry</h2>
             <div className="space-y-1.5">
-              <Label>Pathway</Label>
+              <Label htmlFor="logbook-enrollment">Pathway</Label>
               <Select value={f.enrollmentId || enr.data[0].id} onValueChange={(v) => setF({ ...f, enrollmentId: v })}>
-                <SelectTrigger data-testid="select-enrollment"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="logbook-enrollment" data-testid="select-enrollment"><SelectValue /></SelectTrigger>
                 <SelectContent>{enr.data.map((e) => <SelectItem key={e.id} value={e.id}>{e.course.title} · {e.hours}h</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid min-w-0 grid-cols-2 gap-2.5 sm:gap-3">
               <div className="space-y-1.5"><Label htmlFor="date">Date</Label><Input id="date" type="date" value={f.date} max={today()} onChange={(e) => setF({ ...f, date: e.target.value })} required data-testid="input-date" /></div>
               <div className="space-y-1.5"><Label htmlFor="hours">Hours</Label><Input id="hours" type="number" step="0.25" min="0.25" max="12" value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} required data-testid="input-hours" /></div>
             </div>
@@ -113,30 +113,30 @@ export default function Logbook() {
             })()}
           </div>
 
-          <section>
-            <div className="mb-4 flex items-baseline justify-between">
+          <section className="min-w-0">
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h2 className="font-display text-2xl font-semibold text-primary">Entries</h2>
               <span className="font-mono text-sm text-muted-foreground" data-testid="text-total-hours">{total} hrs total</span>
             </div>
             {logs.isLoading ? <CardSkeletons n={3} h="h-24" /> : logs.error ? <ErrorPanel error={logs.error} onRetry={() => logs.refetch()} /> : sorted.length === 0 ? (
               <Empty title="A blank page, ready" body="Your first entry will appear here as a dated card." />
             ) : (
-              <ol className="space-y-3">
+              <ol className="min-w-0 space-y-3">
                 {sorted.map((l, i) => (
-                  <li key={l.id} className="ink-card rise flex gap-4 p-5" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} data-testid={`log-${l.id}`}>
-                    <div className="w-14 shrink-0 text-center">
+                  <li key={l.id} className="ink-card rise grid min-w-0 grid-cols-[3rem_minmax(0,1fr)_2.5rem] items-start gap-2.5 p-3.5 sm:grid-cols-[3.5rem_minmax(0,1fr)_2.5rem] sm:gap-4 sm:p-5" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} data-testid={`log-${l.id}`}>
+                    <div className="w-12 shrink-0 pt-1 text-center sm:w-14">
                       <p className="font-display text-3xl font-semibold leading-none text-primary">{new Date(l.date + 'T00:00').getDate()}</p>
                       <p className="font-mono text-[10px] uppercase text-muted-foreground">{new Date(l.date + 'T00:00').toLocaleDateString('en-IN', { month: 'short' })}</p>
                       <p className="mt-2 rounded-full bg-accent/10 px-1 py-0.5 font-mono text-[11px] text-accent">{l.hours}h</p>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">{titles[l.enrollmentId] ?? 'Pathway'}</p>
-                      <p className="mt-1">{l.activity}</p>
-                      <p className="mt-2 border-l-2 border-accent/50 pl-3 text-sm italic text-muted-foreground">{l.learning}</p>
+                      <p className="break-words text-xs text-muted-foreground">{titles[l.enrollmentId] ?? 'Pathway'}</p>
+                      <p className="mt-1 break-words text-sm leading-relaxed">{l.activity}</p>
+                      <p className="mt-2 break-words border-l-2 border-accent/50 pl-3 text-sm leading-relaxed italic text-muted-foreground">{l.learning}</p>
                     </div>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" aria-label="Delete entry" data-testid={`button-delete-log-${l.id}`}><Trash2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 text-muted-foreground hover:text-destructive" aria-label="Delete entry" data-testid={`button-delete-log-${l.id}`}><Trash2 className="h-4 w-4" /></Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader><AlertDialogTitle>Delete this entry?</AlertDialogTitle><AlertDialogDescription>{l.hours} hours on {l.date} will be removed from your pathway total.</AlertDialogDescription></AlertDialogHeader>
