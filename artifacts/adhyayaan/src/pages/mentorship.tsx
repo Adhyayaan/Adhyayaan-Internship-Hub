@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, ArrowUpRight, Bell, CalendarDays, Check, CheckCircle2, ChevronRight, FileText, Image as ImageIcon,
-  LockKeyhole, MessageCircle, Paperclip, Send, ShieldCheck, Video, X,
+  ArrowLeft, ArrowUpRight, Bell, CalendarDays, CheckCircle2, FileText, Image as ImageIcon,
+  LockKeyhole, MessageCircle, Paperclip, Search, Send, ShieldCheck, Video, X,
 } from 'lucide-react';
 import {
   getDownloadMentorshipAttachmentQueryKey, getGetMentorshipNotificationPreferenceQueryKey,
@@ -70,25 +70,45 @@ const meetingSchema = z.object({
 function when(date: string | null) {
   if (!date) return 'No messages yet';
   const value = new Date(date);
+  if (Number.isNaN(value.getTime())) return 'Recently';
   return `${value.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · ${value.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`;
 }
 
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || '?';
+}
+
+function dayHeading(date: string) {
+  const value = new Date(date);
+  if (Number.isNaN(value.getTime())) return 'Earlier';
+  const today = new Date();
+  const dateKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  if (dateKey(value) === dateKey(today)) return 'Today';
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (dateKey(value) === dateKey(yesterday)) return 'Yesterday';
+  return value.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 function ThreadRow({ thread, selected = false, isGuide = false }: { thread: MentorshipThread; selected?: boolean; isGuide?: boolean }) {
-  return <Link aria-current={selected ? 'page' : undefined} href={`/mentorship/${thread.enrollmentId}`} className={`group grid min-w-0 gap-2 rounded-xl border p-3.5 transition-colors sm:p-4 ${selected ? 'border-[hsl(var(--ledger))]/60 bg-[hsl(var(--ledger-soft))]/75 ring-1 ring-[hsl(var(--ledger))]/15' : 'border-border bg-card hover:border-[hsl(var(--ledger))]/45 hover:bg-[hsl(var(--ledger-soft))]/35'}`} data-testid={`link-mentorship-thread-${thread.enrollmentId}`}>
-    <span className="min-w-0">
-      <span className="flex min-w-0 items-start justify-between gap-2">
-        <span className="min-w-0 font-display text-base font-bold leading-snug text-primary">{thread.courseTitle}</span>
-        <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">{thread.hours}h</span>
-      </span>
-      <span className="mt-1 block truncate text-xs text-muted-foreground">{isGuide ? `Learner · ${thread.studentName}` : thread.guideName ? `Guide · ${thread.guideName}` : 'Guide assignment pending'}</span>
-      <span className="mt-2 flex min-w-0 items-center justify-between gap-2">
-        <span className="min-w-0 flex-1 truncate text-sm text-foreground/75">{thread.lastMessagePreview || 'Start a private project conversation'}</span>
-        {thread.unreadCount > 0 && <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground" data-testid={`status-unread-${thread.enrollmentId}`}>{thread.unreadCount}</span>}
-      </span>
+  const name = isGuide ? thread.studentName : thread.guideName || 'Guide assignment pending';
+  return <Link aria-current={selected ? 'page' : undefined} href={`/mentorship/${thread.enrollmentId}`}
+    className={`group flex min-w-0 gap-3 rounded-2xl border px-3 py-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3.5 ${selected ? 'border-[hsl(var(--ledger))]/40 bg-[hsl(var(--ledger-soft))]/55 shadow-sm' : 'border-transparent bg-card hover:border-border hover:bg-background'}`}
+    data-testid={`link-mentorship-thread-${thread.enrollmentId}`}>
+    <span className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-black ${selected ? 'bg-primary text-primary-foreground' : 'bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]'}`}>
+      {initials(name)}
+      {thread.canSend && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card bg-[hsl(var(--ledger))]" aria-label="Guide assigned" />}
     </span>
-    <span className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
-      <span>{thread.messageCount} {thread.messageCount === 1 ? 'message' : 'messages'}</span>
-      <span className="flex items-center gap-1">{when(thread.lastMessageAt)}<ChevronRight className="h-3.5 w-3.5 shrink-0 text-accent transition-transform group-hover:translate-x-0.5" /></span>
+    <span className="min-w-0 flex-1">
+      <span className="flex min-w-0 items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-sm font-bold text-primary">{name}</span>
+        <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{when(thread.lastMessageAt)}</span>
+      </span>
+      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{thread.courseTitle} · {thread.hours} hours</span>
+      <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate text-xs text-foreground/75">{thread.lastMessagePreview || 'Start a private project conversation'}</span>
+        {thread.unreadCount > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[hsl(var(--ledger))] px-1.5 text-[10px] font-bold text-white" data-testid={`status-unread-${thread.enrollmentId}`}>{thread.unreadCount}</span>}
+      </span>
     </span>
   </Link>;
 }
@@ -96,18 +116,30 @@ function ThreadRow({ thread, selected = false, isGuide = false }: { thread: Ment
 function ThreadList({ threads, selectedId, loading, error, onRetry, isGuide = false }: {
   threads?: MentorshipThread[]; selectedId?: string; loading?: boolean; error?: string; onRetry?: () => void; isGuide?: boolean;
 }) {
+  const [search, setSearch] = useState('');
+  const filtered = (threads ?? []).filter((thread) => {
+    const haystack = [thread.studentName, thread.guideName, thread.courseTitle, thread.lastMessagePreview].join(' ').toLowerCase();
+    return haystack.includes(search.trim().toLowerCase());
+  });
   return <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card" aria-label="Mentorship conversations">
-    <header className="border-b border-border px-4 py-4 sm:px-5">
-      <div className="flex items-end justify-between gap-2">
-        <div><p className="font-mono text-[10px] uppercase tracking-[.16em] text-accent">Your private spaces</p><h2 className="mt-1 font-display text-lg font-bold text-primary">Conversations</h2></div>
-        {threads && <span className="text-xs text-muted-foreground">{threads.length} {threads.length === 1 ? 'pathway' : 'pathways'}</span>}
+    <header className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
+      <div className="flex items-center justify-between gap-2">
+        <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-[hsl(var(--ledger))]">Private messages</p><h2 className="mt-1 font-display text-lg font-bold text-primary">{isGuide ? 'Learners' : 'Your guide'}</h2></div>
+        {threads && <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground">{threads.length}</span>}
       </div>
+      <label className="flex min-h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 focus-within:border-[hsl(var(--ledger))]/50 focus-within:ring-2 focus-within:ring-[hsl(var(--ledger))]/15">
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="sr-only">Search conversations</span>
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={isGuide ? 'Search learners or pathways' : 'Search pathways'} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" data-testid="input-search-mentorship-threads" />
+        {search && <button type="button" onClick={() => setSearch('')} aria-label="Clear conversation search" className="grid h-7 w-7 place-items-center rounded-full hover:bg-secondary" data-testid="button-clear-mentorship-search"><X className="h-3.5 w-3.5" /></button>}
+      </label>
     </header>
-    <div className="max-h-[calc(100dvh-15rem)] space-y-2 overflow-y-auto p-3 sm:max-h-[calc(100dvh-17rem)] sm:p-3.5">
-      {loading ? <div className="space-y-2" aria-busy="true" aria-label="Loading conversations">{[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-secondary/60" />)}</div>
+    <div className="max-h-[calc(100dvh-19rem)] space-y-1 overflow-y-auto p-2.5 sm:max-h-[calc(100dvh-20rem)] sm:p-3">
+      {loading ? <div className="space-y-2 p-1" aria-busy="true" aria-label="Loading conversations">{[0, 1, 2].map((i) => <div key={i} className="h-20 animate-pulse rounded-xl bg-secondary/60" />)}</div>
         : error ? <div className="rounded-xl bg-destructive/5 p-4"><p className="text-sm font-semibold text-foreground">Conversations did not load</p><p className="mt-1 text-xs text-muted-foreground">{error}</p><button type="button" onClick={onRetry} className="mt-3 min-h-10 text-sm font-bold text-primary underline underline-offset-4" data-testid="button-retry-mentorship-threads">Try again</button></div>
           : !threads?.length ? <div className="px-3 py-9 text-center"><MessageCircle className="mx-auto h-6 w-6 text-[hsl(var(--ledger))]" /><p className="mt-3 text-sm font-semibold text-primary">No conversations yet</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{isGuide ? 'Learner pathways assigned to you will appear here.' : 'Your guide space appears here when you join an internship pathway.'}</p></div>
-            : threads.map((thread) => <ThreadRow key={thread.enrollmentId} thread={thread} selected={selectedId === thread.enrollmentId} isGuide={isGuide} />)}
+            : !filtered.length ? <p className="px-3 py-8 text-center text-sm text-muted-foreground">No conversations match “{search}”.</p>
+              : filtered.map((thread) => <ThreadRow key={thread.enrollmentId} thread={thread} selected={selectedId === thread.enrollmentId} isGuide={isGuide} />)}
     </div>
   </section>;
 }
@@ -152,15 +184,28 @@ export function MentorshipListPage() {
 
   if (authLoading) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></main>;
   if (!user) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><EmptyPanel title="Sign in to view your conversations" icon={<LockKeyhole className="h-6 w-6" />}><p>Your private guide conversations are available after you sign in.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
-  return <main className="mx-auto max-w-[1440px] min-w-0 space-y-5 p-3 pb-24 sm:space-y-6 sm:p-6 lg:p-8">
-    <header className="flex flex-wrap items-end justify-between gap-3 px-1">
-      <div><p className="font-mono text-[10px] uppercase tracking-[.18em] text-accent">Project guidance · private space</p><h1 className="mt-1 font-display text-2xl font-black text-primary sm:text-3xl">Mentorship</h1><p className="mt-1 max-w-xl text-sm text-muted-foreground">A quiet place to think through your project with the guide assigned to your pathway.</p></div>
-      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-[hsl(var(--ledger))]"><LockKeyhole className="h-3.5 w-3.5" />Private to you and your guide</span>
+  return <main className="mx-auto max-w-[1440px] min-w-0 space-y-5 p-3 pb-24 sm:space-y-6 sm:p-6 lg:p-7">
+    <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-4 sm:px-6 sm:py-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><MessageCircle className="h-6 w-6" /></span>
+        <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[.12em] text-[hsl(var(--ledger))]">One-to-one guidance</p><h1 className="mt-0.5 font-display text-2xl font-black text-primary sm:text-3xl">Mentorship</h1><p className="mt-1 max-w-xl text-sm text-muted-foreground">Talk through your project with your guide, share files, and work through questions together.</p></div>
+      </div>
+      <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/45 px-3 py-2 text-xs font-semibold text-[hsl(var(--ledger))]"><LockKeyhole className="h-3.5 w-3.5" />Private conversation</span>
     </header>
     <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)] lg:items-stretch">
       <ThreadList threads={q.data} loading={q.isLoading} error={q.isError ? errMsg(q.error) : undefined} onRetry={() => void q.refetch()} isGuide={!!user.isGuide} />
-      <section className="hidden min-w-0 rounded-2xl border border-border bg-card lg:grid lg:min-h-[33rem] lg:place-items-center" aria-label="Conversation selection">
-        <div className="max-w-sm px-8 text-center"><span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><MessageCircle className="h-6 w-6" /></span><h2 className="mt-4 font-display text-xl font-bold text-primary">Choose a pathway</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Open a conversation to share project progress, ask for guidance, or respond to a learning question.</p><p className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">Each space is private to the learner and currently assigned guide.</p></div>
+      <section className="hidden min-w-0 overflow-hidden rounded-2xl border border-border bg-card lg:flex lg:min-h-[32rem] lg:flex-col" aria-label="Conversation selection">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><p className="text-xs font-semibold text-muted-foreground">Your workspace</p><h2 className="mt-0.5 font-display text-lg font-bold text-primary">A place to make progress</h2></div><ShieldCheck className="h-5 w-5 text-[hsl(var(--ledger))]" /></div>
+        <div className="grid flex-1 place-items-center p-8">
+          <div className="max-w-md text-center"><span className="mx-auto grid h-16 w-16 place-items-center rounded-[1.4rem] bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><MessageCircle className="h-7 w-7" /></span><h3 className="mt-4 font-display text-xl font-bold text-primary">Choose a conversation</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Your messages, files, learning questions, and meeting details stay together in one private place.</p>
+            <div className="mt-6 grid gap-2 text-left sm:grid-cols-3">
+              <div className="rounded-xl bg-secondary/55 p-3"><Paperclip className="h-4 w-4 text-[hsl(var(--ledger))]" /><p className="mt-2 text-xs font-bold text-primary">Share work</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Send project files and images.</p></div>
+              <div className="rounded-xl bg-secondary/55 p-3"><Video className="h-4 w-4 text-[hsl(var(--ledger))]" /><p className="mt-2 text-xs font-bold text-primary">Meet together</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Keep session details close by.</p></div>
+              <div className="rounded-xl bg-secondary/55 p-3"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--ledger))]" /><p className="mt-2 text-xs font-bold text-primary">Learn by doing</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Respond to useful questions.</p></div>
+            </div>
+          </div>
+        </div>
+        <p className="border-t border-border px-5 py-3 text-xs text-muted-foreground">Only the learner and the currently assigned guide can read a one-to-one conversation.</p>
       </section>
     </div>
     <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5" aria-label="Notification settings">
@@ -299,32 +344,39 @@ function QuestionCard({ message, responses, isGuide, canAnswer, enrollmentId }: 
 }
 
 function MessageCard({ message, own, onPreview }: { message: MentorshipMessage; own: boolean; onPreview: (url: string, name: string) => void }) {
-  return <article className={`group relative w-fit max-w-[min(40rem,92%)] rounded-2xl px-3.5 py-2.5 shadow-[0_1px_2px_hsl(232_45%_16%/.08)] sm:px-4 ${own ? 'ml-auto rounded-br-md bg-[hsl(var(--ledger-soft))]' : 'mr-auto rounded-bl-md border border-border/75 bg-card'}`} data-testid={`message-${message.id}`}>
-    <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-      <span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : ''}</span><time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
-    </div>
-    {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--ledger))]/25 bg-background/75 p-3.5" data-testid={`meeting-card-${message.id}`}>
-      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
-      {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" data-testid={`link-join-meeting-${message.id}`} className="mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--ledger))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Join session <ArrowUpRight className="h-4 w-4" /></a>}
-    </div> : message.body && <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
-    {message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
-  </article>;
+  return <div className={`flex w-full items-end gap-2.5 ${own ? 'justify-end' : 'justify-start'}`} data-testid={`message-row-${message.id}`}>
+    {!own && <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground" aria-hidden="true">{initials(message.senderName)}</span>}
+    <article className={`w-fit max-w-[min(40rem,calc(100%-2.75rem))] min-w-0 rounded-2xl px-3.5 py-3 shadow-sm sm:px-4 ${own ? 'rounded-br-md border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/60' : 'rounded-bl-md border border-border/80 bg-card'}`} data-testid={`message-${message.id}`}>
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <span className="text-xs font-bold text-primary">{own ? 'You' : message.senderName}</span>
+        <time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
+      </div>
+      {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--ledger))]/20 bg-background p-3.5" data-testid={`meeting-card-${message.id}`}>
+        <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
+        {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" data-testid={`link-join-meeting-${message.id}`} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--ledger))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Join session <ArrowUpRight className="h-4 w-4" /></a>}
+      </div> : message.body && <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{message.body}</p>}
+      {message.attachments.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{message.attachments.map((a) => <AttachmentAction key={a.id} attachment={a} onPreview={onPreview} />)}</div>}
+    </article>
+  </div>;
 }
 
 export default function MentorshipThreadPage() {
   const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const qc = useQueryClient();
   const key = useMemo(() => getListMentorshipMessagesQueryKey(enrollmentId), [enrollmentId]);
   const threadKey = getListMentorshipThreadsQueryKey();
-  const q = useListMentorshipMessages(enrollmentId, { query: { queryKey: key, enabled: !!enrollmentId } });
+  const q = useListMentorshipMessages(enrollmentId, { query: { queryKey: key, enabled: !!user && !!enrollmentId } });
   const threadsQuery = useListMentorshipThreads({ query: { queryKey: threadKey, enabled: !!user } });
   const send = useSendMentorshipMessage();
   const uploadRequest = useRequestMentorshipUpload();
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
+  const [messageSearchOpen, setMessageSearchOpen] = useState(false);
+  const [messageSearch, setMessageSearch] = useState('');
   const [questionError, setQuestionError] = useState('');
   const [pendingTokens, setPendingTokens] = useState<string[]>([]);
+  const [pendingFileNames, setPendingFileNames] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState('');
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -345,7 +397,7 @@ export default function MentorshipThreadPage() {
   useTitle(thread ? `${thread.courseTitle} conversation` : 'Mentorship conversation');
 
   useEffect(() => {
-    if (!enrollmentId) return;
+    if (!enrollmentId || !user) return;
     const source = new EventSource(`/api/mentorship/threads/${encodeURIComponent(enrollmentId)}/events`, { withCredentials: true });
     const refresh = () => {
       void qc.invalidateQueries({ queryKey: key });
@@ -357,7 +409,7 @@ export default function MentorshipThreadPage() {
       source.removeEventListener('message', refresh);
       source.close();
     };
-  }, [enrollmentId, key, qc, threadKey]);
+  }, [enrollmentId, key, qc, threadKey, user]);
 
   useEffect(() => {
     if (q.data) void qc.invalidateQueries({ queryKey: threadKey });
@@ -381,7 +433,7 @@ export default function MentorshipThreadPage() {
     setSendError('');
     try {
       await send.mutateAsync({ enrollmentId, data: { kind: 'text', ...(clean ? { body: clean } : {}), ...(pendingTokens.length ? { uploadTokens: pendingTokens } : {}) } });
-      messageForm.reset({ body: '' }); setPendingTokens([]); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
+      messageForm.reset({ body: '' }); setPendingTokens([]); setPendingFileNames([]); setUploadStatus(''); setUploadFailed(false); await refreshAfterSend();
     } catch (error) { setSendError(errMsg(error)); }
   }
   async function submitMeeting(values: z.infer<typeof meetingSchema>) {
@@ -423,6 +475,7 @@ export default function MentorshipThreadPage() {
         const result = await fetch(signed.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
         if (!result.ok) throw new Error(`Upload failed for ${file.name}. Please try again.`);
         setPendingTokens((current) => [...current, signed.uploadToken]);
+        setPendingFileNames((current) => [...current, file.name]);
         messageForm.clearErrors('body');
         uploadedCount += 1;
         setUploadStatus(`${uploadedCount} ${uploadedCount === 1 ? 'file is' : 'files are'} ready. Uploading remaining files…`);
@@ -441,7 +494,8 @@ export default function MentorshipThreadPage() {
     setPreview({ url, name });
   }
 
-  if (q.isLoading) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></main>;
+  if (authLoading || q.isLoading) return <main className="mx-auto max-w-5xl p-4 sm:p-8"><PageSkeleton /></main>;
+  if (!user) return <main className="mx-auto max-w-4xl p-4 sm:p-8"><EmptyPanel title="Sign in to open this conversation" icon={<LockKeyhole className="h-6 w-6" />}><p>Your guide messages and shared files are private. Sign in to continue.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
   if (q.isError || !data || !thread) return <main className="mx-auto max-w-5xl space-y-4 p-4 sm:p-8"><Link href="/mentorship" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-muted-foreground"><ArrowLeft className="h-4 w-4" />All conversations</Link><ErrorPanel title="We could not open this conversation" message={errMsg(q.error)} onRetry={() => q.refetch()} /></main>;
   const messages = data.messages;
   const responsesByQuestion = new Map<string, MentorshipMessage[]>();
@@ -451,25 +505,62 @@ export default function MentorshipThreadPage() {
     group.sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
     responsesByQuestion.set(response.replyToMessageId!, group);
   });
-  return <main className="mx-auto max-w-[1440px] min-w-0 space-y-4 p-3 pb-24 sm:space-y-5 sm:p-6 lg:p-8">
-    <Link href="/mentorship" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary lg:hidden" data-testid="link-back-mentorship"><ArrowLeft className="h-4 w-4" />Back to conversations</Link>
-    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)] lg:items-start">
+  const visibleMessages = messages.filter((message) => message.kind !== 'question_response').filter((message) => {
+    const term = messageSearch.trim().toLocaleLowerCase();
+    if (!term) return true;
+    const answers = responsesByQuestion.get(message.id) ?? [];
+    const attachmentNames = message.attachments.map((attachment) => attachment.fileName);
+    return [message.body, message.senderName, ...attachmentNames, ...answers.map((answer) => answer.body)]
+      .join(' ').toLocaleLowerCase().includes(term);
+  });
+  const messageDays = new Map<string, MentorshipMessage[]>();
+  for (const message of visibleMessages) {
+    const day = dayHeading(message.createdAt);
+    const dayMessages = messageDays.get(day) ?? [];
+    dayMessages.push(message);
+    messageDays.set(day, dayMessages);
+  }
+  const contactName = user?.isGuide ? thread.studentName : thread.guideName || 'Guide assignment pending';
+  return <main className="mx-auto max-w-[1440px] min-w-0 space-y-3 p-3 pb-24 sm:space-y-4 sm:p-5 lg:p-6">
+    <Link href="/mentorship" className="inline-flex min-h-10 items-center gap-2 rounded-lg px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary lg:hidden" data-testid="link-back-mentorship"><ArrowLeft className="h-4 w-4" />All conversations</Link>
+    <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)] lg:items-stretch">
       <aside className="hidden min-w-0 lg:block"><ThreadList threads={threadsQuery.data} selectedId={enrollmentId} loading={threadsQuery.isLoading} error={threadsQuery.isError ? errMsg(threadsQuery.error) : undefined} onRetry={() => void threadsQuery.refetch()} isGuide={!!user?.isGuide} /></aside>
-      <div className="min-w-0 space-y-4">
-    <header className="ink-card overflow-hidden">
-      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-        <div className="min-w-0"><p className="font-mono text-[10px] uppercase tracking-[.16em] text-accent">Private project conversation · {thread.hours} hours</p><h1 className="mt-1 font-display text-2xl font-black text-primary sm:text-3xl" data-testid="text-thread-course-title">{thread.courseTitle}</h1><p className="mt-1 text-sm text-muted-foreground">{user?.isGuide ? `Learner · ${thread.studentName}` : thread.guideName ? `Your guide · ${thread.guideName}` : 'Your guide has not been assigned yet'}</p></div>
-        <div className="flex items-center gap-2 self-start rounded-xl bg-[hsl(var(--ledger-soft))] px-3 py-2 text-xs font-semibold text-[hsl(var(--ledger))] sm:self-center"><ShieldCheck className="h-4 w-4" />Private to this pathway</div>
+      <div className="flex min-w-0 flex-col gap-3">
+    <header className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card px-3 py-3 shadow-sm sm:px-4">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">{initials(contactName)}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+          <h1 className="truncate font-display text-lg font-bold text-primary sm:text-xl" data-testid="text-thread-course-title">{contactName}</h1>
+          <span className="hidden rounded-full bg-[hsl(var(--ledger-soft))]/60 px-2 py-0.5 text-[10px] font-semibold text-[hsl(var(--ledger))] sm:inline-flex">{thread.hours} hour pathway</span>
+        </div>
+        <p className="truncate text-xs text-muted-foreground">{thread.courseTitle}</p>
       </div>
-      {!thread.guideId && <div role="status" data-testid="status-guide-pending" className="flex gap-3 border-t border-border bg-secondary/35 px-4 py-3 text-sm sm:px-5"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-accent" /><p><strong>Guide assignment pending.</strong> The programme team will match a guide. You can read this space, but cannot send messages yet.</p></div>}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className="hidden items-center gap-1.5 rounded-full bg-[hsl(var(--ledger-soft))]/55 px-2.5 py-1.5 text-[11px] font-semibold text-[hsl(var(--ledger))] sm:inline-flex"><ShieldCheck className="h-3.5 w-3.5" />Private</span>
+        <button type="button" onClick={() => { setMessageSearchOpen((open) => !open); setMessageSearch(''); }} aria-label={messageSearchOpen ? 'Close message search' : 'Search this conversation'} aria-expanded={messageSearchOpen} className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="button-toggle-message-search"><Search className="h-4 w-4" /></button>
+      </div>
     </header>
-    <section className="overflow-hidden rounded-[1.25rem] border border-border bg-secondary/35" aria-label={`Conversation about ${thread.courseTitle}`}>
-      <div className="flex min-h-12 items-center justify-between gap-2 border-b border-border bg-card px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">{messages.length ? `${messages.length} messages` : 'A good place to start'}</p><p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><LockKeyhole className="h-3 w-3" />Only you and your guide</p></div>
-      <div className="flex min-h-[24rem] max-h-[62dvh] flex-col gap-2.5 overflow-y-auto overscroll-contain p-3 sm:min-h-[30rem] sm:gap-3 sm:p-5" data-testid="list-mentorship-messages">
-        {messages.length === 0 ? <div className="m-auto max-w-sm py-14 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><FileText className="h-5 w-5" /></span><p className="mt-4 font-display text-lg font-bold text-primary">A clear start</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Use this space for project questions, progress notes and files that help your guide understand the work.</p></div>
-          : messages.filter((message) => message.kind !== 'question_response').map((message) => message.kind === 'question' && message.question
-            ? <QuestionCard key={message.id} message={message} responses={responsesByQuestion.get(message.id) ?? []} isGuide={!!user?.isGuide} canAnswer={user?.id === thread.studentId && thread.canSend} enrollmentId={enrollmentId} />
-            : <MessageCard key={message.id} message={message} own={message.senderId === user?.id} onPreview={openPreview} />)}
+    {!thread.guideId && <div role="status" data-testid="status-guide-pending" className="flex gap-3 rounded-xl border border-accent/25 bg-accent/5 px-3 py-3 text-sm"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-accent" /><p><strong>Guide assignment pending.</strong> The programme team will match a guide. You can read this space, but cannot send messages yet.</p></div>}
+    <section className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:h-[calc(100dvh-12rem)] lg:min-h-[34rem]" aria-label={`Conversation about ${thread.courseTitle}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-background/65 px-3 py-2.5 sm:px-4">
+        <p className="text-xs font-semibold text-primary">{messages.length ? `${messages.length} messages` : 'Start a conversation'}</p>
+        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><LockKeyhole className="h-3 w-3 text-[hsl(var(--ledger))]" />Only you and your guide</p>
+      </div>
+      {messageSearchOpen && <label className="flex min-h-11 items-center gap-2 border-b border-border bg-card px-3 sm:px-4">
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="sr-only">Search messages in this conversation</span>
+        <input autoFocus value={messageSearch} onChange={(event) => setMessageSearch(event.target.value)} placeholder="Search messages, people or files" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" data-testid="input-search-mentorship-messages" />
+        {messageSearch && <button type="button" onClick={() => setMessageSearch('')} aria-label="Clear message search" className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary" data-testid="button-clear-message-search"><X className="h-4 w-4" /></button>}
+      </label>}
+      <div className="flex min-h-[24rem] flex-1 flex-col gap-4 overflow-y-auto overscroll-contain bg-secondary/25 p-3 sm:gap-5 sm:p-5" data-testid="list-mentorship-messages" aria-live="polite">
+        {messages.length === 0 ? <div className="m-auto max-w-sm py-12 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><FileText className="h-5 w-5" /></span><p className="mt-4 font-display text-lg font-bold text-primary">Start with a message</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Ask about your project, share an update, or attach a file that will help your guide.</p></div>
+          : !visibleMessages.length ? <div className="m-auto py-12 text-center"><Search className="mx-auto h-6 w-6 text-muted-foreground" /><p className="mt-3 text-sm font-semibold text-primary">No messages found</p><p className="mt-1 text-xs text-muted-foreground">Try another word or file name.</p></div>
+            : Array.from(messageDays.entries()).map(([day, dayMessages]) => <div key={day} className="space-y-3" data-testid={`message-day-${day.toLowerCase().replace(/\s+/g, '-')}`}>
+              <div className="flex items-center gap-3 py-1"><span className="h-px flex-1 bg-border/70" /><span className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-semibold text-muted-foreground">{day}</span><span className="h-px flex-1 bg-border/70" /></div>
+              {dayMessages.map((message) => message.kind === 'question' && message.question
+                ? <QuestionCard key={message.id} message={message} responses={responsesByQuestion.get(message.id) ?? []} isGuide={!!user?.isGuide} canAnswer={user?.id === thread.studentId && thread.canSend} enrollmentId={enrollmentId} />
+                : <MessageCard key={message.id} message={message} own={message.senderId === user?.id} onPreview={openPreview} />)}
+            </div>)}
         <div ref={endRef} />
       </div>
       {sendError && <p className="mx-3 mb-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive" role="alert" data-testid="status-send-error">{sendError}</p>}
@@ -508,21 +599,27 @@ export default function MentorshipThreadPage() {
           {questionError && <p className="mt-2 text-xs text-destructive" role="alert" data-testid="status-question-error">{questionError}</p>}
           <Button type="submit" disabled={send.isPending} className="mt-3 min-h-11" data-testid="button-post-question">{send.isPending ? 'Posting…' : 'Post question'}</Button>
         </form></Form>}
-        <Form {...messageForm}><form onSubmit={messageForm.handleSubmit(submitText)} className="flex items-end gap-2" data-testid="form-send-message">
-          <div className="min-w-0 flex-1">
-            <FormField control={messageForm.control} name="body" render={({ field }) => <FormItem className="space-y-1"><FormLabel className="sr-only">Write a message</FormLabel><FormControl><textarea {...field} maxLength={5000} rows={2} placeholder="Write a project question or update…" disabled={!canSend || uploading} className="max-h-36 min-h-12 w-full resize-y rounded-xl border border-input bg-background px-3 py-3 text-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60" data-testid="input-message-body" /></FormControl><FormMessage /></FormItem>} />
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-              <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading || pendingTokens.length >= MAX_FILES} className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 hover:bg-secondary disabled:opacity-50" data-testid="button-attach-file"><Paperclip className="h-3.5 w-3.5" />Attach file</button>
-              {user?.isGuide && <button type="button" onClick={() => { setMeetingOpen((v) => !v); setQuestionOpen(false); }} disabled={send.isPending} className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 hover:bg-secondary disabled:opacity-50" data-testid="button-open-meeting"><Video className="h-3.5 w-3.5" />Share Meet session</button>}
-              {user?.isGuide && <button type="button" onClick={() => { setQuestionOpen((v) => !v); setMeetingOpen(false); }} disabled={send.isPending} className="inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 hover:bg-secondary disabled:opacity-50" data-testid="button-open-question"><MessageCircle className="h-3.5 w-3.5" />Ask a question</button>}
-              <span className={`ml-auto ${uploadFailed ? 'text-destructive' : ''}`} role={uploadFailed ? 'alert' : uploading ? 'status' : undefined} data-testid={uploadFailed ? 'status-upload-error' : undefined}>{uploadStatus}</span>
+        <Form {...messageForm}><form onSubmit={messageForm.handleSubmit(submitText)} className="space-y-2.5" data-testid="form-send-message">
+          <div className="rounded-2xl border border-border bg-background px-3 pt-2.5 focus-within:border-[hsl(var(--ledger))]/45 focus-within:ring-2 focus-within:ring-[hsl(var(--ledger))]/10 sm:px-4">
+            <FormField control={messageForm.control} name="body" render={({ field }) => <FormItem className="space-y-1"><FormLabel className="sr-only">Write a message</FormLabel><FormControl><textarea {...field} maxLength={5000} rows={2} placeholder="Write a message to your guide…" disabled={!canSend || uploading} className="max-h-36 min-h-12 w-full resize-y bg-transparent py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus-visible:ring-0 disabled:opacity-60" data-testid="input-message-body" /></FormControl><FormMessage /></FormItem>} />
+            <div className="flex flex-wrap items-center gap-1 border-t border-border/70 py-1.5">
+              <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading || pendingTokens.length >= MAX_FILES} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-primary disabled:opacity-50" data-testid="button-attach-file"><Paperclip className="h-4 w-4" />Attach file</button>
+              {user?.isGuide && <button type="button" onClick={() => { setMeetingOpen((v) => !v); setQuestionOpen(false); }} disabled={send.isPending} aria-expanded={meetingOpen} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50 ${meetingOpen ? 'bg-secondary text-primary' : 'text-muted-foreground'}`} data-testid="button-open-meeting"><Video className="h-4 w-4" />Meet</button>}
+              {user?.isGuide && <button type="button" onClick={() => { setQuestionOpen((v) => !v); setMeetingOpen(false); }} disabled={send.isPending} aria-expanded={questionOpen} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-2.5 text-xs font-semibold transition-colors hover:bg-secondary disabled:opacity-50 ${questionOpen ? 'bg-secondary text-primary' : 'text-muted-foreground'}`} data-testid="button-open-question"><MessageCircle className="h-4 w-4" />Ask question</button>}
+              <span className={`ml-auto max-w-full text-[11px] ${uploadFailed ? 'text-destructive' : 'text-muted-foreground'}`} role={uploadFailed ? 'alert' : uploading ? 'status' : undefined} data-testid={uploadFailed ? 'status-upload-error' : undefined}>{uploadStatus}</span>
+              <Button type="submit" aria-label="Send message" disabled={send.isPending || uploading || (!messageForm.watch('body').trim() && pendingTokens.length === 0)} className="ml-auto min-h-10 min-w-10 rounded-xl px-3" data-testid="button-send-message"><Send className="h-4 w-4" /><span className="hidden sm:inline">{send.isPending ? 'Sending…' : 'Send'}</span><span className="sr-only sm:hidden">Send message</span></Button>
             </div>
             <input ref={fileInput} type="file" multiple accept={ACCEPTED.join(',')} onChange={(e) => void onFiles(e.target.files)} className="sr-only" aria-label="Choose images or documents" data-testid="input-attachment-file" />
-            {pendingTokens.length > 0 && <p className="mt-1 flex items-center gap-1.5 text-xs text-[hsl(var(--ledger))]" role="status"><Check className="h-3.5 w-3.5" />{pendingTokens.length} file{pendingTokens.length === 1 ? '' : 's'} ready to send</p>}
           </div>
-          <Button type="submit" aria-label="Send message" disabled={send.isPending || uploading || (!messageForm.watch('body').trim() && pendingTokens.length === 0)} className="mb-1 h-11 w-11 shrink-0 px-0" data-testid="button-send-message"><Send className="h-4 w-4" /><span className="sr-only">Send message</span></Button>
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 text-[10px] text-muted-foreground">
+            <span>Private to this pathway · Images and common documents</span>
+            <span>Up to {MAX_FILES} files · 10 MB each</span>
+          </div>
+          {pendingTokens.length > 0 && <div className="flex flex-wrap gap-1.5" role="status" aria-label={`${pendingTokens.length} attachment${pendingTokens.length === 1 ? '' : 's'} ready to send`} data-testid="list-pending-mentorship-attachments">
+            {pendingFileNames.map((name, index) => <span key={`${name}-${index}`} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[hsl(var(--ledger))]/20 bg-[hsl(var(--ledger-soft))]/45 px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--ledger))]"><Paperclip className="h-3.5 w-3.5 shrink-0" /><span className="max-w-[16rem] truncate">{name}</span></span>)}
+            <span className="sr-only">{pendingTokens.length} file{pendingTokens.length === 1 ? '' : 's'} ready to send</span>
+          </div>}
         </form></Form>
-        <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">Images and common documents only. Maximum 10 MB per file and {MAX_FILES} files per message.</p>
       </div>}
     </section>
       </div>
