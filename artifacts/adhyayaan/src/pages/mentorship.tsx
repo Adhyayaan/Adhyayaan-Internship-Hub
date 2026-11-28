@@ -299,9 +299,9 @@ function QuestionCard({ message, responses, isGuide, canAnswer, enrollmentId }: 
 }
 
 function MessageCard({ message, own, onPreview }: { message: MentorshipMessage; own: boolean; onPreview: (url: string, name: string) => void }) {
-  return <article className={`max-w-[min(44rem,92%)] rounded-2xl border px-4 py-3 shadow-sm ${own ? 'ml-auto border-primary/15 bg-[hsl(var(--ledger-soft))]' : 'border-border bg-card'}`} data-testid={`message-${message.id}`}>
-    <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-      <span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : ''}</span><time className="text-[11px] text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
+  return <article className={`group relative w-fit max-w-[min(40rem,92%)] rounded-2xl px-3.5 py-2.5 shadow-[0_1px_2px_hsl(232_45%_16%/.08)] sm:px-4 ${own ? 'ml-auto rounded-br-md bg-[hsl(var(--ledger-soft))]' : 'mr-auto rounded-bl-md border border-border/75 bg-card'}`} data-testid={`message-${message.id}`}>
+    <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : ''}</span><time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{when(message.createdAt)}</time>
     </div>
     {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--ledger))]/25 bg-background/75 p-3.5" data-testid={`meeting-card-${message.id}`}>
       <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-display font-bold text-primary">Google Meet session</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{when(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
@@ -463,9 +463,9 @@ export default function MentorshipThreadPage() {
       </div>
       {!thread.guideId && <div role="status" data-testid="status-guide-pending" className="flex gap-3 border-t border-border bg-secondary/35 px-4 py-3 text-sm sm:px-5"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-accent" /><p><strong>Guide assignment pending.</strong> The programme team will match a guide. You can read this space, but cannot send messages yet.</p></div>}
     </header>
-    <section className="overflow-hidden rounded-[1.25rem] border border-border bg-[hsl(var(--background))]" aria-label={`Conversation about ${thread.courseTitle}`}>
-      <div className="flex items-center justify-between border-b border-border bg-card/70 px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">{messages.length ? `${messages.length} messages` : 'A good place to start'}</p><p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><LockKeyhole className="h-3 w-3" />Only you and your guide</p></div>
-      <div className="flex min-h-[24rem] max-h-[62dvh] flex-col gap-3 overflow-y-auto overscroll-contain p-3 sm:min-h-[30rem] sm:p-5" data-testid="list-mentorship-messages">
+    <section className="overflow-hidden rounded-[1.25rem] border border-border bg-secondary/35" aria-label={`Conversation about ${thread.courseTitle}`}>
+      <div className="flex min-h-12 items-center justify-between gap-2 border-b border-border bg-card px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">{messages.length ? `${messages.length} messages` : 'A good place to start'}</p><p className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><LockKeyhole className="h-3 w-3" />Only you and your guide</p></div>
+      <div className="flex min-h-[24rem] max-h-[62dvh] flex-col gap-2.5 overflow-y-auto overscroll-contain p-3 sm:min-h-[30rem] sm:gap-3 sm:p-5" data-testid="list-mentorship-messages">
         {messages.length === 0 ? <div className="m-auto max-w-sm py-14 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[hsl(var(--ledger-soft))] text-[hsl(var(--ledger))]"><FileText className="h-5 w-5" /></span><p className="mt-4 font-display text-lg font-bold text-primary">A clear start</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Use this space for project questions, progress notes and files that help your guide understand the work.</p></div>
           : messages.filter((message) => message.kind !== 'question_response').map((message) => message.kind === 'question' && message.question
             ? <QuestionCard key={message.id} message={message} responses={responsesByQuestion.get(message.id) ?? []} isGuide={!!user?.isGuide} canAnswer={user?.id === thread.studentId && thread.canSend} enrollmentId={enrollmentId} />

@@ -160,6 +160,8 @@ export function GuideDashboardPage() {
   const allCourses = useMemo(() => dashboard?.learners.flatMap((learner) => learner.courses) ?? [], [dashboard]);
   const enrolledLearners = dashboard?.learners ?? [];
   const behindCount = allCourses.filter((course) => course.pacing.status === 'behind').length;
+  const steadyCount = allCourses.filter((course) => course.pacing.status === 'on_track' || course.pacing.status === 'complete').length;
+  const aheadCount = allCourses.filter((course) => course.pacing.status === 'ahead').length;
   const totalHours = allCourses.reduce((sum, course) => sum + course.loggedHours, 0);
   const hoursTarget = allCourses.reduce((sum, course) => sum + course.hours, 0);
   const avgCompletion = allCourses.length ? allCourses.reduce((sum, course) => sum + course.pacing.completedPercent, 0) / allCourses.length : 0;
@@ -204,6 +206,11 @@ export function GuideDashboardPage() {
       return a.name.localeCompare(b.name);
     });
   }, [enrolledLearners, search, sort]);
+  const checkInPathways = useMemo(() => visibleLearners
+    .flatMap((learner) => learner.courses
+      .filter((course) => course.pacing.status === 'behind')
+      .map((course) => ({ learner, course })))
+    .sort((a, b) => Math.abs(b.course.pacing.deltaDays) - Math.abs(a.course.pacing.deltaDays)), [visibleLearners]);
   if (authLoading) return <div className="mx-auto max-w-6xl space-y-4 p-4 sm:p-8"><PageSkeleton /></div>;
   if (!user) return <AccessState title="Sign in to view your learners" message="Guide accounts can view progress for learners assigned to them." />;
   if (!user.isGuide) return <AccessState title="Guide access required" message="This dashboard is only available to guide accounts. Ask an administrator if you need guide access." />;
@@ -228,6 +235,36 @@ export function GuideDashboardPage() {
       : q.isError || !dashboard ? <ErrorPanel title="We could not load your assigned learners" message={errMsg(q.error)} onRetry={() => q.refetch()} />
         : dashboard.learners.length === 0 ? <EmptyPanel title="No learners assigned yet" icon={<Users className="h-6 w-6" />}><p>{selectedLabel ? `There are no assigned learners in ${selectedLabel} yet.` : 'Your assigned learners will appear here when the programme team adds them.'}</p></EmptyPanel>
           : <>
+             <section aria-labelledby="pace-overview-heading" className="space-y-3">
+               <div className="flex flex-wrap items-end justify-between gap-2">
+                 <div><p className="text-xs font-bold uppercase tracking-[.14em] text-[hsl(var(--ledger))]">Pacing overview</p><h2 id="pace-overview-heading" className="mt-1 text-xl font-black text-primary">How pathways are progressing</h2><p className="mt-1 text-sm text-muted-foreground">A timing view against each course plan. It does not measure learner ability.</p></div>
+                 <span className="text-xs tabular-nums text-muted-foreground">{allCourses.length} assigned pathways</span>
+               </div>
+               <div className="grid gap-2 sm:grid-cols-3">
+                 <div className="rounded-xl border border-[hsl(var(--ledger))]/25 bg-[hsl(var(--ledger-soft))]/45 px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">On track or complete</p><p className="mt-1 text-xl font-black tabular-nums text-primary">{steadyCount}<span className="ml-1 text-xs font-medium text-muted-foreground">pathways</span></p></div>
+                 <div className="rounded-xl border border-primary/15 bg-card px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">Ahead of plan</p><p className="mt-1 text-xl font-black tabular-nums text-primary">{aheadCount}<span className="ml-1 text-xs font-medium text-muted-foreground">pathways</span></p></div>
+                 <div className="rounded-xl border border-accent/25 bg-accent/5 px-4 py-3"><p className="text-xs font-semibold text-muted-foreground">Behind plan</p><p className="mt-1 text-xl font-black tabular-nums text-primary">{behindCount}<span className="ml-1 text-xs font-medium text-muted-foreground">pathways</span></p></div>
+               </div>
+               <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+                 <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-3">
+                   <div><h3 className="font-display text-base font-bold text-primary">Pathways that may need a check-in</h3><p className="mt-1 text-xs leading-relaxed text-muted-foreground">Review the timing with each learner before deciding what support is useful.</p></div>
+                   <span className="text-xs tabular-nums text-muted-foreground">{checkInPathways.length} behind plan</span>
+                 </div>
+                 {checkInPathways.length ? <ul className="divide-y divide-border" data-testid="list-guide-check-in-pathways">
+                   {checkInPathways.map(({ learner, course }) => <li key={course.enrollmentId} className="flex min-w-0 flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                     <div className="min-w-0">
+                       <p className="truncate text-sm font-bold text-primary">{learner.name}</p>
+                       <p className="mt-0.5 truncate text-xs text-muted-foreground">{course.courseTitle}</p>
+                     </div>
+                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:justify-end">
+                       <span className="text-xs font-semibold text-accent">{Math.abs(course.pacing.deltaDays)} days behind plan</span>
+                       <span className="text-xs tabular-nums text-muted-foreground">{course.pacing.completedPercent}% complete · {course.pacing.expectedPercent}% expected</span>
+                       <Link href={`/mentorship/${course.enrollmentId}`} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-[hsl(var(--ledger))] hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-guide-check-in-${course.enrollmentId}`}><MessagesSquare className="h-3.5 w-3.5" />Open conversation</Link>
+                     </div>
+                   </li>)}
+                 </ul> : <p className="pt-3 text-sm text-muted-foreground">No assigned pathways are currently behind their course plan.</p>}
+               </div>
+             </section>
             <section aria-labelledby="course-analysis-heading" className="space-y-4">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div><p className="text-xs font-bold uppercase tracking-[.14em] text-[hsl(var(--ledger))]">Portfolio analysis</p><h2 id="course-analysis-heading" className="mt-1 text-xl font-black text-primary">Course-level view</h2><p className="mt-1 text-sm text-muted-foreground">Aggregate signals from assigned pathways. Pace describes timing against the course plan, not learner ability.</p></div>

@@ -53,6 +53,22 @@ function GroupCard({ group }: { group: SupportGroup }) {
   </Link>;
 }
 
+function GroupConversationLink({ group, selected }: { group: SupportGroup; selected: boolean }) {
+  return <Link href={`/support-groups/${encodeURIComponent(group.id)}`} aria-current={selected ? 'page' : undefined}
+    className={`block min-w-0 rounded-xl border p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selected ? 'border-[hsl(var(--support-moss))]/40 bg-[hsl(var(--support-wash))]/70' : 'border-transparent hover:border-border hover:bg-background'}`}
+    data-testid={`link-support-chat-${group.id}`}>
+    <span className="flex min-w-0 items-start justify-between gap-2">
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-bold text-primary">{group.name}</span>
+        <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{group.courseTitle}</span>
+      </span>
+      <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{stamp(group.lastMessageAt)}</span>
+    </span>
+    <span className="mt-2 block truncate text-xs text-muted-foreground">{group.lastMessagePreview || 'Start a group conversation'}</span>
+    <span className="mt-1 block text-[11px] text-muted-foreground">{group.memberCount} members</span>
+  </Link>;
+}
+
 export function SupportGroupsPage() {
   useTitle('Support groups');
   const { user, isLoading: authLoading } = useAuth();
@@ -105,6 +121,7 @@ export function GuideSupportPage() {
   const [name, setName] = useState('');
   const [purpose, setPurpose] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [creationStep, setCreationStep] = useState<1 | 2 | 3>(1);
   const [createError, setCreateError] = useState('');
   const [notice, setNotice] = useState('');
   const qc = useQueryClient();
@@ -114,7 +131,7 @@ export function GuideSupportPage() {
   const create = useCreateGuideSupportGroup();
   const review = query.data;
   useEffect(() => { if (review?.selectedCourseId && !courseId) setCourseId(review.selectedCourseId); }, [review?.selectedCourseId, courseId]);
-  const members = useMemo(() => review?.learners.filter((l) => selected.includes(l.enrollmentId)) ?? [], [review?.learners, selected]);
+  const selectedMembers = useMemo(() => review?.learners.filter((learner) => selected.includes(learner.enrollmentId)) ?? [], [review?.learners, selected]);
 
   async function createGroup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setCreateError(''); setNotice('');
@@ -137,25 +154,52 @@ export function GuideSupportPage() {
         <h1 className="mt-2 font-display text-3xl font-black sm:text-4xl">A timely check-in can help.</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-primary-foreground/80">Review course activity, then decide whether a shared group would be useful. These signals describe course activity, not a learner’s ability.</p>
       </div>
-      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
-        <label className="block min-w-0 flex-1"><span className="mb-1.5 block text-sm font-bold text-primary">Course</span><select value={courseId} onChange={(e) => { setCourseId(e.target.value); setSelected([]); }} className={inputClass} data-testid="select-support-course"><option value="">Choose a course</option>{review?.supportedCourses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}</select></label>
-        <Button type="button" onClick={() => setFormOpen((open) => !open)} disabled={!review?.learners.length} className="min-h-11 w-full sm:w-auto" data-testid="button-create-support-group"><Plus className="mr-2 h-4 w-4" />{formOpen ? 'Close group form' : 'Create a group'}</Button>
+       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+         <label className="block min-w-0 flex-1"><span className="mb-1.5 block text-sm font-bold text-primary">Course to review</span><select value={courseId} onChange={(e) => { setCourseId(e.target.value); setSelected([]); setCreationStep(1); setCreateError(''); }} className={inputClass} data-testid="select-support-course"><option value="">Choose a course</option>{review?.supportedCourses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}</select></label>
+         <Button type="button" onClick={() => { setFormOpen((open) => !open); setCreationStep(1); }} disabled={!review?.supportedCourses.length} className="min-h-11 w-full sm:w-auto" data-testid="button-create-support-group"><Plus className="mr-2 h-4 w-4" />{formOpen ? 'Close group form' : 'Create a group'}</Button>
       </div>
     </header>
     {notice && <p role="status" className="flex items-start gap-2 rounded-xl border border-[hsl(var(--support-moss))]/25 bg-[hsl(var(--support-wash))]/70 p-3.5 text-sm text-[hsl(var(--support-moss))]" data-testid="status-support-created"><Check className="mt-0.5 h-4 w-4 shrink-0" />{notice}</p>}
-    {formOpen && <section className="support-enter rounded-2xl border border-[hsl(var(--support-moss))]/30 bg-[hsl(var(--support-wash))]/45 p-4 sm:p-5" aria-labelledby="create-support-heading">
-      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-card text-[hsl(var(--support-moss))]"><UsersRound className="h-5 w-5" /></span><div><h2 id="create-support-heading" className="font-display text-lg font-black text-primary">Choose who to invite</h2><p className="mt-1 text-sm leading-relaxed text-muted-foreground">You make every group decision. Choose 2–20 learners for this course; no one is added automatically.</p></div></div>
-      <form onSubmit={createGroup} className="mt-4 grid gap-3 sm:grid-cols-2">
-        <label className="block"><span className="mb-1.5 block text-sm font-bold">Group name</span><input required minLength={2} maxLength={100} value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="For example, Project planning circle" data-testid="input-support-group-name" /></label>
-        <label className="block"><span className="mb-1.5 block text-sm font-bold">Shared purpose</span><input required minLength={10} maxLength={500} value={purpose} onChange={(e) => setPurpose(e.target.value)} className={inputClass} placeholder="What could the group work through together?" data-testid="input-support-group-purpose" /></label>
-        <div className="sm:col-span-2"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-2"><h3 className="text-sm font-bold text-primary">Learners in {review?.supportedCourses.find((c) => c.id === review.selectedCourseId)?.title || 'this course'}</h3><span className="text-xs text-muted-foreground">{selected.length} selected · 2–20 needed</span></div>
-          <div className="grid gap-2 md:grid-cols-2">{review?.learners.map((learner) => <SupportLearnerRow key={learner.enrollmentId} learner={learner} checked={selected.includes(learner.enrollmentId)} onChange={() => setSelected((prev) => prev.includes(learner.enrollmentId) ? prev.filter((id) => id !== learner.enrollmentId) : prev.length < 20 ? [...prev, learner.enrollmentId] : prev)} />)}</div>
-        </div>
-         <p className="sm:col-span-2 rounded-xl border border-border bg-card/80 p-3 text-xs leading-relaxed text-muted-foreground"><strong className="text-primary">How to read this:</strong> Pace compares progress with the course plan. Learning checks show recorded course work only. Fewer than {review?.learners[0]?.learningChecks.minimumChecks ?? 3} checks is insufficient evidence, not a support flag.</p>
-        {createError && <p className="sm:col-span-2 text-sm text-destructive" role="alert" data-testid="status-create-group-error">{createError}</p>}
-        <div className="flex flex-wrap gap-2 sm:col-span-2"><Button type="submit" disabled={create.isPending || selected.length < 2 || !review?.selectedCourseId} className="min-h-11" data-testid="button-save-support-group">{create.isPending ? 'Creating group…' : 'Create group and invite selected learners'}</Button><button type="button" className={softButton} onClick={() => { setFormOpen(false); setCreateError(''); }}>Cancel</button></div>
-      </form>
-    </section>}
+     {formOpen && <section className="support-enter rounded-2xl border border-[hsl(var(--support-moss))]/30 bg-[hsl(var(--support-wash))]/35 p-4 sm:p-5" aria-labelledby="create-support-heading">
+       <div className="flex flex-col gap-4 border-b border-[hsl(var(--support-moss))]/15 pb-4 sm:flex-row sm:items-start sm:justify-between">
+         <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-card text-[hsl(var(--support-moss))]"><UsersRound className="h-5 w-5" /></span><div><h2 id="create-support-heading" className="font-display text-lg font-black text-primary">Create a course group</h2><p className="mt-1 text-sm leading-relaxed text-muted-foreground">You choose the course, every member and the shared purpose. No one is added automatically.</p></div></div>
+         <ol className="grid grid-cols-3 gap-1 text-center text-[11px] sm:w-[24rem]" aria-label="Group creation steps">
+           {(['Course', 'Learners', 'Details'] as const).map((label, index) => <li key={label} aria-current={creationStep === index + 1 ? 'step' : undefined} className={`rounded-lg px-2 py-2 font-bold ${creationStep === index + 1 ? 'bg-primary text-primary-foreground' : creationStep > index + 1 ? 'bg-card text-[hsl(var(--support-moss))]' : 'bg-card/60 text-muted-foreground'}`}><span className="mr-1">{index + 1}.</span>{label}</li>)}
+         </ol>
+       </div>
+       <form onSubmit={createGroup} className="mt-4 space-y-4">
+         {creationStep === 1 && <div className="max-w-xl space-y-3">
+           <div><h3 className="text-sm font-bold text-primary">Step 1 · Confirm the course</h3><p className="mt-1 text-xs text-muted-foreground">Use the course selector above. Group members must be assigned to the same course.</p></div>
+           <p className="rounded-xl border border-border bg-card px-3 py-3 text-sm font-semibold text-primary">{review?.supportedCourses.find((course) => course.id === courseId)?.title || 'Choose a course above to continue'}</p>
+         </div>}
+         {creationStep === 2 && <div className="space-y-3">
+           <div className="flex flex-wrap items-baseline justify-between gap-2"><div><h3 className="text-sm font-bold text-primary">Step 2 · Choose learners</h3><p className="mt-1 text-xs text-muted-foreground">Select 2–20 learners. Review the course evidence, then make your own decision.</p></div><span className="text-xs font-bold text-[hsl(var(--support-moss))]">{selected.length} selected</span></div>
+           <div className="grid gap-2 md:grid-cols-2">{review?.learners.map((learner) => <SupportLearnerRow key={learner.enrollmentId} learner={learner} checked={selected.includes(learner.enrollmentId)} onChange={() => setSelected((prev) => prev.includes(learner.enrollmentId) ? prev.filter((id) => id !== learner.enrollmentId) : prev.length < 20 ? [...prev, learner.enrollmentId] : prev)} />)}</div>
+           <p className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-relaxed text-muted-foreground"><strong className="text-primary">Reading the evidence:</strong> Pace compares progress with the course plan. Learning checks show recorded course work only. Fewer than {review?.learners[0]?.learningChecks.minimumChecks ?? 3} checks is insufficient evidence, not a support flag.</p>
+         </div>}
+         {creationStep === 3 && <div className="grid gap-3 sm:grid-cols-2">
+           <div className="sm:col-span-2"><h3 className="text-sm font-bold text-primary">Step 3 · Give the group a name and purpose</h3><p className="mt-1 text-xs text-muted-foreground">{selected.length} learners invited · {review?.supportedCourses.find((c) => c.id === review.selectedCourseId)?.title}</p></div>
+           <label className="block"><span className="mb-1.5 block text-sm font-semibold">Group name</span><input required minLength={2} maxLength={100} value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="For example, Project planning circle" data-testid="input-support-group-name" /></label>
+           <label className="block"><span className="mb-1.5 block text-sm font-semibold">Shared purpose</span><input required minLength={10} maxLength={500} value={purpose} onChange={(e) => setPurpose(e.target.value)} className={inputClass} placeholder="What could the group work through together?" data-testid="input-support-group-purpose" /></label>
+           <div className="sm:col-span-2 rounded-xl border border-border bg-card p-3">
+             <h4 className="text-xs font-bold text-primary">Confirm invited learners</h4>
+             <ul className="mt-2 grid gap-2 sm:grid-cols-2" data-testid="list-support-group-invite-preview">
+               {selectedMembers.map((learner) => <li key={learner.enrollmentId} className="flex min-w-0 items-center gap-2 rounded-lg bg-background px-3 py-2">
+                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[hsl(var(--support-wash))] text-xs font-bold text-[hsl(var(--support-moss))]">{initials(learner.name)}</span>
+                 <span className="min-w-0"><span className="block truncate text-sm font-semibold text-primary">{learner.name}</span><span className="block truncate text-xs text-muted-foreground">{learner.email}</span></span>
+               </li>)}
+             </ul>
+             <button type="button" className="mt-2 min-h-10 rounded-lg px-2 text-xs font-bold text-[hsl(var(--support-moss))] hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setCreationStep(2)} data-testid="button-edit-support-group-members">Edit learner selection</button>
+           </div>
+         </div>}
+         {createError && <p className="text-sm text-destructive" role="alert" data-testid="status-create-group-error">{createError}</p>}
+         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[hsl(var(--support-moss))]/15 pt-3">
+           <button type="button" className={softButton} onClick={() => { if (creationStep === 1) { setFormOpen(false); setCreateError(''); } else setCreationStep((creationStep - 1) as 1 | 2 | 3); }} data-testid="button-group-step-back">{creationStep === 1 ? 'Cancel' : 'Back'}</button>
+           {creationStep < 3 ? <Button type="button" className="min-h-11" disabled={creationStep === 1 ? !courseId || query.isLoading || review?.selectedCourseId !== courseId : selected.length < 2} onClick={() => { setCreateError(''); setCreationStep((creationStep + 1) as 1 | 2 | 3); }} data-testid="button-group-step-next">{creationStep === 1 ? 'Choose learners' : 'Review group details'}</Button>
+             : <Button type="submit" disabled={create.isPending || selected.length < 2 || review?.selectedCourseId !== courseId} className="min-h-11" data-testid="button-save-support-group">{create.isPending ? 'Creating group…' : 'Create group and invite selected learners'}</Button>}
+         </div>
+       </form>
+     </section>}
     <section aria-labelledby="signals-heading" className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-[.13em] text-[hsl(var(--support-moss))]">Course review</p><h2 id="signals-heading" className="mt-1 font-display text-xl font-black text-primary">Support signals</h2><p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">A review prompt appears when one or both signals apply: pace is at least 7 days behind, or at least 3 recorded study checks are fewer than 50% secure. This is a prompt for a human check-in, not a diagnosis or fixed label.</p></div>{review && <span className="text-xs text-muted-foreground">{review.learners.filter((l) => l.needsSupportReview).length} learners marked for review</span>}</div>
       {query.isLoading ? <div className="space-y-2" aria-busy="true" aria-label="Loading course support review">{[0, 1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-card" />)}</div>
@@ -234,8 +278,8 @@ function MessageItem({ message, own, groupId, messages }: { message: SupportGrou
   const [attachmentError, setAttachmentError] = useState('');
   if (message.kind === 'question_response') return null;
   if (message.kind === 'question') return <QuestionThread question={message} messages={messages} groupId={groupId} />;
-  return <article className={`support-message w-full max-w-3xl rounded-2xl border px-4 py-3 shadow-sm ${own ? 'ml-auto border-primary/15 bg-[hsl(var(--support-wash))]/75' : 'border-border bg-card'}`} data-testid={`support-message-${message.id}`}>
-    <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : message.senderRole === 'guide' ? ' · Guide' : ''}</span><time className="text-[11px] text-muted-foreground" dateTime={message.createdAt}>{stamp(message.createdAt)}</time></div>
+  return <article className={`support-message w-fit max-w-[min(42rem,92%)] rounded-2xl px-3.5 py-2.5 shadow-[0_1px_2px_hsl(232_45%_16%/.08)] sm:px-4 ${own ? 'ml-auto rounded-br-md bg-[hsl(var(--support-wash))]' : 'mr-auto rounded-bl-md border border-border/75 bg-card'}`} data-testid={`support-message-${message.id}`}>
+    <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span className="text-xs font-bold text-primary">{message.senderName}{own ? ' · You' : message.senderRole === 'guide' ? ' · Guide' : ''}</span><time className="text-[10px] tabular-nums text-muted-foreground" dateTime={message.createdAt}>{stamp(message.createdAt)}</time></div>
     {message.kind === 'meeting' ? <div className="rounded-xl border border-[hsl(var(--support-moss))]/25 bg-background/80 p-3.5">
       <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[hsl(var(--support-wash))] text-[hsl(var(--support-moss))]"><Video className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-bold text-primary">Group Meet</p>{message.meetingStartsAt && <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{stamp(message.meetingStartsAt)}</p>}{message.meetingAgenda && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{message.meetingAgenda}</p>}</div></div>
       {message.meetingUrl && <a href={message.meetingUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[hsl(var(--support-moss))] px-4 text-sm font-bold text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid={`link-join-group-meet-${message.id}`}>Open Meet <ArrowUpRight className="h-4 w-4" /></a>}
@@ -332,6 +376,7 @@ export function SupportGroupPage() {
   const messageKey = useMemo(() => getListSupportGroupMessagesQueryKey(groupId), [groupId]);
   const groupsKey = getListSupportGroupsQueryKey();
   const query = useListSupportGroupMessages(groupId, { query: { enabled: !!user && !!groupId, queryKey: messageKey } });
+  const groupListQuery = useListSupportGroups({ query: { enabled: !!user, queryKey: groupsKey } });
   const manage = useUpdateGuideSupportGroupMembers();
   const data = query.data;
   const endRef = useRef<HTMLDivElement>(null);
@@ -364,7 +409,7 @@ export function SupportGroupPage() {
   if (authLoading) return <main className="mx-auto max-w-6xl p-4 sm:p-8"><PageSkeleton /></main>;
   if (!user) return <main className="mx-auto max-w-4xl p-4 sm:p-8"><EmptyPanel title="Sign in to open this group" icon={<LockKeyhole className="h-6 w-6" />}><p>Group conversations are private. Sign in with an invited account to continue.</p><Button asChild variant="outline" className="mt-4"><Link href="/login">Sign in</Link></Button></EmptyPanel></main>;
   return <main className="mx-auto max-w-6xl space-y-4 p-3 pb-24 sm:space-y-5 sm:p-6">
-    <Link href="/support-groups" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-bold text-[hsl(var(--support-moss))] hover:bg-[hsl(var(--support-wash))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="link-back-support-groups"><ArrowLeft className="h-4 w-4" />All groups</Link>
+     <Link href="/support-groups" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-bold text-[hsl(var(--support-moss))] hover:bg-[hsl(var(--support-wash))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring xl:hidden" data-testid="link-back-support-groups"><ArrowLeft className="h-4 w-4" />All groups</Link>
     {query.isLoading ? <div className="space-y-3" aria-label="Loading group conversation" aria-busy="true"><div className="h-36 animate-pulse rounded-2xl bg-card" /><div className="h-[26rem] animate-pulse rounded-2xl bg-card" /></div>
       : query.isError || !data ? <ErrorPanel title="This group could not be opened" message={errMsg(query.error)} onRetry={() => void query.refetch()} />
         : <>
@@ -375,10 +420,24 @@ export function SupportGroupPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-xs text-muted-foreground sm:px-6"><span className="flex flex-wrap gap-x-3 gap-y-1"><span>{data.members.length} members</span><span>Guide: {data.group.guideName}</span><span>{data.messages.length} messages</span></span><span>Only group members and the creating guide can read this</span></div>
           </header>
-          <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[15rem_minmax(0,1fr)_17rem]">
+            <aside className="hidden min-w-0 xl:block">
+              <section className="overflow-hidden rounded-2xl border border-border bg-card" aria-label="Your course group conversations">
+                <header className="border-b border-border px-3.5 py-4">
+                  <h2 className="font-display font-bold text-primary">Course groups</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">{groupListQuery.data?.length ?? 0} available to you</p>
+                </header>
+                <nav className="max-h-[68dvh] space-y-1 overflow-y-auto p-2" aria-label="Choose a group conversation">
+                  {groupListQuery.isLoading ? <div className="space-y-2 p-1" aria-busy="true" aria-label="Loading groups">{[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-secondary/50" />)}</div>
+                    : groupListQuery.isError ? <div className="p-3 text-xs text-muted-foreground"><p>Groups did not load.</p><button type="button" onClick={() => void groupListQuery.refetch()} className="mt-2 min-h-9 font-bold text-primary underline underline-offset-4" data-testid="button-retry-group-list">Try again</button></div>
+                      : groupListQuery.data?.length ? groupListQuery.data.map((group) => <GroupConversationLink key={group.id} group={group} selected={group.id === groupId} />)
+                        : <p className="p-3 text-xs leading-relaxed text-muted-foreground">Groups you can access will appear here.</p>}
+                </nav>
+              </section>
+            </aside>
             <section className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-background" aria-label="Group conversation">
               <div className="flex min-h-14 items-center justify-between gap-2 border-b border-border bg-card px-4"><h2 className="font-bold text-primary">Conversation</h2><span className="text-xs text-muted-foreground">{data.messages.length ? `${data.messages.length} messages` : 'Start with a thought'}</span></div>
-              <div className="support-scroll flex min-h-64 max-h-[64dvh] flex-col gap-3 overflow-y-auto p-3 sm:p-5" aria-live="polite">
+              <div className="support-scroll flex min-h-64 max-h-[64dvh] flex-col gap-2.5 overflow-y-auto bg-secondary/35 p-3 sm:gap-3 sm:p-5" aria-live="polite">
                 {!data.messages.length ? <div className="my-auto rounded-2xl border border-dashed border-border bg-card p-6 text-center"><MessageCircle className="mx-auto h-6 w-6 text-[hsl(var(--support-moss))]" /><p className="mt-3 font-bold text-primary">A quiet start</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Share a useful question, resource or next step with the group.</p></div>
                   : data.messages.map((message) => <MessageItem key={message.id} message={message} own={message.senderId === user.id} groupId={groupId} messages={data.messages} />)}
                 <div ref={endRef} />

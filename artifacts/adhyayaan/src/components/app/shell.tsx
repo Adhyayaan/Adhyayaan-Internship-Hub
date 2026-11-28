@@ -60,7 +60,11 @@ export function Shell({ children }: { children: ReactNode }) {
   const lastScrollY = useRef(0);
   const { user } = useAuth();
   const navigation = user?.isSuperadmin ? SUPERADMIN_NAV : user?.isGuide ? GUIDE_NAV : user?.isAdmin ? ADMIN_NAV : NAV;
-  const active = (h: string) => (h === '/' ? loc === '/' : loc.startsWith(h) || (h === '/explore' && loc.startsWith('/courses')));
+  const active = (h: string) => {
+    if (h === '/') return loc === '/';
+    if (h === '/guide') return loc === '/guide';
+    return loc === h || loc.startsWith(`${h}/`) || (h === '/explore' && loc.startsWith('/courses'));
+  };
   const here = useHere();
   const initials = user?.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
   useEffect(() => {
